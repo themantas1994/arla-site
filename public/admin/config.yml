@@ -2,14 +2,17 @@
 # Decap CMS — gestão de conteúdos do sítio da ARLA
 #
 # O editor grava diretamente no repositório Git: cada alteração é um commit,
-# tudo fica com histórico e nada se perde. Depois de gravar, o sítio é
-# reconstruído automaticamente (ver docs/implantacao.md).
+# tudo fica com histórico e nada se perde.
 #
-# ANTES DE USAR: acertar "repo" ao repositório real da associação.
+# ATENÇÃO: não existe publicação automática. Depois de gravar, alguém tem de
+# correr o build e publicar o resultado — ver docs/implantacao.md.
+#
+# "repo" tem de corresponder ao repositório real; se a associação mudar de
+# conta ou de organização, atualize-o aqui e na aplicação OAuth.
 # ---------------------------------------------------------------------------
 backend:
   name: github
-  repo: themantas1994/arla
+  repo: themantas1994/arla-site
   branch: main
   commit_messages:
     create: 'Conteúdo: criar {{collection}} "{{slug}}"'

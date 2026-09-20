@@ -255,7 +255,8 @@ Resultados medidos: [`qualidade.md`](qualidade.md).
   `TechArticle`, `Event`, `FAQPage`, `HowTo`, `BreadcrumbList` e `WebSite` conforme a página;
 - `sitemap-index.xml` gerado no build, com a área reservada excluída;
 - `robots.txt` que bloqueia `/admin/` e `/area-reservada/`;
-- **189 redireções 301** do sítio antigo, em três formatos (ver
+- redireções 301 do sítio antigo, em três formatos — 183 rotas em `src/lib/redirects.mjs`
+  e 190 regras em cada um dos `public/.htaccess` e `public/_redirects` (ver
   [`mapa-de-redirecoes.md`](mapa-de-redirecoes.md));
 - feed RSS em `/rss.xml` com notícias, artigos e eventos.
 
