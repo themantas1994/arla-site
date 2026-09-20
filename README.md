@@ -824,8 +824,11 @@ Mais cenários: [Resolução de Problemas](wiki/Resolucao-de-Problemas.md).
 
 ## Contribuir
 
-- **Branches:** não há convenção de nomes imposta no repositório; parta de `main` e abra um
-  pull request contra essa branch.
+- **Branches:** não há convenção de nomes imposta no repositório. **Note que não existe uma
+  branch `main`**: a branch predefinida é atualmente `claude/arla-website-redesign-vcemm3`.
+  Parta da branch predefinida e abra o pull request contra ela. O
+  `public/admin/config.yml` ainda aponta para `main` — ver
+  [auditoria](docs/auditoria-do-projeto.md#problemas-encontrados) (DOC-020).
 - **Mensagens de commit:** o histórico usa frases descritivas no imperativo, em português
   (ex.: `Redesenhar por completo o sítio da ARLA: Astro, CMS e migração de conteúdos`).
   Mantenha esse tom para alterações de conteúdo e de arquitetura.

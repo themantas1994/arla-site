@@ -51,6 +51,13 @@ local_backend: true
 **`repo` tem de corresponder ao repositório real.** Se a associação passar a alojar o
 projeto noutra conta ou organização, este valor muda — e com ele a aplicação OAuth.
 
+> **Atenção: `branch: main` não corresponde a nenhuma branch existente.** A branch
+> predefinida deste repositório é hoje `claude/arla-website-redesign-vcemm3`. Com o CMS a
+> funcionar em produção, as gravações falhariam. Qual deve ser a branch publicada é uma
+> decisão da associação, e por isso ficou registada em
+> [`docs/auditoria-do-projeto.md`](../docs/auditoria-do-projeto.md#problemas-encontrados)
+> (DOC-020) em vez de ser alterada às cegas.
+
 As mensagens de commit em português tornam o histórico legível: vê-se de imediato o que foi
 alteração de conteúdo e o que foi alteração de código.
 

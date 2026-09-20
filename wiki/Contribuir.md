@@ -18,8 +18,13 @@ Ver [Desenvolvimento Local](Desenvolvimento-Local.md).
 
 ## Branches e pull requests
 
-- **Não há convenção de nomes imposta** no repositório. Parta de `main` e abra um pull
-  request contra essa branch.
+- **Não há convenção de nomes imposta** no repositório.
+- **Não existe uma branch `main`.** A branch predefinida é atualmente
+  `claude/arla-website-redesign-vcemm3` — confirme com `git ls-remote --symref origin HEAD`
+  antes de abrir um pull request. O `public/admin/config.yml` aponta para `main`, o que é
+  uma incoerência registada em
+  [`docs/auditoria-do-projeto.md`](../docs/auditoria-do-projeto.md#problemas-encontrados)
+  (DOC-020) e ainda por decidir.
 - Não há CI: **as verificações que não correr, ninguém corre**. Ver [CI/CD](CI-CD.md).
 
 ### Antes de abrir um pull request

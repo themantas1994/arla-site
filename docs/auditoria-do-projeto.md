@@ -25,8 +25,10 @@ problemas encontrados são de três tipos:
 2. **Funcionalidades descritas como automáticas quando são manuais** — a mais importante é a
    afirmação de que o sítio se reconstrói sozinho depois de gravar no CMS, o que não
    acontece: não existe CI/CD.
-3. **Uma configuração desatualizada**: o backend do Decap CMS apontava para um repositório
-   com um nome diferente do real, o que impediria o editor de funcionar.
+3. **Configuração desatualizada no CMS**: o backend do Decap CMS apontava para um
+   repositório com um nome diferente do real, o que impediria o editor de funcionar
+   (corrigido), e aponta para uma branch `main` que não existe neste repositório
+   (registado, por ser uma decisão da associação).
 
 A documentação para quem desenvolve estava em inglês (README de 552 linhas e 22 páginas de
 wiki) e foi traduzida e reescrita em português de Portugal, corrigida contra o código.
@@ -163,6 +165,7 @@ incompleto, sem falha imediata) · **Baixo** (redação, organização, imprecis
 | DOC-016 | **Baixo** | Repositório | README e wiki ligavam para `github.com/themantas1994/arla`. | `git remote -v` | Corrigido em toda a documentação |
 | DOC-017 | **Baixo** | SEO | Não estava documentado que o `robots.txt` tem o endereço do sitemap escrito literalmente e não acompanha `PUBLIC_SITE_URL`. | `public/robots.txt` | Documentado |
 | DOC-018 | **Baixo** | Ambiente | A tabela de variáveis de ambiente omitia `CHROMIUM_PATH`, usada por três guiões. | `qa.mjs`, `capturas.mjs`, `auditar-desempenho.mjs` | Acrescentada |
+| DOC-020 | **Alto** | CMS / Git | `public/admin/config.yml` tem `branch: main`, mas **o repositório não tem uma branch `main`**: a branch predefinida é `claude/arla-website-redesign-vcemm3`. Com o CMS a funcionar, as gravações falhariam. | `git ls-remote --heads origin` | Registado, **não corrigido** — qual deve ser a branch publicada é uma decisão da associação, não uma correção derivável do código |
 | DOC-019 | **Baixo** | Idioma | Toda a documentação para quem desenvolve (README + 22 páginas de wiki) estava em inglês, contra o pedido de português de Portugal. | — | README reescrito e wiki substituída por 27 páginas em PT-PT |
 
 ---
@@ -290,6 +293,7 @@ NÃO IMPLEMENTADO — Sistema de inscrições em eventos
 PARCIALMENTE IMPLEMENTADO — Autenticação do Decap CMS em produção
   O config.yml está completo e o backend local funciona, mas a aplicação OAuth do GitHub
   e o serviço de autenticação não existem. Até lá, o /admin/ carrega mas não autentica.
+  Além disso, `branch: main` não corresponde a nenhuma branch existente (DOC-020).
 ```
 
 ## Funcionalidades implementadas mas não documentadas
@@ -573,10 +577,13 @@ Separadas do que está feito. Nenhuma foi implementada.
 1. **Concluir a configuração do OAuth do Decap CMS** (aplicação OAuth do GitHub + serviço de
    autenticação). Sem isto, o editor não funciona em produção e a promessa feita à direção
    não se cumpre.
-2. **Confirmar os dados assinalados em
+2. **Decidir qual é a branch publicada e acertar `branch:` no `config.yml`** (DOC-020). Hoje
+   o ficheiro diz `main`, e o repositório não tem uma branch com esse nome — a predefinida é
+   `claude/arla-website-redesign-vcemm3`. Com o CMS a funcionar, as gravações falhariam.
+3. **Confirmar os dados assinalados em
    [`carece-de-verificacao.md`](carece-de-verificacao.md)** — mandato dos órgãos sociais,
    valor da quota, IBAN. São factos publicados que vieram do sítio anterior.
-3. **Decidir sobre o ficheiro `LICENSE`** (DT-013).
+4. **Decidir sobre o ficheiro `LICENSE`** (DT-013).
 
 ### Curto prazo
 
@@ -614,7 +621,8 @@ foi encontrado e o que foi alterado.
 
 As pendências não são de documentação, e por isso não foram resolvidas aqui:
 
-- a autenticação do Decap CMS em produção continua por configurar (fora do repositório);
+- a autenticação do Decap CMS em produção continua por configurar (fora do repositório), e
+  a branch publicada continua por decidir (DOC-020);
 - as 14 entradas de dívida técnica e os dois defeitos acima continuam por corrigir, por
   serem alterações de código fora do âmbito desta tarefa;
 - as 3 vulnerabilidades de dependências exigem atualizações de versão maior;
