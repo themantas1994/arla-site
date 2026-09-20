@@ -1,0 +1,95 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import { getCollection } from 'astro:content';
+
+const faq = await getCollection('faq');
+const categorias = [...new Set(faq.map((f) => f.data.categoria))];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({
+    '@type': 'Question',
+    name: f.data.pergunta,
+    acceptedAnswer: { '@type': 'Answer', text: f.data.resposta },
+  })),
+};
+---
+<Pagina
+  titulo="Perguntas frequentes"
+  descricao="As dúvidas mais comuns sobre a ARLA: como associar-se, quotas e isenções, utilização dos repetidores e como começar no radioamadorismo."
+  sobretitulo="Recursos"
+  migalhas={[{ rotulo: 'Recursos', href: '/recursos/' }, { rotulo: 'Perguntas frequentes' }]}
+  jsonLd={jsonLd}
+  largura="estreito"
+>
+  {categorias.map((c) => (
+    <section class="cat">
+      <h2 class="cat__titulo">{c}</h2>
+      <ul class="faq">
+        {faq.filter((f) => f.data.categoria === c).map((f) => (
+          <li class="faq__item">
+            <details id={f.data.id}>
+              <summary>
+                <span>{f.data.pergunta}</span>
+                <Icone nome="seta" class="faq__seta" />
+              </summary>
+              <div class="faq__resposta">
+                <p>{f.data.resposta}</p>
+              </div>
+            </details>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+
+  <aside class="mais-duvidas">
+    <Icone nome="correio" />
+    <div>
+      <h2>Ficou com outra dúvida?</h2>
+      <p>Escreva-nos. Respondemos a todas as mensagens.</p>
+      <a class="btn btn--principal btn--pequeno" href="/contactos/">Contactar a ARLA</a>
+    </div>
+  </aside>
+</Pagina>
+
+<style>
+  .cat + .cat { margin-top: var(--e-6); }
+  .cat__titulo {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: var(--e-3);
+  }
+  .faq { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--e-2); }
+  .faq__item details {
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-lg);
+    background: var(--superficie);
+    overflow: hidden;
+  }
+  .faq__item details[open] { border-color: var(--borda-forte); }
+  .faq__item summary {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--e-3);
+    min-height: 3.25rem; padding: var(--e-3) var(--e-4);
+    font-weight: 600; cursor: pointer; list-style: none;
+  }
+  .faq__item summary::-webkit-details-marker { display: none; }
+  .faq__item summary:hover { color: var(--accent); }
+  .faq__item :global(.faq__seta) {
+    width: 1rem; height: 1rem; flex: none; color: var(--texto-fraco);
+    transform: rotate(90deg); transition: transform var(--transicao);
+  }
+  .faq__item details[open] :global(.faq__seta) { transform: rotate(-90deg); color: var(--accent); }
+  .faq__resposta { padding: 0 var(--e-4) var(--e-4); }
+  .faq__resposta p { color: var(--texto-suave); max-width: 68ch; }
+
+  .mais-duvidas {
+    display: flex; gap: var(--e-4);
+    margin-top: var(--e-8); padding: var(--e-5);
+    border: 1px solid var(--borda); border-radius: var(--raio-lg); background: var(--superficie);
+  }
+  .mais-duvidas > :global(svg) { width: 1.7rem; height: 1.7rem; color: var(--accent); flex: none; }
+  .mais-duvidas h2 { font-size: var(--t-lg); }
+  .mais-duvidas p { margin: var(--e-2) 0 var(--e-4); color: var(--texto-suave); }
+</style>

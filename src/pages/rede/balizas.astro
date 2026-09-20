@@ -1,0 +1,130 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import DistintivoEstado from '@components/DistintivoEstado.astro';
+import BotaoCopiar from '@components/BotaoCopiar.astro';
+import Mapa from '@components/Mapa.astro';
+import Aviso from '@components/Aviso.astro';
+import { getCollection } from 'astro:content';
+import { marcadoresDaRede } from '@lib/rede';
+
+const balizas = await getCollection('balizas');
+const marcadores = await marcadoresDaRede({ repetidores: false, balizas: true });
+---
+<Pagina
+  titulo="Balizas"
+  descricao="As balizas CS5BLA da ARLA em 50, 144, 432 e 1296 MHz, emitidas a partir de Aldeia dos Chãos: frequências, modo, potência, antena e estado."
+  sobretitulo="Rede ARLA"
+  migalhas={[{ rotulo: 'Rede ARLA', href: '/rede/' }, { rotulo: 'Balizas' }]}
+>
+  <p class="intro">
+    As balizas da ARLA emitem em CW de forma contínua e servem de referência para avaliar
+    condições de propagação em VHF, UHF e micro-ondas. Todas usam o indicativo
+    <strong class="mono">CS5BLA</strong>.
+  </p>
+
+  <div class="tabela-envolvente so-largo">
+    <table class="dados">
+      <caption>Balizas operadas pela ARLA.</caption>
+      <thead>
+        <tr>
+          <th scope="col">Banda</th>
+          <th scope="col">Localização</th>
+          <th scope="col">Frequência (MHz)</th>
+          <th scope="col">Modo</th>
+          <th scope="col">P.A.R.</th>
+          <th scope="col">Indicativo</th>
+          <th scope="col">Antena</th>
+          <th scope="col">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {balizas.map((b) => (
+          <tr>
+            <td><strong>{b.data.banda}</strong></td>
+            <td>{b.data.localizacao}{b.data.quadricula && <><br /><span class="mono fraco">{b.data.quadricula}</span></>}</td>
+            <td class="num">
+              {b.data.frequencia}
+              <BotaoCopiar valor={b.data.frequencia} rotulo={`Copiar frequência ${b.data.frequencia} MHz`} class="nao-imprimir" />
+              {b.data.notas && <><br /><span class="fraco nota-licenca">{b.data.notas}</span></>}
+            </td>
+            <td>{b.data.modo}</td>
+            <td class="num">{b.data.potencia ? `${b.data.potencia} W` : '—'}</td>
+            <td class="num"><strong>{b.data.indicativo}</strong></td>
+            <td>{b.data.antena ?? '—'}</td>
+            <td><DistintivoEstado estado={b.data.estado} /></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <ul class="grelha grelha--auto-sm cartoes so-estreito">
+    {balizas.map((b) => (
+      <li class="cartao baliza">
+        <div class="baliza__topo">
+          <p class="baliza__banda">{b.data.banda}</p>
+          <DistintivoEstado estado={b.data.estado} />
+        </div>
+        <p class="baliza__frequencia mono">
+          {b.data.frequencia} <small>MHz</small>
+          <BotaoCopiar valor={b.data.frequencia} rotulo={`Copiar frequência ${b.data.frequencia} MHz`} />
+        </p>
+        {b.data.notas && <p class="fraco nota-licenca">{b.data.notas}</p>}
+        <dl class="baliza__dados">
+          <div><dt>Indicativo</dt><dd class="mono">{b.data.indicativo}</dd></div>
+          <div><dt>Modo</dt><dd>{b.data.modo}</dd></div>
+          <div><dt>P.A.R.</dt><dd>{b.data.potencia ? `${b.data.potencia} W` : '—'}</dd></div>
+          <div><dt>Antena</dt><dd>{b.data.antena ?? '—'}</dd></div>
+          <div class="largo"><dt>Localização</dt><dd>{b.data.localizacao} {b.data.quadricula && <span class="mono fraco">({b.data.quadricula})</span>}</dd></div>
+        </dl>
+      </li>
+    ))}
+  </ul>
+
+  <section class="mapa-seccao nao-imprimir" aria-labelledby="t-mapa-balizas">
+    <h2 id="t-mapa-balizas">Onde estão</h2>
+    <Mapa
+      id="mapa-balizas"
+      rotulo="Mapa com a localização aproximada das balizas da ARLA"
+      marcadores={marcadores}
+      zoom={11}
+      altura="24rem"
+    />
+  </section>
+
+  <Aviso tipo="info">
+    <p>
+      Relatórios de receção das balizas são bem-vindos e ajudam a caracterizar a cobertura.
+      Envie-os para o <a href="/contactos/">correio eletrónico da associação</a>.
+    </p>
+  </Aviso>
+</Pagina>
+
+<style>
+  .intro { font-size: var(--t-lg); color: var(--texto-suave); max-width: 64ch; margin-bottom: var(--e-5); }
+  .nota-licenca { font-size: var(--t-xs); font-style: italic; }
+
+  .so-largo { display: none; }
+  .cartoes { list-style: none; padding: 0; }
+  @media (min-width: 900px) { .so-largo { display: block; } .so-estreito { display: none; } }
+  @media print { .so-largo { display: block; } .so-estreito { display: none; } }
+
+  .baliza { padding: var(--e-4); gap: var(--e-2); }
+  .baliza__topo { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
+  .baliza__banda { font-weight: 700; font-size: var(--t-base); }
+  .baliza__frequencia {
+    display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap;
+    font-size: var(--t-xl); font-weight: 700; color: var(--accent);
+  }
+  .baliza__frequencia small { font-size: var(--t-sm); color: var(--texto-fraco); font-weight: 400; }
+  .baliza__dados {
+    display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3);
+    margin-top: var(--e-3); padding-top: var(--e-3); border-top: 1px solid var(--borda);
+  }
+  .baliza__dados .largo { grid-column: 1 / -1; }
+  .baliza__dados dt { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--texto-fraco); }
+  .baliza__dados dd { margin: 0.15rem 0 0; font-size: var(--t-sm); font-weight: 600; }
+
+  .mapa-seccao { margin: var(--e-8) 0 var(--e-6); }
+  .mapa-seccao h2 { font-size: var(--t-xl); margin-bottom: var(--e-4); }
+</style>

@@ -1,0 +1,142 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Aviso from '@components/Aviso.astro';
+import Icone from '@components/Icone.astro';
+import dados from '@data/associados.json';
+
+const associados = [...dados.associados].sort((a, b) => a.numero - b.numero);
+const comIndicativo = associados.filter((a) => a.indicativo).length;
+---
+<Pagina
+  titulo="Quem somos"
+  descricao="Lista de associados da ARLA, com número de associado, indicativo de amador e nome, tal como publicada pela associação."
+  sobretitulo="A associação"
+  migalhas={[{ rotulo: 'ARLA', href: '/arla/' }, { rotulo: 'Quem somos' }]}
+>
+  <div class="resumo">
+    <div class="resumo__numero">
+      <strong>{associados.length}</strong>
+      <span>associados listados</span>
+    </div>
+    <div class="resumo__numero">
+      <strong>{comIndicativo}</strong>
+      <span>com indicativo de amador</span>
+    </div>
+  </div>
+
+  <Aviso tipo="info">
+    <p>{dados.nota}</p>
+  </Aviso>
+
+  <div class="ferramentas nao-imprimir">
+    <div class="campo campo--pesquisa">
+      <label class="invisivel" for="filtro-associados">Filtrar associados por nome ou indicativo</label>
+      <Icone nome="pesquisa" class="campo__icone" />
+      <input
+        type="search"
+        id="filtro-associados"
+        placeholder="Filtrar por nome, indicativo ou número…"
+        autocomplete="off"
+        data-filtro-associados
+      />
+    </div>
+    <p class="contagem" data-contagem-associados aria-live="polite">{associados.length} associados</p>
+  </div>
+
+  <!-- Tabela em ecrãs largos -->
+  <div class="tabela-envolvente so-largo">
+    <table class="dados">
+      <caption class="invisivel">Associados da ARLA</caption>
+      <thead>
+        <tr>
+          <th scope="col">N.º</th>
+          <th scope="col">Indicativo</th>
+          <th scope="col">Nome</th>
+        </tr>
+      </thead>
+      <tbody>
+        {associados.map((a) => (
+          <tr data-associado data-texto={`${a.numero} ${a.indicativo} ${a.nome}`.toLowerCase()}>
+            <td class="num">{a.numero}</td>
+            <td class="mono">{a.indicativo || <span class="fraco">—</span>}</td>
+            <td>{a.nome}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Cartões em ecrãs estreitos -->
+  <ul class="grelha grelha--auto-sm cartoes so-estreito">
+    {associados.map((a) => (
+      <li class="cartao associado" data-associado data-texto={`${a.numero} ${a.indicativo} ${a.nome}`.toLowerCase()}>
+        <span class="associado__numero mono">#{a.numero}</span>
+        <p class="associado__nome">{a.nome}</p>
+        {a.indicativo && <p class="mono associado__indicativo">{a.indicativo}</p>}
+      </li>
+    ))}
+  </ul>
+
+  <p class="vazio" data-vazio-associados hidden>
+    Não encontrámos associados que correspondam a este filtro.
+  </p>
+
+  <aside class="nota-final">
+    <p class="suave">
+      Quer juntar-se a esta lista? Veja como <a href="/arla/ser-associado/">tornar-se associado/a</a>.
+    </p>
+  </aside>
+</Pagina>
+
+<style>
+  .resumo { display: flex; flex-wrap: wrap; gap: var(--e-6); margin-bottom: var(--e-5); }
+  .resumo__numero { display: flex; flex-direction: column; }
+  .resumo__numero strong { font-size: var(--t-3xl); font-weight: 800; color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums; }
+  .resumo__numero span { font-size: var(--t-sm); color: var(--texto-fraco); margin-top: 0.3rem; }
+
+  .ferramentas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin: var(--e-5) 0 var(--e-4); }
+  .campo--pesquisa { position: relative; flex: 1 1 18rem; }
+  .campo--pesquisa :global(.campo__icone) {
+    position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%);
+    width: 1.05rem; height: 1.05rem; color: var(--texto-fraco); pointer-events: none;
+  }
+  .campo--pesquisa input { padding-left: 2.5rem; }
+  .contagem { font-size: var(--t-sm); color: var(--texto-fraco); margin-left: auto; }
+
+  .so-largo { display: none; }
+  .cartoes { list-style: none; padding: 0; }
+  @media (min-width: 700px) {
+    .so-largo { display: block; }
+    .so-estreito { display: none; }
+  }
+  @media print { .so-largo { display: block; } .so-estreito { display: none; } }
+
+  .associado { padding: var(--e-4); gap: 0.15rem; }
+  .associado__numero { font-size: var(--t-xs); color: var(--texto-fraco); }
+  .associado__nome { font-weight: 600; }
+  .associado__indicativo { font-size: var(--t-sm); color: var(--accent); font-weight: 700; letter-spacing: 0.04em; }
+
+  .nota-final { margin-top: var(--e-7); padding-top: var(--e-5); border-top: 1px solid var(--borda); }
+</style>
+
+<script>
+  const campo = document.querySelector<HTMLInputElement>('[data-filtro-associados]');
+  const linhas = Array.from(document.querySelectorAll<HTMLElement>('[data-associado]'));
+  const contagem = document.querySelector<HTMLElement>('[data-contagem-associados]');
+  const vazio = document.querySelector<HTMLElement>('[data-vazio-associados]');
+  const semAcentos = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+  campo?.addEventListener('input', () => {
+    const termo = semAcentos(campo.value.trim());
+    const vistos = new Set<string>();
+    let n = 0;
+    for (const l of linhas) {
+      const texto = l.dataset.texto ?? '';
+      const mostrar = termo === '' || semAcentos(texto).includes(termo);
+      l.hidden = !mostrar;
+      if (mostrar && !vistos.has(texto)) { vistos.add(texto); n++; }
+    }
+    if (contagem) contagem.textContent = n === 1 ? '1 associado' : `${n} associados`;
+    if (vazio) vazio.hidden = n > 0;
+  });
+</script>

@@ -1,0 +1,31 @@
+{
+  "documentos": [
+    {
+      "id": "estatutos",
+      "nome": "Estatutos da ARLA",
+      "descricao": "Estatutos da Associação de Radioamadores do Litoral Alentejano, onde estão fixados os fins, objetivos e área geográfica da associação.",
+      "categoria": "Estatutos",
+      "ficheiro": "/documentos/estatutos-arla.pdf",
+      "tipo": "PDF",
+      "tamanho": "109 KB"
+    },
+    {
+      "id": "regulamentos-internos",
+      "nome": "Regulamentos Internos",
+      "descricao": "Regulamentos internos da associação, incluindo o regime de Núcleos de Sócios e o funcionamento das secções técnicas.",
+      "categoria": "Regulamentos",
+      "ficheiro": "/documentos/regulamentos-internos.pdf",
+      "tipo": "PDF",
+      "tamanho": "141 KB"
+    },
+    {
+      "id": "ficha-inscricao",
+      "nome": "Ficha de inscrição de associado/a",
+      "descricao": "Formulário a preencher por quem pretenda candidatar-se a associado/a da ARLA.",
+      "categoria": "Formulários",
+      "ficheiro": "/documentos/arla-ficha-de-inscricao.pdf",
+      "tipo": "PDF",
+      "tamanho": "156 KB"
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+---
+import Icone from './Icone.astro';
+import { SITIO, emailVisivel, email } from '@lib/sitio';
+
+const ano = new Date().getFullYear();
+const colunas = [
+  {
+    titulo: 'Associação',
+    ligacoes: [
+      { rotulo: 'A ARLA', href: '/arla/' },
+      { rotulo: 'História', href: '/arla/historia/' },
+      { rotulo: 'Órgãos Sociais', href: '/arla/orgaos-sociais/' },
+      { rotulo: 'Ser associado/a', href: '/arla/ser-associado/' },
+    ],
+  },
+  {
+    titulo: 'Rede ARLA',
+    ligacoes: [
+      { rotulo: 'Repetidores', href: '/rede/repetidores/' },
+      { rotulo: 'Balizas', href: '/rede/balizas/' },
+      { rotulo: 'APRS', href: '/rede/aprs/' },
+      { rotulo: 'Mapa da rede', href: '/rede/mapa/' },
+    ],
+  },
+  {
+    titulo: 'Recursos',
+    ligacoes: [
+      { rotulo: 'Quero começar', href: '/radioamadorismo/comecar/' },
+      { rotulo: 'Artigos técnicos', href: '/tecnica/' },
+      { rotulo: 'Documentos', href: '/recursos/documentos/' },
+      { rotulo: 'Perguntas frequentes', href: '/recursos/faq/' },
+    ],
+  },
+];
+---
+<footer class="site-rodape">
+  <div class="envolvente rodape__topo">
+    <div class="rodape__marca">
+      <p class="rodape__nome">ARLA</p>
+      <p class="rodape__completo">{SITIO.nomeCompleto}</p>
+      <p class="rodape__desc">{SITIO.descricaoCurta}</p>
+      <p class="rodape__indicativo mono">
+        <Icone nome="onda" /> Indicativo coletivo <strong>{SITIO.indicativo}</strong> · Quadrícula {SITIO.quadricula}
+      </p>
+      <ul class="rodape__redes">
+        {SITIO.redes.map((r) => (
+          <li>
+            <a href={r.url} rel="noopener noreferrer me" target="_blank" aria-label={`ARLA no ${r.nome}`}>
+              <Icone nome={r.icone as any} />
+              <span>{r.nome}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    {colunas.map((c) => (
+      <nav class="rodape__coluna" aria-labelledby={`rodape-${c.titulo.toLowerCase().replace(/\s/g, '-')}`}>
+        <h2 class="rodape__titulo" id={`rodape-${c.titulo.toLowerCase().replace(/\s/g, '-')}`}>{c.titulo}</h2>
+        <ul>
+          {c.ligacoes.map((l) => (
+            <li><a href={l.href}>{l.rotulo}</a></li>
+          ))}
+        </ul>
+      </nav>
+    ))}
+
+    <div class="rodape__coluna">
+      <h2 class="rodape__titulo">Contacto</h2>
+      <address>
+        {SITIO.morada.linha1}<br />
+        {SITIO.morada.linha2}<br />
+        {SITIO.morada.codigoPostal} {SITIO.morada.localidade}<br />
+        {SITIO.morada.pais}
+      </address>
+      <p class="rodape__email">
+        <a href={`mailto:${email()}`} data-email-real>{emailVisivel()}</a>
+      </p>
+      <a class="btn btn--contorno btn--pequeno" href="/contactos/">
+        <Icone nome="local" /> Ver no mapa
+      </a>
+    </div>
+  </div>
+
+  <div class="rodape__base">
+    <div class="envolvente rodape__base-interior">
+      <p>© 2000–{ano} {SITIO.nomeCompleto}. Todos os direitos reservados.</p>
+      <ul class="rodape__legal">
+        <li><a href="/legal/privacidade/">Privacidade</a></li>
+        <li><a href="/legal/cookies/">Cookies</a></li>
+        <li><a href="/legal/aviso-legal/">Aviso legal</a></li>
+        <li><a href="/rss.xml">RSS</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-rodape {
+    margin-top: var(--e-9);
+    background: var(--fundo-2);
+    border-top: 1px solid var(--borda);
+    font-size: var(--t-sm);
+  }
+  .rodape__topo {
+    display: grid;
+    gap: var(--e-6);
+    padding-block: var(--e-8) var(--e-6);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 640px) { .rodape__topo { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1000px) { .rodape__topo { grid-template-columns: 1.6fr repeat(4, 1fr); } }
+
+  .rodape__nome { font-size: 1.5rem; font-weight: 800; letter-spacing: 0.08em; }
+  .rodape__completo { color: var(--texto-suave); font-weight: 600; margin-top: 0.15rem; }
+  .rodape__desc { color: var(--texto-fraco); margin-top: var(--e-3); max-width: 42ch; }
+  .rodape__indicativo {
+    display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.15rem 0.45rem;
+    margin-top: var(--e-3); font-size: var(--t-xs); color: var(--texto-fraco);
+  }
+  .rodape__indicativo :global(svg) { align-self: center; }
+  .rodape__indicativo :global(svg) { width: 1rem; height: 1rem; color: var(--accent); }
+  .rodape__indicativo strong { color: var(--texto-suave); }
+
+  .rodape__redes { display: flex; gap: var(--e-2); margin-top: var(--e-4); flex-wrap: wrap; }
+  .rodape__redes a {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    min-height: 2.5rem; padding: 0.35rem 0.8rem;
+    border: 1px solid var(--borda); border-radius: 999px;
+    color: var(--texto-suave); text-decoration: none; font-size: var(--t-xs); font-weight: 600;
+  }
+  .rodape__redes a:hover { color: var(--accent); border-color: var(--accent); }
+  .rodape__redes :global(svg) { width: 1rem; height: 1rem; }
+
+  .rodape__titulo {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--texto); margin-bottom: var(--e-3);
+  }
+  .rodape__coluna ul { display: flex; flex-direction: column; gap: 0.1rem; list-style: none; padding: 0; }
+  /* :not(.btn) — caso contrário este seletor sobrepõe-se ao display:inline-flex
+     dos botões e o ícone acaba numa linha acima do texto. */
+  .rodape__coluna a:not(.btn) {
+    display: inline-block; padding: 0.4rem 0;
+    color: var(--texto-suave); text-decoration: none;
+  }
+  .rodape__coluna a:not(.btn):hover { color: var(--accent); text-decoration: underline; }
+  .rodape__coluna address { font-style: normal; color: var(--texto-suave); line-height: 1.7; }
+  .rodape__email { margin: var(--e-3) 0; word-break: break-word; }
+  .rodape__coluna .btn { white-space: nowrap; }
+  .rodape__email a { color: var(--texto-suave); text-decoration: none; }
+  .rodape__email a:hover { color: var(--accent); }
+
+  .rodape__base { border-top: 1px solid var(--borda); }
+  .rodape__base-interior {
+    display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: var(--e-3);
+    padding-block: var(--e-2); font-size: var(--t-xs); color: var(--texto-fraco);
+  }
+  .rodape__legal { display: flex; flex-wrap: wrap; gap: var(--e-2); list-style: none; padding: 0; margin: 0 -0.6rem; }
+  /* Área de toque confortável: as ligações são curtas, mas o alvo tem de ter altura. */
+  .rodape__legal a {
+    display: inline-flex; align-items: center;
+    min-height: 2.75rem; padding: 0 0.6rem;
+    color: var(--texto-fraco); text-decoration: none;
+  }
+  .rodape__legal a:hover { color: var(--accent); text-decoration: underline; }
+</style>

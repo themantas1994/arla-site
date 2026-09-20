@@ -1,0 +1,123 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Aviso from '@components/Aviso.astro';
+import Icone from '@components/Icone.astro';
+import { email, emailVisivel, SITIO } from '@lib/sitio';
+
+/**
+ * Esta página descreve apenas o que este sítio faz tecnicamente — factos verificáveis
+ * a partir do próprio código. NÃO contém texto jurídico inventado: o tratamento de
+ * dados pela associação (fichas de inscrição, quotas, listas de associados) tem de ser
+ * descrito pela direção.
+ */
+const factos = [
+  {
+    titulo: 'Não há formulários neste sítio',
+    texto: `Este sítio é estático: não existe qualquer formulário que recolha e envie dados
+      para a ARLA. Os contactos são feitos por correio eletrónico, a partir do seu próprio
+      programa de correio.`,
+  },
+  {
+    titulo: 'Não há contas de utilizador',
+    texto: `O sítio não tem registo, início de sessão nem base de dados de utilizadores.
+      Nada do que faz aqui é associado a uma identidade.`,
+  },
+  {
+    titulo: 'Não há análise de tráfego nem publicidade',
+    texto: `Não são carregados Google Analytics, píxeis de redes sociais, sistemas de
+      publicidade ou qualquer outro serviço de rastreio de visitantes.`,
+  },
+  {
+    titulo: 'Não são usados cookies',
+    texto: `O sítio não coloca cookies. A única coisa guardada no seu navegador é a
+      preferência de tema (claro ou escuro), em armazenamento local — fica no seu
+      dispositivo e nunca é enviada para lado nenhum.`,
+  },
+  {
+    titulo: 'Conteúdos de terceiros',
+    texto: `Três elementos fazem pedidos a servidores externos quando os vê: os mapas
+      (telas do OpenStreetMap), os painéis da página de meteorologia espacial (HamQSL e
+      NOAA/SWPC) e as ligações que abrem sítios de terceiros. Nesses pedidos, o seu
+      endereço IP é conhecido por esses servidores, como em qualquer visita à Internet.
+      Os mapas só são carregados quando entram no ecrã.`,
+  },
+  {
+    titulo: 'Registos do servidor',
+    texto: `Como qualquer sítio, o servidor de alojamento pode manter registos técnicos de
+      acesso. A sua existência, conteúdo e prazo de conservação dependem do alojamento
+      contratado pela associação.`,
+  },
+];
+---
+<Pagina
+  titulo="Política de privacidade"
+  descricao="O que este sítio faz — e não faz — com os seus dados: sem cookies, sem rastreio, sem formulários e sem contas de utilizador."
+  sobretitulo="Informação legal"
+  migalhas={[{ rotulo: 'Privacidade' }]}
+  largura="estreito"
+>
+  <p class="intro">
+    Este sítio foi construído para recolher o mínimo possível. A lista abaixo descreve,
+    com exatidão, o que acontece quando o visita.
+  </p>
+
+  <ul class="factos">
+    {factos.map((f) => (
+      <li class="cartao facto">
+        <Icone nome="escudo" />
+        <div>
+          <h2>{f.titulo}</h2>
+          <p>{f.texto}</p>
+        </div>
+      </li>
+    ))}
+  </ul>
+
+  <Aviso tipo="tarefa" titulo="Por completar pela direção da ARLA">
+    <p>
+      Esta página descreve apenas o funcionamento técnico do sítio. <strong>Não descreve o
+      tratamento de dados pessoais feito pela associação</strong> fora dele — fichas de
+      inscrição, registo de associados, gestão de quotas, listas de distribuição ou
+      fotografias de atividades.
+    </p>
+    <p>
+      Essa parte tem de ser redigida pela direção, à luz do Regulamento Geral sobre a
+      Proteção de Dados, indicando pelo menos: que dados são recolhidos, com que finalidade
+      e fundamento, durante quanto tempo são conservados, com quem são partilhados, e como
+      exercer os direitos de acesso, retificação, apagamento, limitação, portabilidade e
+      oposição. Deve também identificar o responsável pelo tratamento.
+    </p>
+    <p>
+      <strong>Não foi escrito aqui nenhum texto jurídico em nome da ARLA</strong>, porque
+      inventá-lo seria assumir compromissos que a associação não tomou. Instruções para
+      preencher esta secção: <code>docs/gestao-de-conteudos.md</code>.
+    </p>
+  </Aviso>
+
+  <section class="contacto-privacidade">
+    <h2>Questões sobre dados pessoais</h2>
+    <p>
+      Para qualquer questão relativa a dados pessoais tratados pela ARLA, contacte a
+      associação: <a href={`mailto:${email()}`}>{emailVisivel()}</a>, ou por escrito para
+      {SITIO.morada.linha1}, {SITIO.morada.codigoPostal} {SITIO.morada.localidade}.
+    </p>
+    <p class="suave">
+      Em 2018, na entrada em vigor do RGPD, a ARLA publicou um
+      <a href="/noticias/regulamento-geral-de-protecao-de-dados/">comunicado sobre o
+      tratamento de dados dos associados</a>. Esse comunicado é de 2018 e está no arquivo.
+    </p>
+  </section>
+</Pagina>
+
+<style>
+  .intro { font-size: var(--t-lg); color: var(--texto-suave); max-width: 62ch; margin-bottom: var(--e-5); }
+  .factos { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--e-3); }
+  .facto { flex-direction: row; gap: var(--e-3); padding: var(--e-4); }
+  .facto > :global(svg) { width: 1.3rem; height: 1.3rem; color: var(--sinal); flex: none; margin-top: 0.2rem; }
+  .facto h2 { font-size: var(--t-base); }
+  .facto p { font-size: var(--t-sm); color: var(--texto-suave); margin-top: 0.3rem; }
+  .contacto-privacidade { margin-top: var(--e-7); padding-top: var(--e-5); border-top: 1px solid var(--borda); }
+  .contacto-privacidade h2 { font-size: var(--t-lg); }
+  .contacto-privacidade p { margin-top: var(--e-3); color: var(--texto-suave); }
+  .contacto-privacidade .suave { font-size: var(--t-sm); }
+</style>

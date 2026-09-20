@@ -1,0 +1,172 @@
+---
+import FundoEspectro from './FundoEspectro.astro';
+import Icone from './Icone.astro';
+import { SITIO } from '@lib/sitio';
+
+interface Props { estatisticas?: { valor: string; rotulo: string }[] }
+const { estatisticas = [] } = Astro.props;
+---
+<section class="heroi">
+  <FundoEspectro />
+  <div class="envolvente heroi__interior">
+    <p class="heroi__indicativo mono">
+      <span class="ponto" aria-hidden="true"></span>
+      {SITIO.indicativo} · {SITIO.quadricula} · Santiago do Cacém
+    </p>
+
+    <h1 class="heroi__titulo">
+      <span class="heroi__sigla">ARLA</span>
+      <span class="heroi__nome">Associação de Radioamadores<br />do Litoral Alentejano</span>
+    </h1>
+
+    <p class="heroi__descricao">
+      Rádio, técnica e comunidade no Litoral Alentejano desde 2000. Operamos repetidores
+      e balizas, promovemos formação e divulgamos o Serviço de Amador — para quem já é
+      radioamador e para quem está a começar.
+    </p>
+
+    <div class="heroi__accoes">
+      <a class="btn btn--principal" href="/arla/">Conhecer a ARLA</a>
+      <a class="btn btn--contorno" href="/arla/ser-associado/">Ser associado/a</a>
+      <a class="btn btn--fantasma" href="/radioamadorismo/comecar/">
+        <Icone nome="estrela" /> Quero começar
+      </a>
+      <a class="btn btn--fantasma" href="/contactos/">Contactos</a>
+    </div>
+
+    <a class="heroi__atalho" href="/rede/repetidores/">
+      <Icone nome="repetidor" />
+      <span>
+        <strong>Ver repetidores e balizas</strong>
+        <small>Frequências, tons, talkgroups e estado da rede</small>
+      </span>
+      <Icone nome="seta" class="heroi__atalho-seta" />
+    </a>
+
+    {estatisticas.length > 0 && (
+      <dl class="heroi__numeros">
+        {estatisticas.map((e) => (
+          <div>
+            <dt>{e.rotulo}</dt>
+            <dd>{e.valor}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
+  </div>
+</section>
+
+<style>
+  .heroi {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-bottom: 1px solid var(--borda);
+  }
+  .heroi__interior {
+    position: relative;
+    z-index: 1;
+    padding-block: clamp(3rem, 8vw, 6rem) clamp(4rem, 9vw, 6.5rem);
+    max-width: 62rem;
+  }
+
+  .heroi__indicativo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: var(--t-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--texto-suave);
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--borda-forte);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--superficie) 70%, transparent);
+  }
+  .ponto {
+    width: 0.5rem; height: 0.5rem; border-radius: 50%;
+    background: var(--sinal);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--sinal) 70%, transparent);
+    animation: pulsar 2.4s ease-out infinite;
+  }
+  @keyframes pulsar {
+    70% { box-shadow: 0 0 0 0.5rem transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  @media (prefers-reduced-motion: reduce) { .ponto { animation: none; } }
+
+  .heroi__titulo { margin-top: var(--e-5); display: flex; flex-direction: column; gap: 0.35rem; }
+  .heroi__sigla {
+    font-size: var(--t-4xl);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    line-height: 0.95;
+    background: linear-gradient(115deg, var(--texto) 30%, var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .heroi__nome {
+    font-size: var(--t-xl);
+    font-weight: 600;
+    color: var(--texto-suave);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  .heroi__descricao {
+    margin-top: var(--e-5);
+    max-width: 58ch;
+    font-size: var(--t-lg);
+    color: var(--texto-suave);
+  }
+
+  .heroi__accoes { display: flex; flex-wrap: wrap; gap: var(--e-3); margin-top: var(--e-6); }
+
+  .heroi__atalho {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e-3);
+    margin-top: var(--e-6);
+    padding: var(--e-3) var(--e-4);
+    max-width: 30rem;
+    background: var(--superficie);
+    border: 1px solid var(--borda-forte);
+    border-radius: var(--raio-lg);
+    text-decoration: none;
+    color: var(--texto);
+    transition: border-color var(--transicao), transform var(--transicao);
+  }
+  .heroi__atalho:hover { border-color: var(--accent); color: var(--texto); }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .heroi__atalho:hover { transform: translateY(-2px); }
+  }
+  .heroi__atalho > :global(svg:first-child) { width: 1.6rem; height: 1.6rem; color: var(--accent); flex: none; }
+  .heroi__atalho span { display: flex; flex-direction: column; }
+  .heroi__atalho strong { font-size: var(--t-sm); font-weight: 700; }
+  .heroi__atalho small { font-size: var(--t-xs); color: var(--texto-fraco); }
+  .heroi__atalho :global(.heroi__atalho-seta) {
+    width: 1.1rem; height: 1.1rem; margin-left: auto; color: var(--accent); flex: none;
+    transition: transform var(--transicao);
+  }
+  .heroi__atalho:hover :global(.heroi__atalho-seta) { transform: translateX(3px); }
+
+  .heroi__numeros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+    gap: var(--e-4);
+    margin-top: var(--e-7);
+    padding-top: var(--e-5);
+    border-top: 1px solid var(--borda);
+    max-width: 44rem;
+  }
+  .heroi__numeros dt { font-size: var(--t-xs); color: var(--texto-fraco); text-transform: uppercase; letter-spacing: 0.08em; }
+  .heroi__numeros dd {
+    margin: 0.2rem 0 0;
+    font-size: var(--t-2xl);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    line-height: 1;
+  }
+</style>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Gestão de conteúdos — ARLA</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      body { margin: 0; font-family: system-ui, sans-serif; background: #070d14; color: #eaf2f8; }
+      #sem-config {
+        max-width: 42rem; margin: 4rem auto; padding: 2rem;
+        border: 1px solid #1f3244; border-radius: 16px; background: #101c2b; line-height: 1.6;
+      }
+      #sem-config h1 { font-size: 1.4rem; margin-top: 0; }
+      #sem-config code { background: #16273a; padding: 0.15em 0.4em; border-radius: 4px; }
+      #sem-config a { color: #2c9fe0; }
+    </style>
+  </head>
+  <body>
+    <div id="sem-config">
+      <h1>Gestão de conteúdos da ARLA</h1>
+      <p>
+        Esta página carrega o Decap CMS, o editor de conteúdos do sítio. Se está a ver
+        esta mensagem, o editor ainda não arrancou — o mais provável é não haver ligação
+        à Internet, ou o <code>backend</code> em <code>/admin/config.yml</code> ainda não
+        estar configurado.
+      </p>
+      <p>
+        Instruções completas em <code>docs/gestao-de-conteudos.md</code> no repositório.
+      </p>
+    </div>
+
+    <script src="https://unpkg.com/decap-cms@^3.8.4/dist/decap-cms.js"></script>
+    <script>
+      // Assim que o CMS arranca, a mensagem de diagnóstico deixa de ser precisa.
+      window.addEventListener('load', function () {
+        if (window.CMS) {
+          var aviso = document.getElementById('sem-config');
+          if (aviso) aviso.remove();
+        }
+      });
+    </script>
+  </body>
+</html>

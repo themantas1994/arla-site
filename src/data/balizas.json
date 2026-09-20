@@ -1,0 +1,53 @@
+{
+  "balizas": [
+    {
+      "id": "cs5bla-50",
+      "banda": "VHF 50 MHz",
+      "localizacao": "Aldeia dos Chãos",
+      "quadricula": "IM57px",
+      "frequencia": "50.465",
+      "modo": "CW (A1A)",
+      "potencia": "2.5",
+      "indicativo": "CS5BLA",
+      "antena": "Dipolo horizontal",
+      "estado": "operacional",
+      "notas": "Aguarda nova licença."
+    },
+    {
+      "id": "cs5bla-144",
+      "banda": "VHF 144 MHz",
+      "localizacao": "Aldeia dos Chãos",
+      "quadricula": "IM57px",
+      "frequencia": "144.410",
+      "modo": "CW (A1A)",
+      "potencia": "5",
+      "indicativo": "CS5BLA",
+      "antena": "Colinear Diamond X50",
+      "estado": "operacional"
+    },
+    {
+      "id": "cs5bla-432",
+      "banda": "UHF 432 MHz",
+      "localizacao": "Aldeia dos Chãos",
+      "quadricula": "IM57px",
+      "frequencia": "432.425",
+      "modo": "CW (A1A)",
+      "potencia": "5",
+      "indicativo": "CS5BLA",
+      "antena": "Colinear Diamond X50",
+      "estado": "operacional"
+    },
+    {
+      "id": "cs5bla-1296",
+      "banda": "UHF 1296 MHz",
+      "localizacao": "Aldeia dos Chãos",
+      "quadricula": "IM57px",
+      "frequencia": "1296.825",
+      "modo": "CW (A1A)",
+      "potencia": "8",
+      "indicativo": "CS5BLA",
+      "antena": "Dual Alford Slot (polarização horizontal)",
+      "estado": "operacional"
+    }
+  ]
+}

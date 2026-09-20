@@ -1,0 +1,71 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Pagina from '@layouts/Pagina.astro';
+import IndiceConteudos from '@components/IndiceConteudos.astro';
+import Partilhar from '@components/Partilhar.astro';
+import Icone from '@components/Icone.astro';
+import { getCollection, render } from 'astro:content';
+
+/** Páginas editoriais do radioamadorismo, vindas de src/content/paginas. */
+const ROTAS: Record<string, { slug: string; sobretitulo: string }> = {
+  'o-que-e': { slug: 'o-que-e-o-radioamadorismo', sobretitulo: 'Radioamadorismo' },
+  'ser-radioamador': { slug: 'ser-radioamador', sobretitulo: 'Radioamadorismo' },
+};
+
+export const getStaticPaths = (async () => {
+  return Object.keys({
+    'o-que-e': 1,
+    'ser-radioamador': 1,
+  }).map((p) => ({ params: { pagina: p } }));
+}) satisfies GetStaticPaths;
+
+const chave = Astro.params.pagina!;
+const rota = ROTAS[chave];
+const todas = await getCollection('paginas');
+const entrada = todas.find((p) => p.id === rota.slug);
+if (!entrada) throw new Error(`Falta src/content/paginas/${rota.slug}.md`);
+const { Content, headings } = await render(entrada);
+const d = entrada.data;
+const urlAbs = new URL(Astro.url.pathname, Astro.site).href;
+---
+<Pagina
+  titulo={d.titulo}
+  descricao={d.resumo}
+  sobretitulo={rota.sobretitulo}
+  migalhas={[{ rotulo: 'Radioamadorismo', href: '/radioamadorismo/' }, { rotulo: d.titulo }]}
+  largura="estreito"
+>
+  {(d.autor || d.indicativo) && (
+    <p slot="cabecalho-extra" class="autoria">
+      <Icone nome="pessoas" />
+      Por {d.autor}{d.autor && d.indicativo ? ' · ' : ''}
+      {d.indicativo && <span class="mono">{d.indicativo}</span>}
+    </p>
+  )}
+
+  {d.indice && <IndiceConteudos titulos={headings} />}
+
+  <div class="prosa">
+    <Content />
+  </div>
+
+  <div class="rodape-pagina">
+    <Partilhar titulo={d.titulo} url={urlAbs} />
+    <div class="linha">
+      <a class="btn btn--contorno" href="/radioamadorismo/comecar/">Quero começar</a>
+      <a class="btn btn--contorno" href="/tecnica/">Artigos técnicos</a>
+    </div>
+  </div>
+</Pagina>
+
+<style>
+  .autoria {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    margin-top: var(--e-4); font-size: var(--t-sm); color: var(--texto-fraco);
+  }
+  .autoria :global(svg) { width: 1rem; height: 1rem; color: var(--accent); }
+  .rodape-pagina {
+    display: flex; flex-direction: column; gap: var(--e-5);
+    margin-top: var(--e-7); padding-top: var(--e-5); border-top: 1px solid var(--borda);
+  }
+</style>

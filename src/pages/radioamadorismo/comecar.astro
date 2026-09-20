@@ -1,0 +1,232 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import Aviso from '@components/Aviso.astro';
+import { email, emailVisivel } from '@lib/sitio';
+
+const perguntas = [
+  {
+    id: 'o-que-e',
+    titulo: 'O que é, afinal, o radioamadorismo?',
+    icone: 'onda',
+    corpo: `É comunicar por rádio com outras pessoas — na terra ao lado ou do outro lado do
+      mundo — sem qualquer fim comercial, usando uma estação legalizada. Mas é também
+      experimentar: construir antenas, montar circuitos, testar modos de transmissão,
+      receber satélites, estudar a propagação das ondas. Uns gostam mais de conversar,
+      outros de construir. Cabem os dois.`,
+  },
+  {
+    id: 'como-funciona',
+    titulo: 'Como é que funciona?',
+    icone: 'antena',
+    corpo: `Um emissor transforma a voz (ou dados) num sinal de rádio, que a antena irradia.
+      Do outro lado, outra antena capta esse sinal e um recetor volta a transformá-lo em som
+      ou informação. Consoante a frequência usada, o sinal comporta-se de maneira diferente:
+      em ondas curtas (HF) pode refletir-se na ionosfera e dar a volta ao planeta; em VHF e
+      UHF é mais «à vista», e é aí que entram os repetidores — estações em pontos altos que
+      recebem e retransmitem, alargando muito o alcance de um rádio portátil.`,
+    ligacao: { rotulo: 'Ver os repetidores da ARLA', href: '/rede/repetidores/' },
+  },
+  {
+    id: 'equipamento',
+    titulo: 'Que equipamento é preciso para começar?',
+    icone: 'ferramenta',
+    corpo: `Menos do que se imagina. Muita gente começa apenas com um recetor, à escuta —
+      isso não exige licença nenhuma. Para transmitir, um pequeno portátil de VHF/UHF e uma
+      antena decente já dão acesso a toda a rede de repetidores. A antena costuma fazer mais
+      diferença do que a potência: é por isso que a construção de antenas é um tema recorrente
+      nos nossos workshops.`,
+  },
+  {
+    id: 'licenca',
+    titulo: 'Como é que se obtém a licença?',
+    icone: 'documento',
+    corpo: `Em Portugal, o serviço de amador é gerido pela ANACOM — Autoridade Nacional de
+      Comunicações. Para transmitir é necessário obter o Certificado de Amador Nacional (CAN),
+      através de um exame de aptidão, e depois licenciar a estação. Existem várias categorias,
+      com diferentes condições de utilização. A ARLA promove cursos de formação destinados
+      sobretudo a associados que se preparam para esse exame ou que pretendem evoluir para
+      uma categoria superior.`,
+    aviso: `As condições, categorias, taxas e calendário de exames são definidos pela ANACOM
+      e mudam ao longo do tempo. Confirme sempre a informação em vigor no sítio da ANACOM
+      antes de tomar decisões.`,
+    ligacao: { rotulo: 'ANACOM — serviço de amador', href: 'https://www.anacom.pt/', externa: true },
+  },
+  {
+    id: 'quem-ajuda',
+    titulo: 'Quem me pode ajudar?',
+    icone: 'pessoas',
+    corpo: `Nós. Não é preciso ser licenciado para se associar à ARLA nem para participar nas
+      atividades — as atividades da associação são explicitamente extensíveis a quem ainda não
+      tem certificado. A forma mais simples de começar é aparecer, ouvir e perguntar.`,
+    ligacao: { rotulo: 'Falar com a ARLA', href: '/contactos/' },
+  },
+];
+
+const areas = [
+  { rotulo: 'DX e concursos', icone: 'onda', texto: 'Contactar estações muito distantes e trocar QSL — os postais que confirmam o contacto.' },
+  { rotulo: 'Propagação', icone: 'estrela', texto: 'Perceber como o Sol e a ionosfera abrem e fecham caminhos em cada banda.' },
+  { rotulo: 'Modos digitais', icone: 'codigo', texto: 'Comunicar por escrito ou por voz com a ajuda de software e de um computador.' },
+  { rotulo: 'Satélites', icone: 'satelite', texto: 'Trabalhar satélites de amador — incluindo contactar a Estação Espacial Internacional.' },
+  { rotulo: 'EME', icone: 'lua', texto: 'Reflexão lunar: os sinais percorrem cerca de 770 000 a 800 000 km, ida e volta.' },
+  { rotulo: 'Antenas e eletrónica', icone: 'ferramenta', texto: 'Construir, afinar e melhorar sistemas radiantes e circuitos.' },
+  { rotulo: 'Operação portátil', icone: 'mapa', texto: 'Levar a estação para um cume ou um parque — SOTA, POTA e ativações.' },
+  { rotulo: 'Emergência', icone: 'escudo', texto: 'Comunicações de apoio em situações de catástrofe, com a Proteção Civil.' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: perguntas.map((p) => ({
+    '@type': 'Question',
+    name: p.titulo,
+    acceptedAnswer: { '@type': 'Answer', text: p.corpo.replace(/\s+/g, ' ').trim() },
+  })),
+};
+---
+<Pagina
+  titulo="Quero começar"
+  descricao="Acabou de descobrir o radioamadorismo? Aqui explica-se o que é, como funciona, que equipamento é preciso, como se obtém a licença em Portugal e quem o pode ajudar."
+  sobretitulo="Para quem está a começar"
+  migalhas={[{ rotulo: 'Radioamadorismo', href: '/radioamadorismo/' }, { rotulo: 'Quero começar' }]}
+  jsonLd={jsonLd}
+>
+  <p slot="cabecalho-extra" class="promessa">
+    Sem jargão, sem pressupor conhecimentos prévios. Se ficar alguma dúvida,
+    <a href="/contactos/">pergunte-nos</a> — é para isso que cá estamos.
+  </p>
+
+  <ol class="perguntas">
+    {perguntas.map((p, n) => (
+      <li class="pergunta" id={p.id}>
+        <div class="pergunta__numero" aria-hidden="true">{n + 1}</div>
+        <div class="pergunta__corpo">
+          <h2><Icone nome={p.icone as any} /> {p.titulo}</h2>
+          <p>{p.corpo}</p>
+          {p.aviso && (
+            <Aviso tipo="historico" titulo="Confirme junto da ANACOM">
+              <p>{p.aviso}</p>
+            </Aviso>
+          )}
+          {p.ligacao && (
+            <a
+              class="btn btn--contorno btn--pequeno"
+              href={p.ligacao.href}
+              rel={p.ligacao.externa ? 'noopener noreferrer' : undefined}
+              target={p.ligacao.externa ? '_blank' : undefined}
+            >
+              <Icone nome={p.ligacao.externa ? 'externo' : 'seta'} /> {p.ligacao.rotulo}
+            </a>
+          )}
+        </div>
+      </li>
+    ))}
+  </ol>
+
+  <section class="areas" aria-labelledby="t-areas">
+    <h2 id="t-areas">O que se pode fazer</h2>
+    <p class="suave">
+      O radioamadorismo não é uma atividade só — são muitas, e ninguém as pratica todas.
+      Estas são algumas das mais comuns.
+    </p>
+    <ul class="grelha grelha--auto-sm">
+      {areas.map((a) => (
+        <li class="cartao area">
+          <Icone nome={a.icone as any} />
+          <h3>{a.rotulo}</h3>
+          <p>{a.texto}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="proximos-passos" aria-labelledby="t-passos">
+    <h2 id="t-passos">Próximos passos</h2>
+    <ul class="passos-lista">
+      <li>
+        <Icone nome="livro" />
+        <div>
+          <strong>Leia com calma</strong>
+          <p>
+            <a href="/radioamadorismo/o-que-e/">O que é o radioamadorismo</a> conta a história;
+            <a href="/radioamadorismo/ser-radioamador/">Ser radioamador</a> descreve a prática.
+          </p>
+        </div>
+      </li>
+      <li>
+        <Icone nome="repetidor" />
+        <div>
+          <strong>Ponha-se à escuta</strong>
+          <p>
+            Não precisa de licença para ouvir. Os <a href="/rede/repetidores/">repetidores da ARLA</a>
+            são um bom ponto de partida — as frequências estão todas publicadas.
+          </p>
+        </div>
+      </li>
+      <li>
+        <Icone nome="calendario" />
+        <div>
+          <strong>Apareça numa atividade</strong>
+          <p>
+            Workshops de antenas, de SSTV, convívios POTA. Veja a <a href="/eventos/">agenda</a>
+            e o arquivo do que já se fez.
+          </p>
+        </div>
+      </li>
+      <li>
+        <Icone nome="correio" />
+        <div>
+          <strong>Diga olá</strong>
+          <p>
+            Escreva para <a href={`mailto:${email()}`}>{emailVisivel()}</a> ou veja como
+            <a href="/arla/ser-associado/">tornar-se associado/a</a>.
+          </p>
+        </div>
+      </li>
+    </ul>
+  </section>
+</Pagina>
+
+<style>
+  .promessa { margin-top: var(--e-4); font-size: var(--t-sm); color: var(--texto-fraco); max-width: 60ch; }
+
+  .perguntas { list-style: none; padding: 0; display: flex; flex-direction: column; }
+  .pergunta {
+    display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: var(--e-4);
+    padding-bottom: var(--e-7); position: relative; scroll-margin-top: 6rem;
+  }
+  .pergunta:not(:last-child)::before {
+    content: ''; position: absolute; left: 1.2rem; top: 2.9rem; bottom: 0;
+    width: 2px; background: linear-gradient(var(--accent), var(--borda));
+  }
+  .pergunta__numero {
+    display: grid; place-items: center; width: 2.5rem; height: 2.5rem;
+    border-radius: 50%; background: var(--accent); color: var(--accent-contraste);
+    font-weight: 800; position: relative; z-index: 1; font-variant-numeric: tabular-nums;
+  }
+  .pergunta__corpo { display: flex; flex-direction: column; gap: var(--e-3); align-items: start; }
+  .pergunta__corpo h2 { display: flex; align-items: center; gap: 0.5rem; font-size: var(--t-xl); }
+  .pergunta__corpo h2 :global(svg) { width: 1.25rem; height: 1.25rem; color: var(--accent); flex: none; }
+  .pergunta__corpo > p { color: var(--texto-suave); max-width: 68ch; }
+
+  .areas { margin-top: var(--e-4); }
+  .areas h2 { font-size: var(--t-2xl); }
+  .areas .suave { margin: var(--e-2) 0 var(--e-5); max-width: 62ch; }
+  .areas ul { list-style: none; padding: 0; }
+  .area { padding: var(--e-4); gap: 0.35rem; }
+  .area > :global(svg) { width: 1.5rem; height: 1.5rem; color: var(--accent); }
+  .area h3 { font-size: var(--t-base); }
+  .area p { font-size: var(--t-sm); color: var(--texto-suave); }
+
+  .proximos-passos { margin-top: var(--e-8); padding-top: var(--e-6); border-top: 1px solid var(--borda); }
+  .proximos-passos h2 { font-size: var(--t-2xl); margin-bottom: var(--e-5); }
+  .passos-lista { list-style: none; padding: 0; display: grid; gap: var(--e-4); }
+  @media (min-width: 760px) { .passos-lista { grid-template-columns: 1fr 1fr; } }
+  .passos-lista li {
+    display: flex; gap: var(--e-3); padding: var(--e-4);
+    border: 1px solid var(--borda); border-radius: var(--raio-lg); background: var(--superficie);
+  }
+  .passos-lista :global(svg) { width: 1.4rem; height: 1.4rem; color: var(--accent); flex: none; margin-top: 0.15rem; }
+  .passos-lista strong { display: block; }
+  .passos-lista p { font-size: var(--t-sm); color: var(--texto-suave); margin-top: 0.25rem; }
+</style>

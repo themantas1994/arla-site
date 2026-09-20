@@ -1,0 +1,109 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import Aviso from '@components/Aviso.astro';
+import CartaoEvento from '@components/CartaoEvento.astro';
+import BotaoCopiar from '@components/BotaoCopiar.astro';
+import { eventos } from '@lib/conteudo';
+import { SITIO } from '@lib/sitio';
+
+// Atividades em que o indicativo coletivo foi usado, segundo os artigos publicados.
+const todos = await eventos();
+const comCS5ARLA = todos.filter((e) => e.data.etiquetas.includes('CS5ARLA')).slice(0, 4);
+---
+<Pagina
+  titulo="CS5ARLA"
+  descricao="CS5ARLA é o indicativo oficial da Associação de Radioamadores do Litoral Alentejano, usado nas atividades e eventos organizados pela associação."
+  sobretitulo="Rede ARLA"
+  migalhas={[{ rotulo: 'Rede ARLA', href: '/rede/' }, { rotulo: 'CS5ARLA' }]}
+>
+  <div class="indicativo-cartao">
+    <p class="indicativo-cartao__rotulo">Estação de Uso Coletivo</p>
+    <p class="indicativo-cartao__valor mono">{SITIO.indicativo}</p>
+    <p class="indicativo-cartao__nome">{SITIO.nomeCompleto}</p>
+    <dl class="indicativo-cartao__dados">
+      <div><dt>Quadrícula</dt><dd class="mono">{SITIO.quadricula}</dd></div>
+      <div><dt>Local</dt><dd>{SITIO.morada.localidade}</dd></div>
+    </dl>
+    <BotaoCopiar valor={SITIO.indicativo} rotulo="Copiar indicativo CS5ARLA" texto="Copiar indicativo" />
+  </div>
+
+  <section class="sobre" aria-labelledby="t-sobre">
+    <h2 id="t-sobre">O indicativo da associação</h2>
+    <p>
+      <strong class="mono">CS5ARLA</strong> é o indicativo oficial da ARLA. É com ele que a
+      associação se identifica no ar nas atividades que organiza — nomeadamente nas várias
+      edições do <a href="/eventos/">Fim de Semana Nacional de Amplitude Modulada em Onda Curta
+      e VHF</a> e na atividade de SSTV <a href="/eventos/80x80-atividade-sstv/">80×80</a>,
+      em que CS5ARLA opera como estação organizadora.
+    </p>
+    <p>
+      As balizas da associação usam o indicativo <a href="/rede/balizas/" class="mono">CS5BLA</a>
+      e cada repetidor tem o seu próprio indicativo, listado no
+      <a href="/rede/repetidores/">diretório de repetidores</a>.
+    </p>
+  </section>
+
+  {comCS5ARLA.length > 0 && (
+    <section class="atividades" aria-labelledby="t-atividades">
+      <h2 id="t-atividades">Atividades com CS5ARLA</h2>
+      <div class="grelha grelha--2">
+        {comCS5ARLA.map((e) => (
+          <CartaoEvento
+            href={`/eventos/${e.id}/`}
+            titulo={e.data.titulo}
+            resumo={e.data.resumo}
+            inicio={e.data.inicio}
+            fim={e.data.fim}
+            dataTexto={e.data.dataTexto}
+            tipo={e.data.tipo}
+          />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <Aviso tipo="tarefa" titulo="Conteúdo por completar">
+    <p>
+      No sítio anterior, a página «EUC CS5ARLA» estava vazia — continha apenas o título.
+      O texto acima resume o que consta, de forma verificável, dos restantes conteúdos
+      publicados pela ARLA. Se a direção quiser documentar aqui o equipamento da estação,
+      as suas condições de utilização pelos associados ou as regras de QSL, pode acrescentar
+      esse conteúdo — ver <code>docs/gestao-de-conteudos.md</code>.
+    </p>
+  </Aviso>
+</Pagina>
+
+<style>
+  .indicativo-cartao {
+    padding: var(--e-6);
+    border-radius: var(--raio-xl);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, var(--superficie)), var(--superficie));
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    text-align: center;
+    max-width: 30rem;
+  }
+  .indicativo-cartao__rotulo {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .indicativo-cartao__valor {
+    font-size: var(--t-4xl); font-weight: 800; letter-spacing: 0.04em;
+    line-height: 1.05; margin-top: var(--e-2);
+  }
+  .indicativo-cartao__nome { font-size: var(--t-sm); color: var(--texto-suave); margin-top: var(--e-2); }
+  .indicativo-cartao__dados {
+    display: flex; justify-content: center; gap: var(--e-6);
+    margin: var(--e-5) 0; padding-top: var(--e-4); border-top: 1px solid var(--borda);
+  }
+  .indicativo-cartao__dados dt { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-fraco); }
+  .indicativo-cartao__dados dd { margin: 0.2rem 0 0; font-weight: 700; }
+
+  .sobre { margin-top: var(--e-7); max-width: 68ch; }
+  .sobre h2 { font-size: var(--t-xl); margin-bottom: var(--e-3); }
+  .sobre p { color: var(--texto-suave); }
+  .sobre p + p { margin-top: var(--e-3); }
+
+  .atividades { margin: var(--e-8) 0 var(--e-6); }
+  .atividades h2 { font-size: var(--t-xl); margin-bottom: var(--e-4); }
+</style>

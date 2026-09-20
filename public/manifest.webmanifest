@@ -1,0 +1,15 @@
+{
+  "name": "ARLA — Associação de Radioamadores do Litoral Alentejano",
+  "short_name": "ARLA",
+  "description": "Repetidores, balizas, notícias e conteúdos técnicos da Associação de Radioamadores do Litoral Alentejano.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "lang": "pt-PT",
+  "background_color": "#070d14",
+  "theme_color": "#0082c8",
+  "icons": [
+    { "src": "/imagens/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

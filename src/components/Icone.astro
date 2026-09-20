@@ -1,0 +1,69 @@
+---
+/**
+ * Conjunto de ícones em linha (sem dependências externas).
+ * Traço de 1.75 para condizer com o peso tipográfico do sítio.
+ */
+interface Props {
+  nome: keyof typeof CAMINHOS;
+  tamanho?: number | string;
+  class?: string;
+  titulo?: string;
+}
+const { nome, tamanho = '1em', class: classe, titulo } = Astro.props;
+
+const CAMINHOS = {
+  antena: '<path d="M12 21V9"/><path d="M8.5 6.5a5 5 0 0 1 7 0"/><path d="M5.5 3.5a9 9 0 0 1 13 0"/><circle cx="12" cy="8" r="1.6"/>',
+  onda: '<path d="M2 12h3l2.5-7 4 14L14 9l2 5 2-2h4"/>',
+  satelite: '<path d="m7 13 4-4"/><rect x="2.5" y="12.5" width="6" height="6" rx="1" transform="rotate(-45 5.5 15.5)"/><rect x="15.5" y="5.5" width="6" height="6" rx="1" transform="rotate(-45 18.5 8.5)"/><path d="M13 19a6 6 0 0 0 6-6"/><path d="M13 22a9 9 0 0 0 9-9"/>',
+  repetidor: '<path d="M12 22V10"/><path d="m7 22 5-12 5 12"/><path d="M6.5 6.5a7 7 0 0 1 11 0"/><path d="M4 3.5a11 11 0 0 1 16 0"/>',
+  livro: '<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22z"/><path d="M4 17.5h16"/>',
+  documento: '<path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/><path d="M9 13h6M9 17h4"/>',
+  pessoas: '<circle cx="9" cy="8" r="3.2"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16.5 5.5a3.2 3.2 0 0 1 0 6"/><path d="M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/>',
+  mapa: '<path d="M9 3 3 5.5v15L9 18l6 3 6-2.5v-15L15 6z"/><path d="M9 3v15M15 6v15"/>',
+  local: '<path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
+  correio: '<rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m3 6.5 9 6.5 9-6.5"/>',
+  calendario: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  pesquisa: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>',
+  copiar: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  partilhar: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.6 6.8-4M8.6 13.4l6.8 4"/>',
+  descarregar: '<path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 20h16"/>',
+  externo: '<path d="M14 4h6v6"/><path d="m20 4-8.5 8.5"/><path d="M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/>',
+  seta: '<path d="M4 12h15"/><path d="m13 6 6 6-6 6"/>',
+  setaCima: '<path d="M12 19V5"/><path d="m6 11 6-6 6 6"/>',
+  menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+  fechar: '<path d="m5 5 14 14M19 5 5 19"/>',
+  sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.5 1.5M18.3 18.3l1.5 1.5M2 12h2M20 12h2M4.2 19.8l1.5-1.5M18.3 5.7l1.5-1.5"/>',
+  lua: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  aviso: '<path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4.5M12 17h.01"/>',
+  relogio: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/>',
+  ferramenta: '<path d="M14.5 5.5a4.5 4.5 0 0 0 5.9 5.9l-8 8a3 3 0 0 1-4.3-4.3z"/><path d="m6.5 17.5.01 0"/>',
+  energia: '<path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/>',
+  rede: '<circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4M10.5 13 6.5 17M13.5 13l4 4"/>',
+  codigo: '<path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/><path d="m13.5 4-3 16"/>',
+  escudo: '<path d="M12 2.5 4 6v6c0 5 3.4 8.5 8 9.5 4.6-1 8-4.5 8-9.5V6z"/><path d="m9 12 2 2 4-4"/>',
+  estrela: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  facebook: '<path d="M14.5 8.5H17V5h-2.5A4.5 4.5 0 0 0 10 9.5V12H7.5v3.5H10V22h3.5v-6.5H16l.5-3.5h-3V9.5a1 1 0 0 1 1-1z"/>',
+  qr: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 19h2M14 21h3"/>',
+  imprimir: '<path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
+  filtro: '<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
+} as const;
+---
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width={tamanho}
+  height={tamanho}
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.75"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={classe}
+  role={titulo ? 'img' : undefined}
+  aria-hidden={titulo ? undefined : 'true'}
+  focusable="false"
+>
+  {titulo && <title>{titulo}</title>}
+  <Fragment set:html={CAMINHOS[nome]} />
+</svg>

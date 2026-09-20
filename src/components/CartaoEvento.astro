@@ -1,0 +1,95 @@
+---
+import Icone from './Icone.astro';
+import { intervaloDatas, estadoEvento, ROTULO_ESTADO_EVENTO } from '@lib/sitio';
+
+interface Props {
+  href: string;
+  titulo: string;
+  resumo: string;
+  inicio: Date;
+  fim?: Date;
+  dataTexto?: string;
+  local?: string;
+  imagem?: string;
+  imagemAlt?: string;
+  tipo?: string;
+  cancelado?: boolean;
+  /** Nível do título do cartão. Ajustar para manter a hierarquia da página. */
+  nivel?: 2 | 3 | 4;
+}
+const {
+  href, titulo, resumo, inicio, fim, dataTexto, local, imagem, imagemAlt,
+  tipo, cancelado = false, nivel = 3,
+} = Astro.props;
+const Titulo = `h${nivel}` as 'h2' | 'h3' | 'h4';
+const estado = estadoEvento(inicio, fim);
+const MESES_CURTO = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+---
+<article class={`cartao cartao-evento cartao-evento--${estado}`}>
+  <div class="cartao-evento__interior">
+    <div class="calendario" aria-hidden="true">
+      <span class="calendario__mes">{MESES_CURTO[inicio.getUTCMonth()]}</span>
+      <span class="calendario__dia">{inicio.getUTCDate()}</span>
+      <span class="calendario__ano">{inicio.getUTCFullYear()}</span>
+    </div>
+    <div class="cartao__corpo">
+      <div class="cartao__meta">
+        <span class={`etiqueta etiqueta--${estado}`}>
+          {cancelado ? 'Cancelado' : ROTULO_ESTADO_EVENTO[estado]}
+        </span>
+        {tipo && <span class="etiqueta">{tipo}</span>}
+      </div>
+      <Titulo class="cartao__titulo"><a href={href}>{titulo}</a></Titulo>
+      <p class="cartao-evento__quando">
+        <Icone nome="calendario" />
+        <span>{dataTexto ?? intervaloDatas(inicio, fim)}</span>
+      </p>
+      {local && (
+        <p class="cartao-evento__quando">
+          <Icone nome="local" />
+          <span>{local}</span>
+        </p>
+      )}
+      <p class="cartao__resumo">{resumo}</p>
+    </div>
+  </div>
+  {imagem && (
+    <div class="cartao-evento__media">
+      <img src={imagem} alt={imagemAlt ?? ''} loading="lazy" decoding="async" width="480" height="270" />
+    </div>
+  )}
+</article>
+
+<style>
+  .cartao-evento__interior { display: flex; gap: 0; align-items: stretch; }
+  .calendario {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex: none; width: 5.2rem; padding: var(--e-4) var(--e-2);
+    background: var(--superficie-2); border-right: 1px solid var(--borda);
+    line-height: 1.1;
+  }
+  .calendario__mes { font-size: var(--t-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+  .calendario__dia { font-size: 1.9rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .calendario__ano { font-size: var(--t-xs); color: var(--texto-fraco); font-variant-numeric: tabular-nums; }
+
+  .cartao-evento__quando {
+    display: flex; align-items: start; gap: 0.45rem;
+    font-size: var(--t-sm); color: var(--texto-suave);
+  }
+  .cartao-evento__quando :global(svg) { width: 1rem; height: 1rem; flex: none; margin-top: 0.22rem; color: var(--accent); }
+
+  .cartao-evento__media { border-top: 1px solid var(--borda); aspect-ratio: 16 / 7; overflow: hidden; }
+  .cartao-evento__media img { width: 100%; height: 100%; object-fit: cover; }
+
+  .etiqueta--futuro { color: var(--sinal); border-color: color-mix(in srgb, var(--sinal) 40%, transparent); background: color-mix(in srgb, var(--sinal) 12%, transparent); }
+  .etiqueta--adecorrer { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .etiqueta--terminado { color: var(--texto-fraco); }
+
+  /* Eventos terminados distinguem-se pelo fundo e pelo tom do calendário, nunca
+     por opacidade: baixar a opacidade do cartão inteiro reduzia o contraste do
+     texto abaixo do mínimo da WCAG. */
+  .cartao-evento--terminado { background: var(--fundo-2); }
+  .cartao-evento--terminado .calendario { color: var(--texto-fraco); }
+  .cartao-evento--terminado .calendario__mes { color: var(--texto-fraco); }
+  .cartao-evento--adecorrer { border-color: color-mix(in srgb, var(--accent) 50%, var(--borda)); }
+</style>

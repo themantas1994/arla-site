@@ -1,0 +1,250 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+---
+<Pagina
+  titulo="Pesquisar"
+  descricao="Pesquise em todo o sítio da ARLA: notícias, eventos, artigos técnicos, páginas da associação, repetidores, balizas e documentos."
+  sobretitulo="Todo o sítio"
+  migalhas={[{ rotulo: 'Pesquisa' }]}
+  largura="estreito"
+  semIndexacao
+>
+  <div class="pesquisa">
+    <form class="pesquisa__form" role="search" data-form-pesquisa>
+      <div class="campo campo--pesquisa">
+        <label class="invisivel" for="q">Termo de pesquisa</label>
+        <Icone nome="pesquisa" class="campo__icone" />
+        <input
+          type="search"
+          id="q"
+          name="q"
+          placeholder="Repetidor, QO-100, quota, Arrábida…"
+          autocomplete="off"
+          autofocus
+          data-entrada-pesquisa
+        />
+      </div>
+      <noscript>
+        <p class="aviso">
+          A pesquisa precisa de JavaScript. Pode navegar pelas secções a partir do menu, ou
+          consultar o <a href="/arquivo/">arquivo por ano</a>.
+        </p>
+      </noscript>
+    </form>
+
+    <div class="pesquisa__sugestoes" data-sugestoes>
+      <p class="sugestoes__rotulo">Pesquisas comuns</p>
+      <div class="linha">
+        {['repetidores', 'QO-100', 'quota', 'balizas', 'SSTV', 'DMR', 'antenas', 'APRS'].map((t) => (
+          <button type="button" class="etiqueta" data-sugestao={t}>{t}</button>
+        ))}
+      </div>
+    </div>
+
+    <p class="pesquisa__estado" data-estado-pesquisa role="status" aria-live="polite"></p>
+    <div class="pesquisa__resultados" data-resultados></div>
+  </div>
+</Pagina>
+
+<style>
+  .pesquisa { display: flex; flex-direction: column; gap: var(--e-5); }
+  .campo--pesquisa { position: relative; }
+  .campo--pesquisa :global(.campo__icone) {
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    width: 1.2rem; height: 1.2rem; color: var(--texto-fraco); pointer-events: none;
+  }
+  .campo--pesquisa input {
+    padding-left: 2.9rem; min-height: 3.4rem; font-size: var(--t-lg);
+    border-radius: var(--raio-lg);
+  }
+
+  .sugestoes__rotulo {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--texto-fraco); margin-bottom: var(--e-2);
+  }
+  .pesquisa__sugestoes button { cursor: pointer; text-transform: none; letter-spacing: 0; min-height: 2.25rem; padding: 0.35rem 0.75rem; }
+  .pesquisa__sugestoes button:hover { border-color: var(--accent); color: var(--accent); }
+
+  .pesquisa__estado { font-size: var(--t-sm); color: var(--texto-fraco); }
+  .pesquisa__resultados { display: flex; flex-direction: column; gap: var(--e-3); }
+
+  .resultado {
+    display: block; padding: var(--e-4);
+    border: 1px solid var(--borda); border-radius: var(--raio-lg);
+    background: var(--superficie); text-decoration: none; color: var(--texto);
+    transition: border-color var(--transicao);
+  }
+  .resultado:hover { border-color: var(--accent); }
+  .resultado__meta {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2);
+    font-size: var(--t-xs); color: var(--texto-fraco); margin-bottom: 0.35rem;
+  }
+  .resultado__tipo {
+    font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); padding: 0.1rem 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 999px;
+  }
+  .resultado__titulo { font-size: var(--t-lg); font-weight: 700; }
+  .resultado:hover .resultado__titulo { color: var(--accent); }
+  .resultado__excerto { font-size: var(--t-sm); color: var(--texto-suave); margin-top: 0.3rem; }
+  .resultado__excerto :global(mark) {
+    background: color-mix(in srgb, var(--accent) 28%, transparent);
+    color: var(--texto); border-radius: 3px; padding: 0 0.15em;
+  }
+  .resultado__url { font-size: var(--t-xs); color: var(--texto-fraco); margin-top: 0.35rem; }
+</style>
+
+<script>
+  const entrada = document.querySelector<HTMLInputElement>('[data-entrada-pesquisa]');
+  const resultados = document.querySelector<HTMLElement>('[data-resultados]');
+  const estado = document.querySelector<HTMLElement>('[data-estado-pesquisa]');
+  const sugestoes = document.querySelector<HTMLElement>('[data-sugestoes]');
+  const formulario = document.querySelector<HTMLFormElement>('[data-form-pesquisa]');
+
+  /** Deduz o tipo de conteúdo a partir do caminho — dá contexto a cada resultado. */
+  function tipoDoUrl(url: string): string {
+    if (url.startsWith('/noticias/')) return 'Notícia';
+    if (url.startsWith('/eventos/')) return 'Evento';
+    if (url.startsWith('/tecnica/')) return 'Artigo técnico';
+    if (url.startsWith('/rede/')) return 'Rede ARLA';
+    if (url.startsWith('/arla/')) return 'Associação';
+    if (url.startsWith('/radioamadorismo/')) return 'Radioamadorismo';
+    if (url.startsWith('/recursos/')) return 'Recurso';
+    if (url.startsWith('/legal/')) return 'Legal';
+    return 'Página';
+  }
+
+  /** Remove acentos e pontuação, para comparar termos em português. */
+  const normalizar = (t: string) =>
+    t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}-]/gu, '');
+
+  /**
+   * O Pagefind é tolerante a erros de escrita e faz correspondência por prefixo.
+   * Isso é útil para «repet» encontrar «repetidores», mas também faz com que uma
+   * palavra inventada como «wxkjqzvbn» encontre «W.». Só se aceita um resultado
+   * quando alguma palavra realçada corresponde mesmo a um termo pesquisado.
+   */
+  function correspondeMesmo(excerto: string, termos: string[]): boolean {
+    const realcadas = [...excerto.matchAll(/<mark>(.*?)<\/mark>/g)]
+      .map((m) => normalizar(m[1]))
+      .filter(Boolean);
+    if (realcadas.length === 0) return false;
+    return termos.some((termo) =>
+      realcadas.some(
+        (r) =>
+          r.startsWith(termo) ||
+          (termo.startsWith(r) && r.length >= Math.max(3, Math.ceil(termo.length * 0.6))),
+      ),
+    );
+  }
+
+  let pagefind: any = null;
+  async function carregar() {
+    if (pagefind) return pagefind;
+    try {
+      // O índice é gerado no build (pagefind --site dist); em dev pode não existir.
+      // O caminho é montado em runtime para o Vite não o tentar resolver no build.
+      const caminho = ['', 'pagefind', 'pagefind.js'].join('/');
+      pagefind = await import(/* @vite-ignore */ caminho);
+      await pagefind.options({ excerptLength: 28 });
+      await pagefind.init();
+    } catch {
+      pagefind = 'indisponivel';
+    }
+    return pagefind;
+  }
+
+  function limpar() {
+    if (resultados) resultados.innerHTML = '';
+    if (estado) estado.textContent = '';
+    if (sugestoes) sugestoes.hidden = false;
+  }
+
+  async function pesquisar(termo: string) {
+    if (!resultados || !estado) return;
+    if (termo.trim().length < 2) { limpar(); return; }
+    if (sugestoes) sugestoes.hidden = true;
+
+    const pf = await carregar();
+    if (pf === 'indisponivel') {
+      estado.textContent =
+        'O índice de pesquisa ainda não está disponível. Em desenvolvimento, corra «npm run build» para o gerar.';
+      return;
+    }
+
+    estado.textContent = 'A pesquisar…';
+    const busca = await pf.search(termo);
+    const termosNormalizados = termo
+      .split(/\s+/)
+      .map(normalizar)
+      .filter((t) => t.length >= 2);
+
+    const brutos = await Promise.all(busca.results.slice(0, 40).map((r: any) => r.data()));
+    const dados = termosNormalizados.length
+      ? brutos.filter((d: any) => correspondeMesmo(d.excerpt, termosNormalizados)).slice(0, 25)
+      : brutos.slice(0, 25);
+
+    if (dados.length === 0) {
+      resultados.innerHTML = `
+        <div class="vazio">
+          <strong>Não encontrámos resultados para esta pesquisa.</strong>
+          <p>Experimente outras palavras, menos termos, ou procure pelo indicativo de uma estação.</p>
+          <a class="btn btn--contorno btn--pequeno" href="/arquivo/">Ver o arquivo por ano</a>
+        </div>`;
+      estado.textContent = `Sem resultados para «${termo}».`;
+      return;
+    }
+
+    estado.textContent = `${dados.length}${dados.length === 25 ? '+' : ''} ${dados.length === 1 ? 'resultado' : 'resultados'} para «${termo}».`;
+    resultados.innerHTML = dados
+      .map((d: any) => {
+        const url = d.url.replace(/index\.html$/, '').replace(/\.html$/, '/');
+        const data = d.meta?.data ?? '';
+        return `
+          <a class="resultado" href="${url}">
+            <p class="resultado__meta">
+              <span class="resultado__tipo">${tipoDoUrl(url)}</span>
+              ${data ? `<span>${data}</span>` : ''}
+            </p>
+            <p class="resultado__titulo">${d.meta?.title ?? url}</p>
+            <p class="resultado__excerto">${d.excerpt}</p>
+            <p class="resultado__url">${url}</p>
+          </a>`;
+      })
+      .join('');
+  }
+
+  let temporizador: number | undefined;
+  entrada?.addEventListener('input', () => {
+    clearTimeout(temporizador);
+    const termo = entrada.value;
+    temporizador = window.setTimeout(() => {
+      pesquisar(termo);
+      const u = new URL(location.href);
+      if (termo) u.searchParams.set('q', termo); else u.searchParams.delete('q');
+      history.replaceState(null, '', u);
+    }, 180);
+  });
+
+  formulario?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    pesquisar(entrada?.value ?? '');
+  });
+
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-sugestao]')) {
+    b.addEventListener('click', () => {
+      if (!entrada) return;
+      entrada.value = b.dataset.sugestao ?? '';
+      entrada.focus();
+      pesquisar(entrada.value);
+    });
+  }
+
+  // Permite chegar com ?q=… a partir de outra página ou de um motor de busca.
+  const inicial = new URLSearchParams(location.search).get('q');
+  if (inicial && entrada) {
+    entrada.value = inicial;
+    pesquisar(inicial);
+  }
+</script>

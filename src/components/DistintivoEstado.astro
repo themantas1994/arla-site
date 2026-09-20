@@ -1,0 +1,47 @@
+---
+/**
+ * Estado operacional. Nunca depende só da cor: há sempre texto e uma forma
+ * distinta (● ◐ ✕ ?) para leitura com daltonismo ou em impressão a preto.
+ */
+interface Props {
+  estado: 'operacional' | 'manutencao' | 'indisponivel' | 'desconhecido';
+  compacto?: boolean;
+}
+const { estado, compacto = false } = Astro.props;
+
+const MAPA = {
+  operacional: { rotulo: 'Operacional', simbolo: '●' },
+  manutencao: { rotulo: 'Em manutenção', simbolo: '◐' },
+  indisponivel: { rotulo: 'Indisponível', simbolo: '✕' },
+  desconhecido: { rotulo: 'Estado por confirmar', simbolo: '?' },
+} as const;
+const { rotulo, simbolo } = MAPA[estado];
+---
+<span class={`estado estado--${estado} ${compacto ? 'estado--compacto' : ''}`}>
+  <span class="estado__simbolo" aria-hidden="true">{simbolo}</span>
+  <span class="estado__texto">{rotulo}</span>
+</span>
+
+<style>
+  .estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 0.18em 0.6em 0.18em 0.45em;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .estado__simbolo { font-size: 0.92em; line-height: 1; }
+  .estado--operacional { color: var(--sinal); background: color-mix(in srgb, var(--sinal) 12%, transparent); }
+  .estado--manutencao { color: var(--alerta); background: color-mix(in srgb, var(--alerta) 12%, transparent); }
+  .estado--indisponivel { color: var(--falha); background: color-mix(in srgb, var(--falha) 12%, transparent); }
+  .estado--desconhecido { color: var(--texto-fraco); background: var(--superficie-2); }
+  .estado--compacto .estado__texto {
+    position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+</style>

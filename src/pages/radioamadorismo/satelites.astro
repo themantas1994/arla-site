@@ -1,0 +1,87 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import CartaoArtigo from '@components/CartaoArtigo.astro';
+import Icone from '@components/Icone.astro';
+import Aviso from '@components/Aviso.astro';
+import { tecnica, textoSimples } from '@lib/conteudo';
+import { tempoLeitura } from '@lib/sitio';
+
+const todos = await tecnica();
+const satelite = todos.filter((a) => a.data.etiquetas.includes('QO-100') || a.data.categoria === 'Satélites');
+---
+<Pagina
+  titulo="Satélites e QO-100"
+  descricao="Comunicações por satélite no serviço de amador e os artigos da ARLA sobre o QO-100 (Es'hail 2): como receber, que modos usar e como montar uma estação portátil."
+  sobretitulo="Radioamadorismo"
+  migalhas={[{ rotulo: 'Radioamadorismo', href: '/radioamadorismo/' }, { rotulo: 'Satélites' }]}
+>
+  <section class="intro-satelite">
+    <div>
+      <h2>Es’hail 2 / QO-100</h2>
+      <p>
+        O QO-100 é o primeiro transponder de radioamador em órbita geoestacionária. Ao
+        contrário dos satélites de órbita baixa, que passam rapidamente e obrigam a seguir
+        a antena, o QO-100 está sempre na mesma direção no céu — a antena aponta-se uma vez
+        e fica. Transporta dois transponders: um de banda estreita (NB), para CW, SSB e
+        modos digitais, e um de banda larga (WB), usado sobretudo para televisão digital
+        de amador.
+      </p>
+      <p class="suave">
+        Os artigos abaixo, escritos por associados da ARLA, descrevem montagens concretas:
+        o que comprar, como apontar, que frequências esperar e que resultados se obtêm.
+      </p>
+    </div>
+    <div class="cartao caixa-conceitos">
+      <h3><Icone nome="satelite" /> Conceitos úteis</h3>
+      <dl>
+        <div><dt>LNB</dt><dd>O conversor de baixo ruído que desce os 10 GHz recebidos para uma frequência que um SDR consegue sintonizar.</dd></div>
+        <div><dt>LO</dt><dd>O oscilador local do LNB. Na prática raramente está exatamente onde diz estar — daí a preferência por LNB com PLL referenciado.</dd></div>
+        <div><dt>NB / WB</dt><dd>Transponder de banda estreita (voz e digitais, polarização vertical) e de banda larga (DATV, polarização horizontal).</dd></div>
+        <div><dt>Skew</dt><dd>A torção do LNB em relação à vertical, necessária para acertar a polarização.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="artigos" aria-labelledby="t-artigos">
+    <h2 id="t-artigos">Artigos da ARLA sobre satélite</h2>
+    <div class="grelha grelha--auto">
+      {satelite.map((a) => (
+        <CartaoArtigo
+          href={`/tecnica/${a.id}/`}
+          titulo={a.data.titulo}
+          resumo={a.data.resumo}
+          data={a.data.data}
+          categoria={a.data.categoria}
+          imagem={a.data.imagem}
+          imagemAlt={a.data.imagemAlt}
+          autor={a.data.autor}
+          indicativo={a.data.indicativo}
+          minutos={tempoLeitura(textoSimples(a.body ?? ''))}
+        />
+      ))}
+    </div>
+  </section>
+
+  <Aviso tipo="info" titulo="Fontes externas">
+    <p>
+      O plano de banda dos transponders e o estado operacional do satélite são publicados
+      pela AMSAT-DL. Consulte as <a href="/recursos/ligacoes/">ligações úteis</a> para
+      referências verificadas.
+    </p>
+  </Aviso>
+</Pagina>
+
+<style>
+  .intro-satelite { display: grid; gap: var(--e-6); align-items: start; }
+  @media (min-width: 900px) { .intro-satelite { grid-template-columns: 1.2fr 1fr; gap: var(--e-7); } }
+  .intro-satelite h2 { font-size: var(--t-2xl); }
+  .intro-satelite p { margin-top: var(--e-3); color: var(--texto-suave); }
+  .caixa-conceitos { padding: var(--e-5); }
+  .caixa-conceitos h3 { display: flex; align-items: center; gap: 0.5rem; font-size: var(--t-lg); }
+  .caixa-conceitos h3 :global(svg) { width: 1.25rem; height: 1.25rem; color: var(--accent); }
+  .caixa-conceitos dl { margin-top: var(--e-4); display: flex; flex-direction: column; gap: var(--e-3); }
+  .caixa-conceitos dt { font-weight: 700; font-size: var(--t-sm); color: var(--accent); }
+  .caixa-conceitos dd { margin: 0.15rem 0 0; font-size: var(--t-sm); color: var(--texto-suave); }
+  .artigos { margin: var(--e-8) 0 var(--e-6); }
+  .artigos h2 { font-size: var(--t-2xl); margin-bottom: var(--e-5); }
+</style>

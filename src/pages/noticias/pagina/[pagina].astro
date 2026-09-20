@@ -1,0 +1,54 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Pagina from '@layouts/Pagina.astro';
+import CartaoArtigo from '@components/CartaoArtigo.astro';
+import Paginacao from '@components/Paginacao.astro';
+import { noticias } from '@lib/conteudo';
+
+const POR_PAGINA = 12;
+
+export const getStaticPaths = (async () => {
+  const { noticias } = await import('@lib/conteudo');
+  const todas = await noticias();
+  const total = Math.ceil(todas.length / 12);
+  // A página 1 vive em /noticias/, por isso a numeração começa na 2.
+  return Array.from({ length: Math.max(0, total - 1) }, (_, i) => ({
+    params: { pagina: String(i + 2) },
+  }));
+}) satisfies GetStaticPaths;
+
+const n = Number(Astro.params.pagina);
+const todas = await noticias();
+const totalPaginas = Math.ceil(todas.length / POR_PAGINA);
+const itens = todas.slice((n - 1) * POR_PAGINA, n * POR_PAGINA);
+---
+<Pagina
+  titulo={`Notícias — página ${n}`}
+  descricao={`Página ${n} de ${totalPaginas} do arquivo de notícias e comunicados da Associação de Radioamadores do Litoral Alentejano.`}
+  cabecalho="Notícias"
+  sobretitulo={`Página ${n} de ${totalPaginas}`}
+  migalhas={[{ rotulo: 'Notícias', href: '/noticias/' }, { rotulo: `Página ${n}` }]}
+>
+  <div class="grelha grelha--auto">
+    {itens.map((item) => (
+      <CartaoArtigo
+        href={`/noticias/${item.id}/`}
+        titulo={item.data.titulo}
+        resumo={item.data.resumo}
+        data={item.data.data}
+        categoria={item.data.categoria}
+        imagem={item.data.imagem}
+        imagemAlt={item.data.imagemAlt}
+        historico={item.data.historico}
+        nivel={2}
+      />
+    ))}
+  </div>
+  <Paginacao
+    paginaAtual={n}
+    totalPaginas={totalPaginas}
+    urlAnterior={n === 2 ? '/noticias/' : `/noticias/pagina/${n - 1}/`}
+    urlSeguinte={n < totalPaginas ? `/noticias/pagina/${n + 1}/` : undefined}
+    base="/noticias/"
+  />
+</Pagina>

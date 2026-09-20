@@ -1,0 +1,183 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Artigo from '@layouts/Artigo.astro';
+import Icone from '@components/Icone.astro';
+import Mapa from '@components/Mapa.astro';
+import { render } from 'astro:content';
+import { eventos, relacionados, textoSimples } from '@lib/conteudo';
+import { intervaloDatas, estadoEvento, ROTULO_ESTADO_EVENTO, dataExtenso, SITIO } from '@lib/sitio';
+
+export const getStaticPaths = (async () => {
+  const { eventos } = await import('@lib/conteudo');
+  const todos = await eventos();
+  return todos.map((e, i) => ({
+    params: { slug: e.id },
+    props: { entrada: e, seguinte: todos[i - 1], anterior: todos[i + 1] },
+  }));
+}) satisfies GetStaticPaths;
+
+const { entrada, anterior, seguinte } = Astro.props;
+const { Content, headings } = await render(entrada);
+const d = entrada.data;
+const estado = estadoEvento(d.inicio, d.fim);
+
+const todos = await eventos();
+const proximos = relacionados(entrada, todos, 3);
+
+const ESTADO_SCHEMA = {
+  futuro: 'https://schema.org/EventScheduled',
+  adecorrer: 'https://schema.org/EventScheduled',
+  terminado: 'https://schema.org/EventScheduled',
+} as const;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: d.titulo,
+  description: d.resumo,
+  startDate: d.inicio.toISOString().slice(0, 10),
+  endDate: (d.fim ?? d.inicio).toISOString().slice(0, 10),
+  eventStatus: d.cancelado ? 'https://schema.org/EventCancelled' : ESTADO_SCHEMA[estado],
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  inLanguage: 'pt-PT',
+  ...(d.imagem ? { image: new URL(d.imagem, Astro.site).href } : {}),
+  ...(d.local
+    ? {
+        location: {
+          '@type': 'Place',
+          name: d.local,
+          ...(d.coordenadas
+            ? { geo: { '@type': 'GeoCoordinates', latitude: d.coordenadas.lat, longitude: d.coordenadas.lon } }
+            : {}),
+        },
+      }
+    : {}),
+  organizer: { '@type': 'Organization', name: d.organizador ?? SITIO.nomeCompleto, url: new URL('/', Astro.site).href },
+  mainEntityOfPage: new URL(Astro.url.pathname, Astro.site).href,
+};
+---
+<Artigo
+  titulo={d.titulo}
+  resumo={d.resumo}
+  data={d.data}
+  atualizado={d.atualizado}
+  autor={d.autor}
+  indicativo={d.indicativo}
+  categoria={d.categoria}
+  etiquetas={d.etiquetas}
+  imagem={d.imagem}
+  imagemAlt={d.imagemAlt}
+  historico={false}
+  titulos={headings}
+  mostrarIndice={false}
+  corpoTexto={textoSimples(entrada.body ?? '')}
+  migalhas={[{ rotulo: 'Eventos', href: '/eventos/' }, { rotulo: d.titulo }]}
+  anterior={anterior ? { href: `/eventos/${anterior.id}/`, titulo: anterior.data.titulo } : undefined}
+  seguinte={seguinte ? { href: `/eventos/${seguinte.id}/`, titulo: seguinte.data.titulo } : undefined}
+  relacionados={proximos.map((r) => ({
+    href: `/eventos/${r.id}/`,
+    titulo: r.data.titulo,
+    resumo: r.data.resumo,
+    data: r.data.inicio,
+    categoria: r.data.categoria,
+    imagem: r.data.imagem,
+  }))}
+  jsonLd={jsonLd}
+  tipoArtigo="evento"
+>
+  <div slot="antes-do-corpo" class="ficha-evento">
+    <div class={`ficha-evento__estado ficha-evento__estado--${estado}`}>
+      <span class="ponto" aria-hidden="true"></span>
+      {d.cancelado ? 'Evento cancelado' : ROTULO_ESTADO_EVENTO[estado]}
+      {estado === 'terminado' && ' — este evento já se realizou'}
+    </div>
+
+    <dl class="ficha-evento__dados">
+      <div>
+        <dt><Icone nome="calendario" /> Quando</dt>
+        <dd>
+          {d.dataTexto ?? intervaloDatas(d.inicio, d.fim)}
+          {(d.horaInicio || d.horaFim) && (
+            <span class="fraco"> · {d.horaInicio}{d.horaFim ? `–${d.horaFim}` : ''}</span>
+          )}
+        </dd>
+      </div>
+      {d.local && (
+        <div>
+          <dt><Icone nome="local" /> Onde</dt>
+          <dd>{d.local}</dd>
+        </div>
+      )}
+      <div>
+        <dt><Icone nome="pessoas" /> Organização</dt>
+        <dd>{d.organizador ?? 'ARLA'}</dd>
+      </div>
+      {d.inscricoes && (
+        <div>
+          <dt><Icone nome="documento" /> Inscrições</dt>
+          <dd>{d.inscricoes}</dd>
+        </div>
+      )}
+    </dl>
+
+    {d.ligacaoExterna && (
+      <a class="btn btn--contorno btn--pequeno" href={d.ligacaoExterna} rel="noopener noreferrer" target="_blank">
+        <Icone nome="externo" /> Informação externa
+      </a>
+    )}
+  </div>
+
+  <Content />
+
+  {d.coordenadas && (
+    <section class="mapa-evento nao-imprimir">
+      <h2>Localização</h2>
+      <Mapa
+        id={`mapa-${entrada.id}`}
+        rotulo={`Mapa com a localização de ${d.titulo}`}
+        zoom={13}
+        altura="20rem"
+        centro={d.coordenadas}
+        marcadores={[{
+          lat: d.coordenadas.lat,
+          lon: d.coordenadas.lon,
+          titulo: d.local ?? d.titulo,
+          tipo: 'evento',
+          origem: 'exata',
+        }]}
+      />
+    </section>
+  )}
+</Artigo>
+
+<style>
+  .ficha-evento {
+    padding: var(--e-5);
+    border: 1px solid var(--borda-forte);
+    border-radius: var(--raio-lg);
+    background: var(--superficie);
+  }
+  .ficha-evento__estado {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: var(--t-sm); font-weight: 700;
+    padding: 0.3rem 0.8rem; border-radius: 999px;
+    border: 1px solid currentColor;
+  }
+  .ficha-evento__estado .ponto { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: currentColor; }
+  .ficha-evento__estado--futuro { color: var(--sinal); }
+  .ficha-evento__estado--adecorrer { color: var(--accent); }
+  .ficha-evento__estado--terminado { color: var(--texto-fraco); }
+
+  .ficha-evento__dados { display: grid; gap: var(--e-4); margin-top: var(--e-4); }
+  @media (min-width: 620px) { .ficha-evento__dados { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .ficha-evento__dados dt {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-fraco);
+  }
+  .ficha-evento__dados dt :global(svg) { width: 0.95rem; height: 0.95rem; color: var(--accent); }
+  .ficha-evento__dados dd { margin: 0.3rem 0 0; font-weight: 600; }
+  .ficha-evento .btn { margin-top: var(--e-4); }
+
+  .mapa-evento { margin-top: var(--e-6); }
+  .mapa-evento h2 { font-size: var(--t-lg); margin-bottom: var(--e-3); }
+</style>

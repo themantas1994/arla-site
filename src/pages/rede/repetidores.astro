@@ -1,0 +1,81 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import TabelaRepetidores from '@components/TabelaRepetidores.astro';
+import Mapa from '@components/Mapa.astro';
+import Icone from '@components/Icone.astro';
+import Aviso from '@components/Aviso.astro';
+import { getCollection } from 'astro:content';
+import { marcadoresDaRede } from '@lib/rede';
+
+const repetidores = await getCollection('repetidores');
+const marcadores = await marcadoresDaRede({ repetidores: true, balizas: false });
+const porLocal = new Map<string, number>();
+for (const r of repetidores) porLocal.set(r.data.localizacao, (porLocal.get(r.data.localizacao) ?? 0) + 1);
+---
+<Pagina
+  titulo="Repetidores"
+  descricao="Diretório dos repetidores da ARLA: canal, banda, modo, localização, frequências de emissão e receção, tom de acesso, potência, indicativo e estado operacional."
+  sobretitulo="Rede ARLA"
+  migalhas={[{ rotulo: 'Rede ARLA', href: '/rede/' }, { rotulo: 'Repetidores' }]}
+>
+  <div slot="cabecalho-extra" class="resumo-locais">
+    {[...porLocal].map(([local, n]) => (
+      <span class="resumo-locais__item">
+        <Icone nome="local" /> {local} <strong>({n})</strong>
+      </span>
+    ))}
+  </div>
+
+  <TabelaRepetidores
+    repetidores={repetidores}
+    legenda="Repetidores operados pela Associação de Radioamadores do Litoral Alentejano."
+  />
+
+  <section class="mapa-seccao nao-imprimir" aria-labelledby="t-mapa">
+    <h2 id="t-mapa">Onde estão</h2>
+    <Mapa
+      id="mapa-repetidores"
+      rotulo="Mapa com a localização aproximada dos repetidores da ARLA"
+      marcadores={marcadores}
+      altura="28rem"
+    />
+  </section>
+
+  <section class="legenda" aria-labelledby="t-legenda">
+    <h2 id="t-legenda">Como ler esta tabela</h2>
+    <dl>
+      <div><dt>Canal</dt><dd>Designação normalizada do canal (por exemplo RV56, RU688).</dd></div>
+      <div><dt>Frequência Tx</dt><dd>Frequência em que o repetidor <em>emite</em> — a que deve sintonizar para o ouvir.</dd></div>
+      <div><dt>Frequência Rx</dt><dd>Frequência em que o repetidor <em>recebe</em> — a que a sua estação deve usar para transmitir.</dd></div>
+      <div><dt>Acesso</dt><dd>Tom subaudível (CTCSS) nos repetidores analógicos; <em>talkgroup</em> e <em>color code</em> em DMR; reflector em D-STAR.</dd></div>
+      <div><dt>P.A.R.</dt><dd>Potência aparente radiada, em watt.</dd></div>
+    </dl>
+    <Aviso tipo="info">
+      <p>
+        Os dados são os publicados pela ARLA. Se detetar uma discrepância ou uma avaria,
+        contacte a <a href="/arla/direcao-tecnica/">direção técnica</a>.
+        Para dados de balizas consulte a página de <a href="/rede/balizas/">balizas</a>.
+      </p>
+    </Aviso>
+  </section>
+</Pagina>
+
+<style>
+  .resumo-locais { display: flex; flex-wrap: wrap; gap: var(--e-4); margin-top: var(--e-5); }
+  .resumo-locais__item {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: var(--t-sm); color: var(--texto-suave);
+  }
+  .resumo-locais__item :global(svg) { width: 1rem; height: 1rem; color: var(--accent); }
+  .resumo-locais__item strong { color: var(--texto-fraco); font-weight: 600; }
+
+  .mapa-seccao { margin-top: var(--e-8); }
+  .mapa-seccao h2 { font-size: var(--t-xl); margin-bottom: var(--e-4); }
+
+  .legenda { margin-top: var(--e-8); padding-top: var(--e-6); border-top: 1px solid var(--borda); }
+  .legenda h2 { font-size: var(--t-xl); }
+  .legenda dl { margin: var(--e-4) 0 var(--e-5); display: grid; gap: var(--e-3); }
+  @media (min-width: 720px) { .legenda dl { grid-template-columns: 1fr 1fr; gap: var(--e-4); } }
+  .legenda dt { font-weight: 700; font-size: var(--t-sm); color: var(--accent); }
+  .legenda dd { margin: 0.2rem 0 0; font-size: var(--t-sm); color: var(--texto-suave); }
+</style>

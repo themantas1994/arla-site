@@ -1,0 +1,53 @@
+---
+interface Props { class?: string; compacto?: boolean }
+const { class: classe, compacto = false } = Astro.props;
+---
+<a href="/" class={`logotipo ${classe ?? ''}`} aria-label="ARLA — página inicial">
+  <span class="logotipo__marca" aria-hidden="true">
+    <svg viewBox="0 0 32 32" width="34" height="34" fill="none" focusable="false">
+      <rect width="32" height="32" rx="8" fill="var(--accent)"></rect>
+      <g stroke="var(--accent-contraste)" stroke-width="2" stroke-linecap="round">
+        <path d="M9.5 21.5a9 9 0 0 1 0-11"></path>
+        <path d="M22.5 21.5a9 9 0 0 0 0-11"></path>
+        <path d="M13.2 18.6a4.3 4.3 0 0 1 0-5.2"></path>
+        <path d="M18.8 18.6a4.3 4.3 0 0 0 0-5.2"></path>
+      </g>
+      <circle cx="16" cy="16" r="2.4" fill="var(--accent-contraste)"></circle>
+    </svg>
+  </span>
+  <span class="logotipo__texto">
+    <strong>ARLA</strong>
+    {!compacto && <small>Associação de Radioamadores do Litoral Alentejano</small>}
+  </span>
+</a>
+
+<style>
+  .logotipo {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    gap: 0.7rem;
+    text-decoration: none;
+    color: var(--texto);
+    border-radius: var(--raio);
+  }
+  .logotipo__marca { display: flex; flex: none; }
+  .logotipo__texto { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
+  .logotipo__texto strong {
+    font-size: 1.32rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+  /* O subtítulo fica sempre numa linha só: comprimido pelo menu, partia em
+     quatro linhas e desalinhava o cabeçalho. Desaparece quando não cabe. */
+  .logotipo__texto small {
+    font-size: 0.66rem;
+    color: var(--texto-fraco);
+    letter-spacing: 0.015em;
+    white-space: nowrap;
+  }
+  .logotipo:hover .logotipo__texto strong { color: var(--accent); }
+  @media (max-width: 1399px) {
+    .logotipo__texto small { display: none; }
+  }
+</style>

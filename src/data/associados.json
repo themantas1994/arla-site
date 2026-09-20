@@ -1,0 +1,235 @@
+{
+  "nota": "Lista de associados tal como publicada pela ARLA no sítio anterior. Apenas número de associado, indicativo e nome — nenhum dado de contacto pessoal é publicado.",
+  "associados": [
+    {
+      "numero": 2,
+      "indicativo": "CT1EYQ",
+      "nome": "João Pires"
+    },
+    {
+      "numero": 5,
+      "indicativo": "CT1ETL",
+      "nome": "Miguel Andrade"
+    },
+    {
+      "numero": 11,
+      "indicativo": "CT2GXB",
+      "nome": "Fernando Pereira"
+    },
+    {
+      "numero": 13,
+      "indicativo": "CT2ISX",
+      "nome": "Ana Leal"
+    },
+    {
+      "numero": 14,
+      "indicativo": "CT2GQL",
+      "nome": "João Lázaro"
+    },
+    {
+      "numero": 19,
+      "indicativo": "CT2JZF",
+      "nome": "José Fernandes"
+    },
+    {
+      "numero": 21,
+      "indicativo": "CT1HMN",
+      "nome": "Sérgio Matias"
+    },
+    {
+      "numero": 24,
+      "indicativo": "CT1ETZ",
+      "nome": "Ruben Mendes"
+    },
+    {
+      "numero": 34,
+      "indicativo": "CT4RK",
+      "nome": "Carlos Mourato"
+    },
+    {
+      "numero": 36,
+      "indicativo": "CT2GAI",
+      "nome": "Fernando Seco"
+    },
+    {
+      "numero": 39,
+      "indicativo": "CT1FNV",
+      "nome": "António Correia"
+    },
+    {
+      "numero": 44,
+      "indicativo": "CT1FKF",
+      "nome": "Jorge Guimarães"
+    },
+    {
+      "numero": 47,
+      "indicativo": "CT1HDC",
+      "nome": "Paulo Pereira"
+    },
+    {
+      "numero": 48,
+      "indicativo": "CT1AED",
+      "nome": "Manuel Rodrigues"
+    },
+    {
+      "numero": 52,
+      "indicativo": "CT1GFQ",
+      "nome": "Carlos Fonseca"
+    },
+    {
+      "numero": 55,
+      "indicativo": "CT1JJU/DJ1SP",
+      "nome": "Joachim Förnzler"
+    },
+    {
+      "numero": 57,
+      "indicativo": "CT2JFM",
+      "nome": "José Patricio"
+    },
+    {
+      "numero": 61,
+      "indicativo": "CT1EXR",
+      "nome": "Jorge Lopes"
+    },
+    {
+      "numero": 64,
+      "indicativo": "CT1BEC",
+      "nome": "Sérgio Carraça"
+    },
+    {
+      "numero": 70,
+      "indicativo": "CT1JIB",
+      "nome": "Jorge Santos"
+    },
+    {
+      "numero": 71,
+      "indicativo": "CT1BYM",
+      "nome": "Miguel Pelicano"
+    },
+    {
+      "numero": 81,
+      "indicativo": "CT1FHW",
+      "nome": "José Alves"
+    },
+    {
+      "numero": 82,
+      "indicativo": "CT1CVL",
+      "nome": "Luís Santos"
+    },
+    {
+      "numero": 83,
+      "indicativo": "CT1MH",
+      "nome": "António Cardoso"
+    },
+    {
+      "numero": 85,
+      "indicativo": "CT7ABP",
+      "nome": "Pedro Ribeiro"
+    },
+    {
+      "numero": 87,
+      "indicativo": "CT7ASZ",
+      "nome": "António Vilela"
+    },
+    {
+      "numero": 90,
+      "indicativo": "CT7ASY",
+      "nome": "Eduardo Arraia"
+    },
+    {
+      "numero": 95,
+      "indicativo": "CT5JLD",
+      "nome": "Mónica Marques"
+    },
+    {
+      "numero": 96,
+      "indicativo": "CS7AKX",
+      "nome": "Sofia Ferreira"
+    },
+    {
+      "numero": 97,
+      "indicativo": "",
+      "nome": "Rute Antunes"
+    },
+    {
+      "numero": 99,
+      "indicativo": "CT1DYH",
+      "nome": "Carlos Ferreira"
+    },
+    {
+      "numero": 100,
+      "indicativo": "CS7AGH",
+      "nome": "Paulo Martins"
+    },
+    {
+      "numero": 102,
+      "indicativo": "CT2KJU",
+      "nome": "Maria Tomás"
+    },
+    {
+      "numero": 103,
+      "indicativo": "CT1DER",
+      "nome": "João Cóias"
+    },
+    {
+      "numero": 104,
+      "indicativo": "CT1FBZ",
+      "nome": "Manuel Lopes"
+    },
+    {
+      "numero": 105,
+      "indicativo": "",
+      "nome": "Sandra Gomes"
+    },
+    {
+      "numero": 106,
+      "indicativo": "CT1YRA",
+      "nome": "Manuela Monteiro"
+    },
+    {
+      "numero": 107,
+      "indicativo": "CT1CVT",
+      "nome": "Jorge Santos"
+    },
+    {
+      "numero": 108,
+      "indicativo": "CS7AMP",
+      "nome": "João Pastorinho"
+    },
+    {
+      "numero": 109,
+      "indicativo": "CT1CHX",
+      "nome": "Eduardo Santos"
+    },
+    {
+      "numero": 110,
+      "indicativo": "CT1BGZ",
+      "nome": "Paulo Sousa"
+    },
+    {
+      "numero": 112,
+      "indicativo": "CT2HCQ",
+      "nome": "Tiago Santos"
+    },
+    {
+      "numero": 113,
+      "indicativo": "CT2GJF",
+      "nome": "Emílio Martins"
+    },
+    {
+      "numero": 114,
+      "indicativo": "CT1FNG",
+      "nome": "Víctor Barros"
+    },
+    {
+      "numero": 115,
+      "indicativo": "CT1FGR",
+      "nome": "Fernando Machado"
+    },
+    {
+      "numero": 116,
+      "indicativo": "CT1ETM",
+      "nome": "Pedro Graça"
+    }
+  ]
+}

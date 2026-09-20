@@ -1,0 +1,60 @@
+{
+  "ligacoes": [
+    {
+      "id": "facebook-arla",
+      "nome": "ARLA no Facebook",
+      "url": "https://www.facebook.com/ARLAOficial/",
+      "descricao": "Página oficial da associação, com avisos e fotografias de atividades.",
+      "categoria": "ARLA"
+    },
+    {
+      "id": "cluster-radioamador",
+      "nome": "Lista Cluster — radio-amador.net",
+      "url": "http://radio-amador.net/cgi-bin/mailman/listinfo/cluster",
+      "descricao": "Lista de distribuição de DX cluster referenciada pelo sítio anterior da ARLA.",
+      "categoria": "Comunidade"
+    },
+    {
+      "id": "hamqsl",
+      "nome": "Solar-Terrestrial Data — HamQSL",
+      "url": "https://www.hamqsl.com/solar.html",
+      "descricao": "Painéis de dados solares e de propagação usados na página de Meteorologia Espacial.",
+      "categoria": "Propagação"
+    },
+    {
+      "id": "noaa-swpc",
+      "nome": "NOAA Space Weather Prediction Center",
+      "url": "https://www.swpc.noaa.gov/",
+      "descricao": "Fonte oficial dos dados de meteorologia espacial apresentados no sítio.",
+      "categoria": "Propagação"
+    },
+    {
+      "id": "anacom",
+      "nome": "ANACOM — Serviço de amador",
+      "url": "https://www.anacom.pt/",
+      "descricao": "Autoridade Nacional de Comunicações: regulamentação, certificados e licenciamento do serviço de amador em Portugal.",
+      "categoria": "Licenciamento"
+    },
+    {
+      "id": "dishpointer",
+      "nome": "DishPointer",
+      "url": "http://www.dishpointer.com/",
+      "descricao": "Ferramenta de apontamento de antenas parabólicas, usada nos artigos sobre o QO-100.",
+      "categoria": "Ferramentas"
+    },
+    {
+      "id": "amsat-dl-qo100",
+      "nome": "AMSAT-DL — QO-100",
+      "url": "https://amsat-dl.org/p4-a-nb-transponder-bandplan-und-betriebsrichtlinien/",
+      "descricao": "Plano de banda e regras de operação do transponder de banda estreita do QO-100, publicados pela AMSAT-DL.",
+      "categoria": "Satélites"
+    },
+    {
+      "id": "batc-wb-qo100",
+      "nome": "QO-100 WB — visualizador do transponder (BATC)",
+      "url": "https://eshail.batc.org.uk/nb/",
+      "descricao": "Espetro em tempo real do transponder do QO-100, mantido pelo British Amateur Television Club.",
+      "categoria": "Satélites"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Mapa from '@components/Mapa.astro';
+import Aviso from '@components/Aviso.astro';
+import { marcadoresDaRede } from '@lib/rede';
+import { SITIO } from '@lib/sitio';
+
+const rede = await marcadoresDaRede();
+const marcadores = [
+  {
+    lat: SITIO.coordenadas.lat,
+    lon: SITIO.coordenadas.lon,
+    titulo: 'Sede da ARLA',
+    descricao: `${SITIO.morada.linha1}, ${SITIO.morada.localidade}`,
+    tipo: 'sede' as const,
+    origem: 'exata' as const,
+    url: '/contactos/',
+  },
+  ...rede,
+];
+---
+<Pagina
+  titulo="Mapa da rede"
+  descricao="Onde estão as estações da ARLA: sede, repetidores e balizas em Santiago do Cacém, Aldeia dos Chãos, Serra da Arrábida e Setúbal."
+  sobretitulo="Rede ARLA"
+  migalhas={[{ rotulo: 'Rede ARLA', href: '/rede/' }, { rotulo: 'Mapa' }]}
+>
+  <ul class="legenda-mapa">
+    <li><span class="ponto ponto--sede"></span> Sede</li>
+    <li><span class="ponto ponto--repetidor"></span> Repetidores</li>
+    <li><span class="ponto ponto--baliza"></span> Balizas</li>
+  </ul>
+
+  <Mapa
+    id="mapa-rede"
+    rotulo="Mapa com a sede, os repetidores e as balizas da ARLA"
+    marcadores={marcadores}
+    altura="clamp(22rem, 62vh, 36rem)"
+  />
+
+  <Aviso tipo="info" titulo="Sobre as posições assinaladas">
+    <p>
+      A ARLA publica a <strong>quadrícula Maidenhead</strong> de cada estação, mas não as
+      coordenadas exatas. Os repetidores e balizas estão por isso assinalados no centro da
+      respetiva sub-quadrícula — uma área com cerca de 5 × 9 km. Só a sede está marcada
+      com as coordenadas publicadas pela associação.
+    </p>
+    <p>
+      Não são apresentados polígonos de cobertura: a ARLA não publica estudos de cobertura
+      verificados, e desenhá-los sem esses dados seria inventar informação.
+    </p>
+  </Aviso>
+</Pagina>
+
+<style>
+  .legenda-mapa {
+    display: flex; flex-wrap: wrap; gap: var(--e-5);
+    list-style: none; padding: 0; margin-bottom: var(--e-4);
+    font-size: var(--t-sm); color: var(--texto-suave);
+  }
+  .legenda-mapa li { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .ponto { width: 0.8rem; height: 0.8rem; border-radius: 50%; border: 2px solid currentColor; }
+  .ponto--sede { color: var(--alerta); background: color-mix(in srgb, var(--alerta) 32%, transparent); }
+  .ponto--repetidor { color: var(--arla-500); background: color-mix(in srgb, var(--arla-500) 32%, transparent); }
+  .ponto--baliza { color: var(--sinal); background: color-mix(in srgb, var(--sinal) 32%, transparent); }
+</style>

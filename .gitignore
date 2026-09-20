@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+*.log
+npm-debug.log*
+.env
+.env.production
+.env.local
+.vercel
+.netlify
+reports/
+
+# Capturas de ecrã de QA (regeneráveis com `npm run qa:capturas`)
+reports/capturas/

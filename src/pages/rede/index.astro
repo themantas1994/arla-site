@@ -1,0 +1,110 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import DistintivoEstado from '@components/DistintivoEstado.astro';
+import { getCollection } from 'astro:content';
+
+const repetidores = await getCollection('repetidores');
+const balizas = await getCollection('balizas');
+const locais = [...new Set([...repetidores, ...balizas].map((e) => e.data.localizacao))];
+const operacionais = [...repetidores, ...balizas].filter((e) => e.data.estado === 'operacional').length;
+
+const seccoes = [
+  { rotulo: 'Repetidores', href: '/rede/repetidores/', icone: 'repetidor',
+    texto: `${repetidores.length} estações em VHF e UHF: analógicas, DMR, D-STAR e APRS.`,
+    detalhe: 'Frequências, tons, talkgroups, potência e estado.' },
+  { rotulo: 'Balizas', href: '/rede/balizas/', icone: 'antena',
+    texto: `${balizas.length} balizas CS5BLA em 50, 144, 432 e 1296 MHz.`,
+    detalhe: 'Emissão em CW a partir de Aldeia dos Chãos.' },
+  { rotulo: 'APRS', href: '/rede/aprs/', icone: 'rede',
+    texto: 'Digipeaters CQ0PLA e CQ0PST em 144.800 MHz.',
+    detalhe: 'Cobertura em Aldeia dos Chãos e Setúbal.' },
+  { rotulo: 'CS5ARLA', href: '/rede/cs5arla/', icone: 'onda',
+    texto: 'O indicativo coletivo da associação.',
+    detalhe: 'Usado em atividades e eventos da ARLA.' },
+  { rotulo: 'Mapa da rede', href: '/rede/mapa/', icone: 'mapa',
+    texto: 'Onde estão as estações.',
+    detalhe: 'Filtragem por tipo, com posições a partir da quadrícula.' },
+];
+---
+<Pagina
+  titulo="Rede ARLA"
+  descricao="Os repetidores, balizas e digipeaters operados pela Associação de Radioamadores do Litoral Alentejano em Aldeia dos Chãos, Serra da Arrábida e Setúbal."
+  sobretitulo="Infraestrutura"
+  migalhas={[{ rotulo: 'Rede ARLA' }]}
+>
+  <dl class="numeros">
+    <div><dt>Repetidores</dt><dd>{repetidores.length}</dd></div>
+    <div><dt>Balizas</dt><dd>{balizas.length}</dd></div>
+    <div><dt>Locais</dt><dd>{locais.length}</dd></div>
+    <div><dt>Operacionais</dt><dd>{operacionais}</dd></div>
+  </dl>
+
+  <ul class="grelha grelha--auto seccoes">
+    {seccoes.map((s) => (
+      <li class="cartao seccao-cartao">
+        <Icone nome={s.icone as any} />
+        <h2><a href={s.href}>{s.rotulo}</a></h2>
+        <p>{s.texto}</p>
+        <p class="fraco">{s.detalhe}</p>
+        <span class="cartao__rodape">Abrir <Icone nome="seta" /></span>
+      </li>
+    ))}
+  </ul>
+
+  <section class="estado-rede" aria-labelledby="t-estado">
+    <h2 id="t-estado">Estado da rede</h2>
+    <p class="suave">
+      Estado de cada estação tal como publicado pela ARLA. Para comunicar uma anomalia,
+      contacte a <a href="/arla/direcao-tecnica/">direção técnica</a> através do
+      <a href="/contactos/">correio eletrónico da associação</a>.
+    </p>
+    <ul class="lista-estado">
+      {[...repetidores, ...balizas].map((e) => (
+        <li>
+          <span class="mono lista-estado__indicativo">{e.data.indicativo}</span>
+          <span class="fraco lista-estado__local">{e.data.localizacao}</span>
+          <DistintivoEstado estado={e.data.estado} />
+        </li>
+      ))}
+    </ul>
+  </section>
+</Pagina>
+
+<style>
+  .numeros {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: var(--e-4); margin-bottom: var(--e-7);
+    padding-bottom: var(--e-5); border-bottom: 1px solid var(--borda);
+  }
+  .numeros dt { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-fraco); }
+  .numeros dd { margin: 0.2rem 0 0; font-size: var(--t-3xl); font-weight: 800; color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums; }
+
+  .seccoes { list-style: none; padding: 0; }
+  .seccao-cartao { padding: var(--e-5); gap: var(--e-2); }
+  .seccao-cartao > :global(svg) { width: 1.9rem; height: 1.9rem; color: var(--accent); margin-bottom: var(--e-2); }
+  .seccao-cartao h2 { font-size: var(--t-lg); }
+  .seccao-cartao h2 a { color: inherit; text-decoration: none; }
+  .seccao-cartao h2 a::after { content: ''; position: absolute; inset: 0; }
+  .seccao-cartao h2 a:hover { color: var(--accent); }
+  .seccao-cartao p { font-size: var(--t-sm); color: var(--texto-suave); }
+  .seccao-cartao .fraco { font-size: var(--t-xs); }
+  .seccao-cartao :global(.cartao__rodape) { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .seccao-cartao :global(.cartao__rodape svg) { width: 1em; height: 1em; }
+
+  .estado-rede { margin-top: var(--e-8); }
+  .estado-rede h2 { font-size: var(--t-xl); }
+  .estado-rede .suave { margin-top: var(--e-2); font-size: var(--t-sm); max-width: 66ch; }
+  .lista-estado {
+    list-style: none; padding: 0; margin-top: var(--e-4);
+    border: 1px solid var(--borda); border-radius: var(--raio-lg);
+    background: var(--superficie); overflow: hidden;
+  }
+  .lista-estado li {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3);
+    padding: 0.75rem var(--e-4);
+  }
+  .lista-estado li + li { border-top: 1px solid var(--borda); }
+  .lista-estado__indicativo { font-weight: 700; letter-spacing: 0.04em; min-width: 7rem; }
+  .lista-estado__local { font-size: var(--t-sm); flex: 1; }
+</style>

@@ -1,0 +1,103 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Artigo from '@layouts/Artigo.astro';
+import { render } from 'astro:content';
+import { tecnica, relacionados, textoSimples } from '@lib/conteudo';
+import { SITIO } from '@lib/sitio';
+
+export const getStaticPaths = (async () => {
+  const { tecnica } = await import('@lib/conteudo');
+  const todos = await tecnica();
+  return todos.map((a, i) => ({
+    params: { slug: a.id },
+    props: { entrada: a, seguinte: todos[i - 1], anterior: todos[i + 1] },
+  }));
+}) satisfies GetStaticPaths;
+
+const { entrada, anterior, seguinte } = Astro.props;
+const { Content, headings } = await render(entrada);
+const d = entrada.data;
+
+const todos = await tecnica();
+const proximos = relacionados(entrada, todos, 3);
+
+const NIVEL = {
+  introducao: 'Introdução',
+  intermedio: 'Nível intermédio',
+  avancado: 'Nível avançado',
+} as const;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: d.titulo,
+  description: d.resumo,
+  datePublished: d.data.toISOString(),
+  dateModified: (d.atualizado ?? d.data).toISOString(),
+  inLanguage: 'pt-PT',
+  articleSection: d.categoria,
+  keywords: d.etiquetas.join(', '),
+  proficiencyLevel: d.nivel === 'introducao' ? 'Beginner' : 'Expert',
+  ...(d.imagem ? { image: new URL(d.imagem, Astro.site).href } : {}),
+  author: d.autor
+    ? { '@type': 'Person', name: d.indicativo ? `${d.autor} (${d.indicativo})` : d.autor }
+    : { '@type': 'Organization', name: SITIO.nomeCompleto },
+  publisher: { '@id': new URL('/#organizacao', Astro.site).href },
+  mainEntityOfPage: new URL(Astro.url.pathname, Astro.site).href,
+};
+---
+<Artigo
+  titulo={d.titulo}
+  resumo={d.resumo}
+  data={d.data}
+  atualizado={d.atualizado}
+  autor={d.autor}
+  indicativo={d.indicativo}
+  categoria={d.categoria}
+  etiquetas={d.etiquetas}
+  imagem={d.imagem}
+  imagemAlt={d.imagemAlt}
+  historico={d.historico}
+  notaHistorica={d.notaHistorica}
+  titulos={headings}
+  mostrarIndice={d.indice}
+  corpoTexto={textoSimples(entrada.body ?? '')}
+  migalhas={[{ rotulo: 'Artigos técnicos', href: '/tecnica/' }, { rotulo: d.titulo }]}
+  anterior={anterior ? { href: `/tecnica/${anterior.id}/`, titulo: anterior.data.titulo } : undefined}
+  seguinte={seguinte ? { href: `/tecnica/${seguinte.id}/`, titulo: seguinte.data.titulo } : undefined}
+  relacionados={proximos.map((r) => ({
+    href: `/tecnica/${r.id}/`,
+    titulo: r.data.titulo,
+    resumo: r.data.resumo,
+    data: r.data.data,
+    categoria: r.data.categoria,
+    imagem: r.data.imagem,
+  }))}
+  jsonLd={jsonLd}
+  tipoArtigo="tecnica"
+>
+  <div slot="antes-do-corpo" class="ficha-tecnica">
+    <span class="etiqueta">{NIVEL[d.nivel]}</span>
+    {d.etiquetas.slice(0, 4).map((t) => <span class="etiqueta">{t}</span>)}
+  </div>
+
+  <Content />
+
+  {d.referencias.length > 0 && (
+    <section class="referencias">
+      <h2>Referências</h2>
+      <ol>
+        {d.referencias.map((r) => (
+          <li><a href={r.url} rel="noopener noreferrer" target="_blank">{r.titulo}</a></li>
+        ))}
+      </ol>
+    </section>
+  )}
+</Artigo>
+
+<style>
+  .ficha-tecnica { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+  .referencias { margin-top: var(--e-6); padding-top: var(--e-5); border-top: 1px solid var(--borda); }
+  .referencias h2 { font-size: var(--t-lg); }
+  .referencias ol { margin-top: var(--e-3); padding-left: 1.3rem; display: flex; flex-direction: column; gap: var(--e-2); }
+</style>

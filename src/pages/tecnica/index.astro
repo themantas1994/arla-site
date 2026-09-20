@@ -1,0 +1,95 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import CartaoArtigo from '@components/CartaoArtigo.astro';
+import EstadoVazio from '@components/EstadoVazio.astro';
+import Icone from '@components/Icone.astro';
+import { tecnica, textoSimples } from '@lib/conteudo';
+import { tempoLeitura } from '@lib/sitio';
+
+const artigos = await tecnica();
+const categorias = [...new Set(artigos.map((a) => a.data.categoria))].sort((a, b) =>
+  a.localeCompare(b, 'pt-PT'),
+);
+const NIVEL = { introducao: 'Introdução', intermedio: 'Intermédio', avancado: 'Avançado' } as const;
+
+const porCategoria = new Map<string, typeof artigos>();
+for (const a of artigos) {
+  if (!porCategoria.has(a.data.categoria)) porCategoria.set(a.data.categoria, []);
+  porCategoria.get(a.data.categoria)!.push(a);
+}
+---
+<Pagina
+  titulo="Artigos técnicos"
+  descricao="A biblioteca técnica da ARLA: satélites e QO-100, micro-ondas e sinais fracos, modos digitais e experimentação, escritos por associados."
+  sobretitulo="Recursos"
+  migalhas={[{ rotulo: 'Artigos técnicos' }]}
+>
+  <nav slot="cabecalho-extra" class="categorias" aria-label="Categorias técnicas">
+    {categorias.map((c) => (
+      <a class="etiqueta" href={`#cat-${c.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, '-')}`}>
+        {c} ({porCategoria.get(c)!.length})
+      </a>
+    ))}
+  </nav>
+
+  {artigos.length === 0 ? (
+    <EstadoVazio titulo="Ainda não há artigos técnicos publicados." icone="ferramenta" />
+  ) : (
+    categorias.map((c) => (
+      <section class="cat-bloco" aria-labelledby={`cat-${c.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, '-')}`}>
+        <h2
+          class="cat-titulo"
+          id={`cat-${c.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, '-')}`}
+        >
+          {c}
+        </h2>
+        <div class="grelha grelha--auto">
+          {porCategoria.get(c)!.map((a) => (
+            <CartaoArtigo
+              href={`/tecnica/${a.id}/`}
+              titulo={a.data.titulo}
+              resumo={a.data.resumo}
+              data={a.data.data}
+              categoria={NIVEL[a.data.nivel]}
+              imagem={a.data.imagem}
+              imagemAlt={a.data.imagemAlt}
+              autor={a.data.autor}
+              indicativo={a.data.indicativo}
+              minutos={tempoLeitura(textoSimples(a.body ?? ''))}
+            />
+          ))}
+        </div>
+      </section>
+    ))
+  )}
+
+  <aside class="contribuir">
+    <Icone nome="ferramenta" />
+    <div>
+      <h2>Quer publicar um artigo?</h2>
+      <p>
+        Os artigos desta biblioteca foram escritos por associados da ARLA. Se tem um projeto,
+        uma experiência ou uma montagem que valha a pena partilhar, fale connosco.
+      </p>
+      <a class="btn btn--contorno btn--pequeno" href="/contactos/">Contactar a ARLA</a>
+    </div>
+  </aside>
+</Pagina>
+
+<style>
+  .categorias { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-5); }
+  .categorias .etiqueta { text-transform: none; letter-spacing: 0; font-weight: 600; padding: 0.35rem 0.75rem; min-height: 2.25rem; }
+  .cat-bloco + .cat-bloco { margin-top: var(--e-8); }
+  .cat-titulo {
+    font-size: var(--t-xl); color: var(--accent); scroll-margin-top: 6rem;
+    padding-bottom: var(--e-2); margin-bottom: var(--e-5); border-bottom: 1px solid var(--borda);
+  }
+  .contribuir {
+    display: flex; gap: var(--e-4);
+    margin-top: var(--e-8); padding: var(--e-5);
+    border: 1px solid var(--borda); border-radius: var(--raio-lg); background: var(--superficie);
+  }
+  .contribuir > :global(svg) { width: 1.8rem; height: 1.8rem; color: var(--accent); flex: none; }
+  .contribuir h2 { font-size: var(--t-lg); }
+  .contribuir p { margin: var(--e-2) 0 var(--e-4); color: var(--texto-suave); max-width: 62ch; }
+</style>

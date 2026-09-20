@@ -1,0 +1,67 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Pagina from '@layouts/Pagina.astro';
+import CartaoArtigo from '@components/CartaoArtigo.astro';
+import EstadoVazio from '@components/EstadoVazio.astro';
+import { noticias, slugCategoria } from '@lib/conteudo';
+
+export const getStaticPaths = (async () => {
+  const { noticias, slugCategoria } = await import('@lib/conteudo');
+  const todas = await noticias();
+  const categorias = [...new Set(todas.map((n) => n.data.categoria))];
+  return categorias.map((c) => ({
+    params: { categoria: slugCategoria(c) },
+    props: { nome: c },
+  }));
+}) satisfies GetStaticPaths;
+
+const { nome } = Astro.props as { nome: string };
+const todas = await noticias();
+const itens = todas.filter((n) => n.data.categoria === nome);
+const outras = [...new Set(todas.map((n) => n.data.categoria))]
+  .filter((c) => c !== nome)
+  .sort((a, b) => a.localeCompare(b, 'pt-PT'));
+---
+<Pagina
+  titulo={`Notícias: ${nome}`}
+  cabecalho={nome}
+  descricao={`${itens.length} ${itens.length === 1 ? 'notícia publicada' : 'notícias publicadas'} pela ARLA na categoria ${nome}.`}
+  sobretitulo="Notícias"
+  migalhas={[{ rotulo: 'Notícias', href: '/noticias/' }, { rotulo: nome }]}
+>
+  <nav slot="cabecalho-extra" class="categorias" aria-label="Outras categorias">
+    <a class="etiqueta" href="/noticias/">Todas ({todas.length})</a>
+    {outras.map((c) => (
+      <a class="etiqueta" href={`/noticias/categoria/${slugCategoria(c)}/`}>{c}</a>
+    ))}
+  </nav>
+
+  {itens.length > 0 ? (
+    <div class="grelha grelha--auto">
+      {itens.map((n) => (
+        <CartaoArtigo
+          href={`/noticias/${n.id}/`}
+          titulo={n.data.titulo}
+          resumo={n.data.resumo}
+          data={n.data.data}
+          categoria={n.data.categoria}
+          imagem={n.data.imagem}
+          imagemAlt={n.data.imagemAlt}
+          historico={n.data.historico}
+          nivel={2}
+        />
+      ))}
+    </div>
+  ) : (
+    <EstadoVazio
+      titulo="Não há notícias nesta categoria."
+      accaoHref="/noticias/"
+      accaoRotulo="Ver todas as notícias"
+    />
+  )}
+</Pagina>
+
+<style>
+  .categorias { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-5); }
+  .categorias .etiqueta { text-transform: none; letter-spacing: 0; font-weight: 600; padding: 0.35rem 0.75rem; min-height: 2.25rem; }
+</style>

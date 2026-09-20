@@ -1,0 +1,124 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Aviso from '@components/Aviso.astro';
+import cronologia from '@data/cronologia.json';
+
+/** Agrupa a cronologia por ano, para um índice lateral e cabeçalhos legíveis. */
+const porAno = new Map<string, typeof cronologia.entradas>();
+for (const e of cronologia.entradas) {
+  const ano = (e.ordenacao ?? e.data ?? '').slice(0, 4) || 'Sem data';
+  if (!porAno.has(ano)) porAno.set(ano, []);
+  porAno.get(ano)!.push(e);
+}
+const anos = [...porAno.keys()].sort();
+---
+<Pagina
+  titulo="História da ARLA"
+  descricao="Historial sumário das principais atividades e acontecimentos da ARLA, desde a primeira reunião de radioamadores em Sines, em abril de 1999."
+  sobretitulo="A associação"
+  migalhas={[{ rotulo: 'ARLA', href: '/arla/' }, { rotulo: 'História' }]}
+>
+  <div class="historia">
+    <nav class="historia__anos nao-imprimir" aria-label="Saltar para um ano">
+      <p class="historia__anos-titulo">Anos</p>
+      <ul>
+        {anos.map((a) => <li><a href={`#ano-${a}`}>{a}</a></li>)}
+      </ul>
+    </nav>
+
+    <div class="historia__corpo">
+      <Aviso tipo="info">
+        <p>{cronologia.nota}</p>
+      </Aviso>
+
+      {anos.map((ano) => (
+        <section class="ano" aria-labelledby={`ano-${ano}`}>
+          <h2 class="ano__titulo" id={`ano-${ano}`}>{ano}</h2>
+          <ol class="linha-tempo">
+            {porAno.get(ano)!.map((e) => (
+              <li class="linha-tempo__item">
+                <div class="linha-tempo__data">
+                  {e.data ? (
+                    <time datetime={e.data} class="mono">{e.dataTexto}</time>
+                  ) : (
+                    <span class="mono fraco" title="Continuação do acontecimento anterior">↳</span>
+                  )}
+                </div>
+                <p class="linha-tempo__texto">{e.texto}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))}
+
+      {cronologia.emAtualizacao && (
+        <Aviso tipo="tarefa" titulo="Historial em atualização">
+          <p>
+            O historial publicado pela ARLA termina em 2012 e está assinalado como
+            «conteúdo em atualização». Os acontecimentos posteriores podem ser
+            acompanhados nas <a href="/noticias/">notícias</a> e nos
+            <a href="/eventos/">eventos</a>.
+          </p>
+        </Aviso>
+      )}
+    </div>
+  </div>
+</Pagina>
+
+<style>
+  .historia { display: grid; gap: var(--e-6); }
+  @media (min-width: 1080px) {
+    .historia { grid-template-columns: 9rem minmax(0, 1fr); gap: var(--e-7); }
+  }
+  .historia__anos { font-size: var(--t-sm); }
+  @media (min-width: 1080px) {
+    .historia__anos { position: sticky; top: 6rem; max-height: calc(100dvh - 8rem); overflow-y: auto; }
+  }
+  .historia__anos-titulo {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--texto-fraco); margin-bottom: var(--e-2);
+  }
+  .historia__anos ul { display: flex; flex-wrap: wrap; gap: 0.25rem; list-style: none; padding: 0; }
+  @media (min-width: 1080px) { .historia__anos ul { flex-direction: column; } }
+  .historia__anos a {
+    display: block; padding: 0.35rem 0.6rem;
+    border: 1px solid var(--borda); border-radius: var(--raio-sm);
+    color: var(--texto-suave); text-decoration: none;
+    font-variant-numeric: tabular-nums; font-size: var(--t-xs); font-weight: 600;
+  }
+  .historia__anos a:hover { border-color: var(--accent); color: var(--accent); }
+
+  .historia__corpo { display: flex; flex-direction: column; gap: var(--e-6); min-width: 0; }
+
+  .ano__titulo {
+    font-size: var(--t-2xl);
+    color: var(--accent);
+    scroll-margin-top: 6rem;
+    padding-bottom: var(--e-2);
+    border-bottom: 1px solid var(--borda);
+    font-variant-numeric: tabular-nums;
+  }
+  .linha-tempo { list-style: none; padding: 0; margin-top: var(--e-4); display: flex; flex-direction: column; }
+  .linha-tempo__item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+    padding: var(--e-3) 0 var(--e-3) var(--e-4);
+    border-left: 2px solid var(--borda);
+    position: relative;
+  }
+  @media (min-width: 720px) {
+    .linha-tempo__item { grid-template-columns: 6.5rem minmax(0, 1fr); gap: var(--e-4); align-items: baseline; }
+  }
+  .linha-tempo__item::before {
+    content: '';
+    position: absolute;
+    left: -0.32rem; top: 1.35rem;
+    width: 0.55rem; height: 0.55rem;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .linha-tempo__item:has(.fraco)::before { background: var(--borda-forte); }
+  .linha-tempo__data { font-size: var(--t-sm); color: var(--texto-suave); white-space: nowrap; }
+  .linha-tempo__texto { color: var(--texto-suave); font-size: var(--t-sm); line-height: 1.7; }
+</style>

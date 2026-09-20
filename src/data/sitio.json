@@ -1,0 +1,31 @@
+{
+  "nome": "ARLA",
+  "nomeCompleto": "Associação de Radioamadores do Litoral Alentejano",
+  "sigla": "ARLA",
+  "indicativo": "CS5ARLA",
+  "descricaoCurta": "Associação de carácter científico e técnico dedicada ao estudo e prática das radiocomunicações no Litoral Alentejano.",
+  "descricao": "A Associação de Radioamadores do Litoral Alentejano (ARLA) é uma associação de carácter científico e técnico, apolítica e apartidária, sem fins lucrativos e de duração ilimitada. Opera repetidores e balizas, promove formação e divulga o Serviço de Amador e Amador por Satélite.",
+  "fundacao": "2000-04-01",
+  "morada": {
+    "linha1": "Rua do Parque 10",
+    "linha2": "(Antigo Colégio de S. José)",
+    "codigoPostal": "7540-180",
+    "localidade": "Santiago do Cacém",
+    "pais": "Portugal"
+  },
+  "coordenadas": { "lat": 38.017372, "lon": -8.695195 },
+  "coordenadasTexto": "38°01’02.5″N 8°41’42.7″W",
+  "quadricula": "IM58pa",
+  "mapaExterno": "https://www.google.pt/maps/dir//Rua+do+Parque+10,+7540-105+Santiago+do+Cacém/@38.0174149,-8.695797,19z/data=!4m9!4m8!1m0!1m5!1m1!1s0xd1bc7a2f23bab63:0xd6472b1a0275a797!2m2!1d-8.6952498!2d38.0174149!3e0",
+  "email": { "utilizador": "cs5arla", "dominio": "gmail.com" },
+  "quotaAnual": "20,00 €",
+  "iban": "PT50 0035 0729 00014769230 25",
+  "nib": "0035 0729 00014769230 25",
+  "titularConta": "Associação de Radioamadores do Litoral Alentejano (ARLA)",
+  "redes": [
+    { "nome": "Facebook", "url": "https://www.facebook.com/ARLAOficial/", "icone": "facebook" }
+  ],
+  "areaGeografica": [
+    "Grândola", "Alcácer do Sal", "Santiago do Cacém", "Sines", "Odemira"
+  ]
+}

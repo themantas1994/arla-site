@@ -1,0 +1,53 @@
+---
+import Icone from './Icone.astro';
+---
+<button
+  type="button"
+  id="alternar-tema"
+  class="alternar-tema"
+  aria-label="Mudar entre tema claro e escuro"
+  title="Mudar tema"
+>
+  <Icone nome="sol" class="i-sol" />
+  <Icone nome="lua" class="i-lua" />
+</button>
+
+<style>
+  .alternar-tema {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--raio);
+    border: 1px solid var(--borda);
+    background: var(--superficie);
+    color: var(--texto-suave);
+    cursor: pointer;
+    transition: color var(--transicao), border-color var(--transicao);
+  }
+  .alternar-tema:hover { color: var(--accent); border-color: var(--accent); }
+  .alternar-tema :global(svg) { width: 1.2rem; height: 1.2rem; }
+  /* O ícone mostrado é o do tema para o qual se muda. */
+  .alternar-tema :global(.i-sol) { display: none; }
+  :global(:root[data-tema='escuro']) .alternar-tema :global(.i-sol) { display: block; }
+  :global(:root[data-tema='escuro']) .alternar-tema :global(.i-lua) { display: none; }
+  :global(:root[data-tema='claro']) .alternar-tema :global(.i-lua) { display: block; }
+  :global(:root[data-tema='claro']) .alternar-tema :global(.i-sol) { display: none; }
+</style>
+
+<script>
+  const botao = document.getElementById('alternar-tema');
+  botao?.addEventListener('click', () => {
+    const atual =
+      document.documentElement.dataset.tema ??
+      (matchMedia('(prefers-color-scheme: light)').matches ? 'claro' : 'escuro');
+    const novo = atual === 'escuro' ? 'claro' : 'escuro';
+    document.documentElement.dataset.tema = novo;
+    try {
+      localStorage.setItem('arla-tema', novo);
+    } catch {
+      /* armazenamento indisponível (janela privada, cookies bloqueados) */
+    }
+  });
+</script>

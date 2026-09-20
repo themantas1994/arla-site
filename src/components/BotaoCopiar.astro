@@ -1,0 +1,95 @@
+---
+import Icone from './Icone.astro';
+/** Copia um valor (frequência, indicativo, quadrícula, coordenadas) para a área de transferência. */
+interface Props {
+  valor: string;
+  rotulo: string;
+  /** Texto visível; quando ausente mostra só o ícone. */
+  texto?: string;
+  class?: string;
+}
+const { valor, rotulo, texto, class: classe } = Astro.props;
+---
+<button
+  type="button"
+  class={`copiar ${texto ? '' : 'copiar--so-icone'} ${classe ?? ''}`}
+  data-copiar={valor}
+  aria-label={rotulo}
+  title={rotulo}
+>
+  <Icone nome="copiar" />
+  {texto && <span>{texto}</span>}
+  <span class="copiar__confirmacao" aria-hidden="true">Copiado</span>
+</button>
+
+<style>
+  .copiar {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2rem;
+    min-width: 2rem;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-sm);
+    background: var(--superficie-2);
+    color: var(--texto-fraco);
+    font-size: var(--t-xs);
+    cursor: pointer;
+    transition: color var(--transicao), border-color var(--transicao);
+  }
+  .copiar:hover { color: var(--accent); border-color: var(--accent); }
+  .copiar :global(svg) { width: 0.95rem; height: 0.95rem; }
+  .copiar__confirmacao {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: var(--sinal);
+    color: var(--fundo);
+    border-radius: inherit;
+    font-weight: 700;
+    font-size: 0.7rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transicao);
+  }
+  .copiar--copiado .copiar__confirmacao { opacity: 1; }
+  .copiar--so-icone .copiar__confirmacao { font-size: 0; }
+  .copiar--so-icone.copiar--copiado .copiar__confirmacao::before { content: '✓'; font-size: 0.9rem; }
+</style>
+
+<script>
+  declare global {
+    interface Window { __arlaCopiar?: boolean }
+  }
+
+  /* Delegação: um único ouvinte para todos os botões de cópia da página. */
+  if (!window.__arlaCopiar) {
+    window.__arlaCopiar = true;
+    document.addEventListener('click', async (e) => {
+      const botao = (e.target as Element)?.closest<HTMLButtonElement>('[data-copiar]');
+      if (!botao) return;
+      const valor = botao.dataset.copiar ?? '';
+      try {
+        await navigator.clipboard.writeText(valor);
+      } catch {
+        // Reserva para navegadores sem Clipboard API ou em contexto não seguro
+        const campo = document.createElement('textarea');
+        campo.value = valor;
+        campo.setAttribute('readonly', '');
+        campo.style.position = 'fixed';
+        campo.style.opacity = '0';
+        document.body.append(campo);
+        campo.select();
+        try { document.execCommand('copy'); } catch { /* sem alternativa */ }
+        campo.remove();
+      }
+      botao.classList.add('copiar--copiado');
+      const aviso = document.getElementById('anuncio-acessibilidade');
+      if (aviso) aviso.textContent = `${valor} copiado para a área de transferência.`;
+      setTimeout(() => botao.classList.remove('copiar--copiado'), 1400);
+    });
+  }
+</script>

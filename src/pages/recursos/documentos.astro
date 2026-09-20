@@ -1,0 +1,104 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import Aviso from '@components/Aviso.astro';
+import EstadoVazio from '@components/EstadoVazio.astro';
+import { getCollection } from 'astro:content';
+import { dataExtenso } from '@lib/sitio';
+
+const documentos = await getCollection('documentos');
+const categorias = [...new Set(documentos.map((d) => d.data.categoria))].sort((a, b) =>
+  a.localeCompare(b, 'pt-PT'),
+);
+const porCategoria = new Map<string, typeof documentos>();
+for (const d of documentos) {
+  if (!porCategoria.has(d.data.categoria)) porCategoria.set(d.data.categoria, []);
+  porCategoria.get(d.data.categoria)!.push(d);
+}
+---
+<Pagina
+  titulo="Documentos"
+  descricao="Biblioteca de documentos da ARLA: estatutos, regulamentos internos e formulários, disponíveis para descarregar em PDF."
+  sobretitulo="Recursos"
+  migalhas={[{ rotulo: 'Recursos', href: '/recursos/' }, { rotulo: 'Documentos' }]}
+>
+  {documentos.length === 0 ? (
+    <EstadoVazio titulo="Ainda não há documentos publicados." icone="documento" />
+  ) : (
+    categorias.map((c) => (
+      <section class="cat" aria-labelledby={`cat-${c.toLowerCase()}`}>
+        <h2 class="cat__titulo" id={`cat-${c.toLowerCase()}`}>{c}</h2>
+        <ul class="documentos">
+          {porCategoria.get(c)!.map((d) => (
+            <li class="cartao documento">
+              <div class="documento__icone" aria-hidden="true">
+                <Icone nome="documento" />
+                <span class="documento__tipo">{d.data.tipo}</span>
+              </div>
+              <div class="documento__corpo">
+                <h3 class="documento__nome">{d.data.nome}</h3>
+                {d.data.descricao && <p class="documento__descricao">{d.data.descricao}</p>}
+                <p class="documento__meta">
+                  <span>{d.data.tipo}</span>
+                  {d.data.tamanho && <><span aria-hidden="true">·</span><span>{d.data.tamanho}</span></>}
+                  {d.data.data && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <time datetime={d.data.data.toISOString().slice(0, 10)}>{dataExtenso(d.data.data)}</time>
+                    </>
+                  )}
+                </p>
+              </div>
+              <a
+                class="btn btn--principal btn--pequeno documento__botao"
+                href={d.data.ficheiro}
+                download={!d.data.externo}
+                rel={d.data.externo ? 'noopener noreferrer' : undefined}
+                target={d.data.externo ? '_blank' : undefined}
+              >
+                <Icone nome={d.data.externo ? 'externo' : 'descarregar'} />
+                <span>{d.data.externo ? 'Abrir' : 'Descarregar'}</span>
+                <span class="invisivel"> — {d.data.nome} ({d.data.tipo}{d.data.tamanho ? `, ${d.data.tamanho}` : ''})</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  )}
+
+  <Aviso tipo="info" titulo="Documentos oficiais">
+    <p>
+      Os estatutos e regulamentos internos são reproduzidos exatamente como foram aprovados
+      pela associação, sem qualquer alteração. Em caso de divergência entre esta página e o
+      documento em PDF, prevalece o documento.
+    </p>
+  </Aviso>
+</Pagina>
+
+<style>
+  .cat + .cat { margin-top: var(--e-7); }
+  .cat__titulo {
+    font-size: var(--t-xl); color: var(--accent);
+    padding-bottom: var(--e-2); margin-bottom: var(--e-4); border-bottom: 1px solid var(--borda);
+  }
+  .documentos { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--e-3); }
+  .documento {
+    flex-direction: row; align-items: center; flex-wrap: wrap;
+    gap: var(--e-4); padding: var(--e-4);
+  }
+  .documento__icone {
+    display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+    width: 3.2rem; flex: none; color: var(--accent);
+  }
+  .documento__icone :global(svg) { width: 1.9rem; height: 1.9rem; }
+  .documento__tipo { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; }
+  .documento__corpo { flex: 1 1 16rem; min-width: 0; }
+  .documento__nome { font-size: var(--t-base); }
+  .documento__descricao { font-size: var(--t-sm); color: var(--texto-suave); margin-top: 0.25rem; }
+  .documento__meta {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin-top: var(--e-2); font-size: var(--t-xs); color: var(--texto-fraco);
+  }
+  .documento__botao { flex: none; }
+</style>

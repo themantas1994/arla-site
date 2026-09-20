@@ -1,0 +1,187 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import BotaoCopiar from '@components/BotaoCopiar.astro';
+import { SITIO, email, emailVisivel } from '@lib/sitio';
+
+const passos = [
+  {
+    titulo: 'Quem pode ser associado/a',
+    icone: 'pessoas',
+    corpo: `Qualquer pessoa interessada nas radiocomunicações. Não é preciso ser licenciado
+      pela ANACOM nem possuir o Certificado para o Serviço de Amador e Amador por Satélite —
+      as atividades da ARLA são extensíveis a quem ainda não é licenciado. Também não há
+      restrição geográfica: qualquer pessoa se pode associar, independentemente de onde resida.`,
+  },
+  {
+    titulo: 'Preencha a ficha de inscrição',
+    icone: 'documento',
+    corpo: 'Descarregue a ficha de inscrição em PDF, preencha-a e envie-a para a associação.',
+    accao: { rotulo: 'Descarregar ficha de inscrição (PDF)', href: '/documentos/arla-ficha-de-inscricao.pdf', icone: 'descarregar' },
+  },
+  {
+    titulo: 'O pedido é avaliado em reunião de direção',
+    icone: 'escudo',
+    corpo: `O seu pedido é apreciado em reunião de direção. Assim que for aprovado, a ARLA
+      entra em contacto consigo para que possa efetuar o pagamento da quota.`,
+  },
+  {
+    titulo: 'Pague a quota anual',
+    icone: 'estrela',
+    corpo: `A quota anual é de ${SITIO.quotaAnual}. Não é cobrada qualquer jóia de inscrição —
+      a única obrigação de entrada é o pagamento da quota anual. O pagamento deve ser feito
+      preferencialmente por transferência bancária.`,
+    accao: { rotulo: 'Ver dados de pagamento', href: '/arla/quotizacao/', icone: 'seta' },
+  },
+  {
+    titulo: 'Envie o comprovativo',
+    icone: 'correio',
+    corpo: `O comprovativo do pagamento tem de ser sempre enviado para o endereço oficial
+      de correio eletrónico da associação. Na descrição da transferência indique o seu
+      indicativo (ou primeiro e último nome), a palavra «Quota» e o ano a que se refere.`,
+  },
+  {
+    titulo: 'Fale connosco',
+    icone: 'info',
+    corpo: 'Em caso de dúvida, contacte-nos. Seja qual for a sua decisão, a porta fica sempre aberta.',
+    accao: { rotulo: 'Contactos', href: '/contactos/', icone: 'seta' },
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: 'Como tornar-se associado/a da ARLA',
+  description: 'Passos para se candidatar a associado da Associação de Radioamadores do Litoral Alentejano.',
+  step: passos.map((p, n) => ({
+    '@type': 'HowToStep',
+    position: n + 1,
+    name: p.titulo,
+    text: p.corpo.replace(/\s+/g, ' ').trim(),
+  })),
+};
+---
+<Pagina
+  titulo="Ser associado/a"
+  descricao={`Como tornar-se associado/a da ARLA: quem pode aderir, como fazer a inscrição, o que acontece depois e como pagar a quota anual de ${SITIO.quotaAnual}.`}
+  sobretitulo="A associação"
+  migalhas={[{ rotulo: 'ARLA', href: '/arla/' }, { rotulo: 'Ser associado/a' }]}
+  jsonLd={jsonLd}
+>
+  <div slot="cabecalho-extra" class="linha topo-accoes">
+    <a class="btn btn--principal" href="/documentos/arla-ficha-de-inscricao.pdf">
+      <Icone nome="descarregar" /> Ficha de inscrição (PDF)
+    </a>
+    <a class="btn btn--contorno" href="/arla/quotizacao/">Quotização</a>
+  </div>
+
+  <ol class="passos">
+    {passos.map((p, n) => (
+      <li class="passo">
+        <div class="passo__numero" aria-hidden="true">{n + 1}</div>
+        <div class="passo__corpo">
+          <h2 class="passo__titulo">
+            <Icone nome={p.icone as any} /> {p.titulo}
+          </h2>
+          <p>{p.corpo}</p>
+          {p.accao && (
+            <a class="btn btn--contorno btn--pequeno" href={p.accao.href}>
+              <Icone nome={p.accao.icone as any} /> {p.accao.rotulo}
+            </a>
+          )}
+        </div>
+      </li>
+    ))}
+  </ol>
+
+  <section class="isencao" aria-labelledby="t-isencao">
+    <Icone nome="estrela" />
+    <div>
+      <h2 id="t-isencao">Isenção de quotas</h2>
+      <p>
+        Em homenagem ao Dia Internacional da Mulher, celebrado a 8 de março, foi deliberado
+        por unanimidade e aclamação na Assembleia-Geral Ordinária de Associados de 2016 que,
+        a partir dessa data, <strong>todas as senhoras ou meninas radioamadoras — ou em vias
+        de o ser — que se queiram associar estão isentas do pagamento de quotas</strong>.
+      </p>
+    </div>
+  </section>
+
+  <section class="contacto-rapido" aria-labelledby="t-contacto-rapido">
+    <h2 id="t-contacto-rapido">Para onde enviar</h2>
+    <dl>
+      <div>
+        <dt>Correio eletrónico oficial</dt>
+        <dd>
+          <a href={`mailto:${email()}`}>{emailVisivel()}</a>
+          <BotaoCopiar valor={email()} rotulo="Copiar endereço de correio eletrónico da ARLA" />
+        </dd>
+      </div>
+      <div>
+        <dt>Morada da sede</dt>
+        <dd>
+          {SITIO.morada.linha1}, {SITIO.morada.linha2}<br />
+          {SITIO.morada.codigoPostal} {SITIO.morada.localidade}
+        </dd>
+      </div>
+    </dl>
+  </section>
+</Pagina>
+
+<style>
+  .topo-accoes { margin-top: var(--e-5); }
+
+  .passos { list-style: none; padding: 0; counter-reset: passo; display: flex; flex-direction: column; }
+  .passo {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    gap: var(--e-4);
+    padding-bottom: var(--e-6);
+    position: relative;
+  }
+  .passo:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 1.32rem; top: 3rem; bottom: 0;
+    width: 2px;
+    background: linear-gradient(var(--accent), var(--borda));
+  }
+  .passo__numero {
+    display: grid; place-items: center;
+    width: 2.75rem; height: 2.75rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-contraste);
+    font-weight: 800; font-size: var(--t-lg);
+    font-variant-numeric: tabular-nums;
+    position: relative; z-index: 1;
+  }
+  .passo__corpo { padding-top: 0.25rem; display: flex; flex-direction: column; gap: var(--e-3); align-items: start; }
+  .passo__titulo { display: flex; align-items: center; gap: 0.5rem; font-size: var(--t-lg); }
+  .passo__titulo :global(svg) { width: 1.2rem; height: 1.2rem; color: var(--accent); flex: none; }
+  .passo__corpo p { color: var(--texto-suave); max-width: 66ch; }
+
+  .isencao {
+    display: flex; gap: var(--e-4);
+    margin-top: var(--e-4);
+    padding: var(--e-5);
+    background: color-mix(in srgb, var(--accent) 9%, var(--superficie));
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius: var(--raio-lg);
+  }
+  .isencao > :global(svg) { width: 1.8rem; height: 1.8rem; color: var(--accent); flex: none; }
+  .isencao h2 { font-size: var(--t-lg); }
+  .isencao p { margin-top: var(--e-2); color: var(--texto-suave); max-width: 68ch; }
+
+  .contacto-rapido { margin-top: var(--e-7); padding-top: var(--e-6); border-top: 1px solid var(--borda); }
+  .contacto-rapido h2 { font-size: var(--t-lg); margin-bottom: var(--e-4); }
+  .contacto-rapido dl { display: grid; gap: var(--e-4); }
+  @media (min-width: 620px) { .contacto-rapido dl { grid-template-columns: 1fr 1fr; } }
+  .contacto-rapido dt {
+    font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-fraco);
+  }
+  .contacto-rapido dd {
+    margin: 0.3rem 0 0; color: var(--texto-suave); line-height: 1.7;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  }
+</style>

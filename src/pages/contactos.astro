@@ -1,0 +1,175 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Mapa from '@components/Mapa.astro';
+import Icone from '@components/Icone.astro';
+import BotaoCopiar from '@components/BotaoCopiar.astro';
+import { SITIO, email, emailVisivel, moradaLinhas } from '@lib/sitio';
+import { formatarCoordenadas } from '@lib/maidenhead';
+
+const coordDMS = formatarCoordenadas(SITIO.coordenadas.lat, SITIO.coordenadas.lon);
+const coordDecimal = `${SITIO.coordenadas.lat}, ${SITIO.coordenadas.lon}`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: 'Contactos da ARLA',
+  mainEntity: { '@id': new URL('/#organizacao', Astro.site).href },
+};
+---
+<Pagina
+  titulo="Contactos"
+  descricao={`Como contactar a ARLA: morada da sede em ${SITIO.morada.localidade}, correio eletrónico, coordenadas, quadrícula Maidenhead ${SITIO.quadricula} e mapa.`}
+  sobretitulo="Onde estamos"
+  migalhas={[{ rotulo: 'Contactos' }]}
+  jsonLd={jsonLd}
+>
+  <div class="contactos">
+    <div class="contactos__info">
+      <section class="bloco-contacto" aria-labelledby="t-morada">
+        <h2 id="t-morada"><Icone nome="local" /> Sede</h2>
+        <address>
+          <strong>{SITIO.nomeCompleto}</strong><br />
+          {SITIO.morada.linha1}<br />
+          <span class="suave">{SITIO.morada.linha2}</span><br />
+          {SITIO.morada.codigoPostal} {SITIO.morada.localidade}<br />
+          {SITIO.morada.pais}
+        </address>
+        <div class="linha">
+          <BotaoCopiar
+            valor={moradaLinhas.join('\n')}
+            rotulo="Copiar morada completa da ARLA"
+            texto="Copiar morada"
+          />
+          <a class="btn btn--contorno btn--pequeno" href={SITIO.mapaExterno} rel="noopener noreferrer" target="_blank">
+            <Icone nome="externo" /> Direções
+          </a>
+        </div>
+      </section>
+
+      <section class="bloco-contacto" aria-labelledby="t-email">
+        <h2 id="t-email"><Icone nome="correio" /> Correio eletrónico</h2>
+        <p class="suave">
+          Este é o endereço oficial da associação — para pedidos de adesão, envio de
+          comprovativos de quota, relatórios de receção e qualquer outro assunto.
+        </p>
+        <p class="email-linha">
+          <a class="email-valor" href={`mailto:${email()}`}>{emailVisivel()}</a>
+          <BotaoCopiar valor={email()} rotulo="Copiar endereço de correio eletrónico da ARLA" />
+        </p>
+        <p class="fraco nota-spam">
+          O endereço é mostrado com «(arroba)» para reduzir a recolha automática por
+          programas de spam. A ligação funciona normalmente.
+        </p>
+      </section>
+
+      <section class="bloco-contacto" aria-labelledby="t-coordenadas">
+        <h2 id="t-coordenadas"><Icone nome="antena" /> Dados de estação</h2>
+        <dl class="dados-estacao">
+          <div>
+            <dt>Indicativo coletivo</dt>
+            <dd>
+              <span class="mono">{SITIO.indicativo}</span>
+              <BotaoCopiar valor={SITIO.indicativo} rotulo="Copiar indicativo CS5ARLA" />
+            </dd>
+          </div>
+          <div>
+            <dt>Quadrícula Maidenhead</dt>
+            <dd>
+              <span class="mono">{SITIO.quadricula}</span>
+              <BotaoCopiar valor={SITIO.quadricula} rotulo="Copiar quadrícula Maidenhead" />
+            </dd>
+          </div>
+          <div>
+            <dt>Coordenadas (decimais)</dt>
+            <dd>
+              <span class="mono">{coordDecimal}</span>
+              <BotaoCopiar valor={coordDecimal} rotulo="Copiar coordenadas decimais" />
+            </dd>
+          </div>
+          <div>
+            <dt>Coordenadas (GMS)</dt>
+            <dd><span class="mono">{SITIO.coordenadasTexto}</span></dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="bloco-contacto" aria-labelledby="t-redes">
+        <h2 id="t-redes"><Icone nome="partilhar" /> Redes sociais</h2>
+        <ul class="redes">
+          {SITIO.redes.map((r) => (
+            <li>
+              <a class="btn btn--contorno" href={r.url} rel="noopener noreferrer me" target="_blank">
+                <Icone nome={r.icone as any} /> {r.nome}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+
+    <div class="contactos__mapa">
+      <Mapa
+        id="mapa-contactos"
+        rotulo="Mapa com a localização da sede da ARLA"
+        zoom={16}
+        altura="clamp(20rem, 50vh, 30rem)"
+        centro={{ lat: SITIO.coordenadas.lat, lon: SITIO.coordenadas.lon }}
+        marcadores={[{
+          lat: SITIO.coordenadas.lat,
+          lon: SITIO.coordenadas.lon,
+          titulo: 'Sede da ARLA',
+          descricao: `${SITIO.morada.linha1}<br>${SITIO.morada.codigoPostal} ${SITIO.morada.localidade}`,
+          tipo: 'sede',
+          origem: 'exata',
+        }]}
+      />
+
+      <div class="cartao atalhos-contacto">
+        <h2>Antes de escrever</h2>
+        <ul>
+          <li><a href="/arla/ser-associado/">Quero associar-me</a> — o processo passo a passo.</li>
+          <li><a href="/arla/quotizacao/">Pagar a quota</a> — IBAN e envio do comprovativo.</li>
+          <li><a href="/recursos/faq/">Perguntas frequentes</a> — talvez já tenhamos a resposta.</li>
+          <li><a href="/arla/direcao-tecnica/">Avaria num repetidor</a> — quem trata de quê.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</Pagina>
+
+<style>
+  .contactos { display: grid; gap: var(--e-7); align-items: start; }
+  @media (min-width: 960px) { .contactos { grid-template-columns: 1fr 1.05fr; gap: var(--e-8); } }
+
+  .contactos__info { display: flex; flex-direction: column; gap: var(--e-6); }
+  .bloco-contacto h2 { display: flex; align-items: center; gap: 0.55rem; font-size: var(--t-lg); }
+  .bloco-contacto h2 :global(svg) { width: 1.2rem; height: 1.2rem; color: var(--accent); }
+  .bloco-contacto address { font-style: normal; margin-top: var(--e-3); line-height: 1.8; color: var(--texto-suave); }
+  .bloco-contacto address strong { color: var(--texto); }
+  .bloco-contacto .suave { margin-top: var(--e-2); font-size: var(--t-sm); max-width: 58ch; }
+  .bloco-contacto .linha { margin-top: var(--e-4); }
+
+  .email-linha { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin-top: var(--e-3); }
+  .email-valor { font-size: var(--t-lg); font-weight: 600; word-break: break-word; }
+  .nota-spam { margin-top: var(--e-2); font-size: var(--t-xs); max-width: 54ch; }
+
+  .dados-estacao {
+    display: grid; gap: var(--e-3); margin-top: var(--e-3);
+    border: 1px solid var(--borda); border-radius: var(--raio-lg);
+    background: var(--superficie); padding: var(--e-4);
+  }
+  @media (min-width: 560px) { .dados-estacao { grid-template-columns: 1fr 1fr; gap: var(--e-4); } }
+  .dados-estacao dt { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.07em; color: var(--texto-fraco); }
+  .dados-estacao dd {
+    margin: 0.25rem 0 0; display: flex; align-items: center; gap: 0.5rem;
+    font-weight: 700; flex-wrap: wrap;
+  }
+
+  .redes { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-3); list-style: none; padding: 0; }
+
+  .contactos__mapa { display: flex; flex-direction: column; gap: var(--e-4); }
+  .atalhos-contacto { padding: var(--e-5); }
+  .atalhos-contacto h2 { font-size: var(--t-base); margin-bottom: var(--e-3); }
+  .atalhos-contacto ul { display: flex; flex-direction: column; gap: var(--e-2); padding-left: 1.1rem; font-size: var(--t-sm); color: var(--texto-suave); }
+  .atalhos-contacto li::marker { color: var(--accent); }
+</style>

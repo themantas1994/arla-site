@@ -1,0 +1,204 @@
+---
+/**
+ * Mapa Leaflet com fundo OpenStreetMap. Só é carregado quando entra no ecrã
+ * (IntersectionObserver) — nenhum JavaScript de mapa pesa nas outras páginas.
+ * Sem posições inventadas: cada marcador diz de onde vem a sua coordenada.
+ */
+export interface Marcador {
+  lat: number;
+  lon: number;
+  titulo: string;
+  descricao?: string;
+  tipo?: 'sede' | 'repetidor' | 'baliza' | 'evento';
+  /** «exata» ou «quadricula» — mostrado ao utilizador. */
+  origem?: 'exata' | 'quadricula';
+  url?: string;
+}
+interface Props {
+  marcadores: Marcador[];
+  zoom?: number;
+  altura?: string;
+  centro?: { lat: number; lon: number };
+  rotulo: string;
+  id?: string;
+}
+const {
+  marcadores,
+  zoom = 9,
+  altura = '26rem',
+  centro,
+  rotulo,
+  id = 'mapa',
+} = Astro.props;
+
+const meio = centro ?? {
+  lat: marcadores.reduce((s, m) => s + m.lat, 0) / Math.max(1, marcadores.length),
+  lon: marcadores.reduce((s, m) => s + m.lon, 0) / Math.max(1, marcadores.length),
+};
+const aproximados = marcadores.some((m) => m.origem === 'quadricula');
+---
+<div class="mapa-bloco">
+  <div
+    id={id}
+    class="mapa"
+    style={`--altura-mapa:${altura}`}
+    role="application"
+    aria-label={rotulo}
+    data-mapa
+    data-centro={JSON.stringify(meio)}
+    data-zoom={zoom}
+    data-marcadores={JSON.stringify(marcadores)}
+  >
+    <noscript>
+      <div class="mapa__sem-js">
+        <p>O mapa interativo precisa de JavaScript. As localizações estão também listadas em texto nesta página.</p>
+      </div>
+    </noscript>
+  </div>
+
+  {/* Alternativa textual: o mapa nunca é a única forma de obter a informação. */}
+  <details class="mapa__lista">
+    <summary>Lista de localizações em texto ({marcadores.length})</summary>
+    <ul>
+      {marcadores.map((m) => (
+        <li>
+          <strong>{m.titulo}</strong>
+          {m.descricao && <> — {m.descricao}</>}
+          <span class="mono fraco"> · {m.lat.toFixed(4)}, {m.lon.toFixed(4)}</span>
+          {m.origem === 'quadricula' && <span class="fraco"> (posição aproximada)</span>}
+        </li>
+      ))}
+    </ul>
+  </details>
+
+  {aproximados && (
+    <p class="mapa__nota">
+      As estações assinaladas com posição aproximada estão colocadas no centro da
+      quadrícula Maidenhead publicada pela ARLA, não nas coordenadas exatas do local.
+    </p>
+  )}
+</div>
+
+<style>
+  .mapa-bloco { display: flex; flex-direction: column; gap: var(--e-3); }
+  .mapa {
+    height: var(--altura-mapa);
+    min-height: 16rem;
+    border-radius: var(--raio-lg);
+    border: 1px solid var(--borda);
+    background: var(--superficie-2);
+    overflow: hidden;
+    z-index: 0;
+  }
+  .mapa__sem-js { display: grid; place-items: center; height: 100%; padding: var(--e-5); text-align: center; color: var(--texto-suave); }
+  .mapa__lista { font-size: var(--t-sm); }
+  .mapa__lista summary {
+    cursor: pointer; padding: 0.6rem 0; font-weight: 600; color: var(--texto-suave);
+    min-height: 2.75rem; display: flex; align-items: center;
+  }
+  .mapa__lista summary:hover { color: var(--accent); }
+  .mapa__lista ul { display: flex; flex-direction: column; gap: var(--e-2); padding-left: 1.2rem; list-style: disc; color: var(--texto-suave); }
+  .mapa__lista li::marker { color: var(--accent); }
+  .mapa__nota { font-size: var(--t-xs); color: var(--texto-fraco); }
+
+  /* Ajustes ao Leaflet para condizer com o tema */
+  .mapa :global(.leaflet-container) { background: var(--superficie-2); font: inherit; }
+  .mapa :global(.leaflet-popup-content-wrapper),
+  .mapa :global(.leaflet-popup-tip) {
+    background: var(--superficie); color: var(--texto);
+    border: 1px solid var(--borda-forte); box-shadow: var(--sombra-alta);
+  }
+  .mapa :global(.leaflet-popup-content) { margin: 0.8rem 1rem; font-size: var(--t-sm); line-height: 1.5; }
+  .mapa :global(.leaflet-popup-content strong) { display: block; font-size: var(--t-base); }
+  .mapa :global(.leaflet-popup-content a) { color: var(--accent); }
+  .mapa :global(.leaflet-control-attribution) {
+    background: color-mix(in srgb, var(--superficie) 85%, transparent) !important;
+    color: var(--texto-fraco); font-size: 0.68rem;
+  }
+  .mapa :global(.leaflet-control-attribution a) { color: var(--texto-suave); }
+  .mapa :global(.leaflet-bar a) {
+    background: var(--superficie); color: var(--texto); border-color: var(--borda-forte);
+    width: 2.2rem; height: 2.2rem; line-height: 2.2rem;
+  }
+  .mapa :global(.leaflet-bar a:hover) { background: var(--superficie-2); color: var(--accent); }
+  /* Em tema escuro as telas ficam demasiado claras; suaviza-se sem as tornar ilegíveis. */
+  :global(:root[data-tema='escuro']) .mapa :global(.leaflet-tile-pane) { filter: brightness(0.74) saturate(0.82) contrast(1.05); }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-tema])) .mapa :global(.leaflet-tile-pane) { filter: brightness(0.74) saturate(0.82) contrast(1.05); }
+  }
+</style>
+
+<script>
+  const CORES: Record<string, string> = {
+    sede: '#f0a32c',
+    repetidor: '#0082c8',
+    baliza: '#2dd4a7',
+    evento: '#a855f7',
+  };
+
+  async function iniciar(el: HTMLElement) {
+    if (el.dataset.pronto) return;
+    el.dataset.pronto = '1';
+
+    // O Leaflet (código e estilos) só é descarregado quando há mesmo um mapa à vista.
+    // Está empacotado com o sítio — nenhum pedido a CDN de terceiros.
+    const [{ default: L }] = await Promise.all([
+      import('leaflet'),
+      import('leaflet/dist/leaflet.css'),
+    ]);
+
+    const centro = JSON.parse(el.dataset.centro ?? '{"lat":38.0,"lon":-8.7}');
+    const zoom = Number(el.dataset.zoom ?? 9);
+    const marcadores = JSON.parse(el.dataset.marcadores ?? '[]');
+
+    const mapa = L.map(el, { scrollWheelZoom: false, zoomControl: true })
+      .setView([centro.lat, centro.lon], zoom);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; colaboradores do <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(mapa);
+
+    const grupo: any[] = [];
+    for (const m of marcadores) {
+      const cor = CORES[m.tipo ?? 'repetidor'] ?? CORES.repetidor;
+      const marca = L.circleMarker([m.lat, m.lon], {
+        radius: m.tipo === 'sede' ? 10 : 8,
+        color: cor,
+        weight: 2.5,
+        fillColor: cor,
+        fillOpacity: 0.32,
+      }).addTo(mapa);
+
+      const aprox = m.origem === 'quadricula'
+        ? '<br><em style="opacity:.75">Posição aproximada (centro da quadrícula)</em>'
+        : '';
+      const liga = m.url ? `<br><a href="${m.url}">Ver detalhes</a>` : '';
+      marca.bindPopup(
+        `<strong>${m.titulo}</strong>${m.descricao ? m.descricao : ''}${aprox}${liga}`,
+      );
+      marca.bindTooltip(m.titulo);
+      grupo.push(marca);
+    }
+
+    if (grupo.length > 1) {
+      mapa.fitBounds(L.featureGroup(grupo).getBounds().pad(0.22));
+    }
+
+    // O zoom com a roda do rato só é ativado depois de o utilizador clicar no mapa,
+    // para não roubar o deslocamento da página.
+    mapa.on('click', () => mapa.scrollWheelZoom.enable());
+    mapa.on('mouseout', () => mapa.scrollWheelZoom.disable());
+  }
+
+  const observador = new IntersectionObserver((entradas) => {
+    for (const e of entradas) {
+      if (e.isIntersecting) {
+        iniciar(e.target as HTMLElement);
+        observador.unobserve(e.target);
+      }
+    }
+  }, { rootMargin: '250px' });
+
+  for (const el of document.querySelectorAll<HTMLElement>('[data-mapa]')) observador.observe(el);
+</script>

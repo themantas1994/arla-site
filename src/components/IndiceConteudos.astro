@@ -1,0 +1,76 @@
+---
+import type { MarkdownHeading } from 'astro';
+interface Props { titulos: MarkdownHeading[] }
+const { titulos } = Astro.props;
+// Só os níveis 2 e 3; mais fundo do que isso o índice deixa de ajudar.
+const itens = titulos.filter((t) => t.depth === 2 || t.depth === 3);
+---
+{itens.length >= 3 && (
+  <nav class="indice" aria-labelledby="indice-titulo">
+    <h2 class="indice__titulo" id="indice-titulo">Nesta página</h2>
+    <ol>
+      {itens.map((t) => (
+        <li class={t.depth === 3 ? 'indice--nivel3' : ''}>
+          <a href={`#${t.slug}`}>{t.text}</a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+)}
+
+<style>
+  .indice {
+    padding: var(--e-4);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-lg);
+    background: var(--superficie);
+    font-size: var(--t-sm);
+  }
+  .indice__titulo {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--texto-fraco); margin-bottom: var(--e-3);
+  }
+  .indice ol { list-style: none; padding: 0; display: flex; flex-direction: column; counter-reset: i; }
+  .indice a {
+    display: block; padding: 0.4rem 0 0.4rem 0.7rem;
+    border-left: 2px solid var(--borda);
+    color: var(--texto-suave); text-decoration: none; line-height: 1.4;
+  }
+  .indice a:hover { color: var(--accent); border-left-color: var(--accent); }
+  .indice a[aria-current='true'] { color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+  .indice--nivel3 a { padding-left: 1.6rem; font-size: 0.9em; }
+
+  @media (min-width: 1100px) {
+    .indice { position: sticky; top: 6rem; max-height: calc(100dvh - 8rem); overflow-y: auto; }
+  }
+</style>
+
+<script>
+  /* Realça no índice a secção que está a ser lida. */
+  const indice = document.querySelector('.indice');
+  if (indice) {
+    const ligacoes = new Map<string, HTMLAnchorElement>();
+    for (const a of indice.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) {
+      ligacoes.set(decodeURIComponent(a.hash.slice(1)), a);
+    }
+    const alvos = [...ligacoes.keys()]
+      .map((id) => document.getElementById(id))
+      .filter((e): e is HTMLElement => e !== null);
+
+    let atual: HTMLAnchorElement | null = null;
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (!e.isIntersecting) continue;
+          const a = ligacoes.get(e.target.id);
+          if (!a) continue;
+          atual?.removeAttribute('aria-current');
+          a.setAttribute('aria-current', 'true');
+          atual = a;
+        }
+      },
+      { rootMargin: '-90px 0px -70% 0px' },
+    );
+    for (const alvo of alvos) observador.observe(alvo);
+  }
+</script>

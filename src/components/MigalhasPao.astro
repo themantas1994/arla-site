@@ -1,0 +1,39 @@
+---
+interface Item { rotulo: string; href?: string }
+interface Props { itens: Item[] }
+const { itens } = Astro.props;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [{ rotulo: 'Início', href: '/' }, ...itens].map((i, n) => ({
+    '@type': 'ListItem',
+    position: n + 1,
+    name: i.rotulo,
+    ...(i.href ? { item: new URL(i.href, Astro.site).href } : {}),
+  })),
+};
+---
+<nav class="migalhas" aria-label="Percurso">
+  <ol>
+    <li><a href="/">Início</a></li>
+    {itens.map((i, n) => (
+      <li>
+        {i.href && n < itens.length - 1
+          ? <a href={i.href}>{i.rotulo}</a>
+          : <span aria-current="page">{i.rotulo}</span>}
+      </li>
+    ))}
+  </ol>
+</nav>
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+
+<style>
+  .migalhas { font-size: var(--t-xs); color: var(--texto-fraco); }
+  .migalhas ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; list-style: none; padding: 0; }
+  .migalhas li { display: flex; align-items: center; gap: 0.3rem; }
+  .migalhas li + li::before { content: '/'; color: var(--borda-forte); }
+  .migalhas a { color: var(--texto-fraco); text-decoration: none; }
+  .migalhas a:hover { color: var(--accent); text-decoration: underline; }
+  .migalhas [aria-current] { color: var(--texto-suave); }
+</style>

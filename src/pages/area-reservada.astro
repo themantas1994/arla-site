@@ -1,0 +1,86 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Aviso from '@components/Aviso.astro';
+import Icone from '@components/Icone.astro';
+import { email, emailVisivel } from '@lib/sitio';
+---
+<Pagina
+  titulo="Área reservada"
+  descricao="Área reservada aos associados da ARLA. O sítio anterior tinha páginas de registo e início de sessão; esta página explica o que lhes aconteceu e como contactar a direção."
+  sobretitulo="Associados"
+  migalhas={[{ rotulo: 'Área reservada' }]}
+  largura="estreito"
+  semIndexacao
+>
+  <Aviso tipo="tarefa" titulo="Área ainda não disponível nesta versão do sítio">
+    <p>
+      O sítio anterior tinha páginas de registo e início de sessão para associados
+      (<span class="mono">/site/login/</span>, <span class="mono">/site/members/</span> e
+      outras). Essas páginas dependiam do sistema de utilizadores do WordPress, que não
+      transitou para esta versão: o novo sítio é estático e não guarda contas nem
+      palavras-passe.
+    </p>
+    <p>
+      Todos esses endereços antigos passaram a apontar para esta página, para que nenhuma
+      ligação fique partida.
+    </p>
+  </Aviso>
+
+  <section class="opcoes">
+    <h2>Enquanto isso</h2>
+    <p class="suave">
+      Toda a informação pública da associação continua acessível sem qualquer registo.
+      Para assuntos que exijam identificação — quotas, inscrições, documentos internos —
+      contacte a direção diretamente.
+    </p>
+    <ul class="lista-opcoes">
+      <li>
+        <Icone nome="correio" />
+        <div>
+          <strong>Contacto direto</strong>
+          <p><a href={`mailto:${email()}`}>{emailVisivel()}</a></p>
+        </div>
+      </li>
+      <li>
+        <Icone nome="documento" />
+        <div>
+          <strong>Documentos da associação</strong>
+          <p><a href="/recursos/documentos/">Estatutos, regulamentos e formulários</a></p>
+        </div>
+      </li>
+      <li>
+        <Icone nome="estrela" />
+        <div>
+          <strong>Tornar-se associado/a</strong>
+          <p><a href="/arla/ser-associado/">O processo passo a passo</a></p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <Aviso tipo="info" titulo="Nota para a direção">
+    <p>
+      Se a associação vier a precisar de uma área reservada com autenticação, a arquitetura
+      do sítio prevê essa evolução — ver a secção «Evolução futura» em
+      <code>docs/arquitetura.md</code>. Enquanto não existir, esta página mantém as
+      ligações antigas funcionais e explica a situação a quem chegue aqui.
+    </p>
+  </Aviso>
+</Pagina>
+
+<style>
+  .opcoes { margin: var(--e-6) 0; }
+  .opcoes h2 { font-size: var(--t-xl); }
+  .opcoes .suave { margin: var(--e-3) 0 var(--e-5); max-width: 64ch; }
+  .lista-opcoes { list-style: none; padding: 0; display: grid; gap: var(--e-3); }
+  @media (min-width: 700px) { .lista-opcoes { grid-template-columns: repeat(3, 1fr); } }
+  .lista-opcoes li {
+    display: flex; gap: var(--e-3); padding: var(--e-4);
+    border: 1px solid var(--borda); border-radius: var(--raio-lg); background: var(--superficie);
+  }
+  .lista-opcoes :global(svg) { width: 1.3rem; height: 1.3rem; color: var(--accent); flex: none; margin-top: 0.15rem; }
+  .lista-opcoes strong { display: block; font-size: var(--t-sm); }
+  .lista-opcoes p { font-size: var(--t-sm); color: var(--texto-suave); margin-top: 0.2rem; word-break: break-word; }
+  /* Cada parágrafo contém só uma ligação: é essa a área de toque. */
+  .lista-opcoes p a { display: inline-block; padding-block: 0.45rem; }
+</style>

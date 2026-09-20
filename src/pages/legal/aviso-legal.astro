@@ -1,0 +1,36 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Aviso from '@components/Aviso.astro';
+import { getEntry, render } from 'astro:content';
+
+const entrada = await getEntry('paginas', 'aviso-legal');
+if (!entrada) throw new Error('Falta src/content/paginas/aviso-legal.md');
+const { Content } = await render(entrada);
+---
+<Pagina
+  titulo="Aviso legal"
+  descricao="Aviso legal publicado pela ARLA relativo ao envio de mensagens de correio eletrónico."
+  sobretitulo="Informação legal"
+  migalhas={[{ rotulo: 'Aviso legal' }]}
+  largura="estreito"
+>
+  <Aviso tipo="info" titulo="Texto reproduzido sem alterações">
+    <p>
+      O texto abaixo é o aviso legal tal como foi publicado pela ARLA no sítio anterior.
+      Não foi reescrito nem atualizado.
+    </p>
+  </Aviso>
+
+  <div class="prosa">
+    <Content />
+  </div>
+
+  <nav class="outras-legais">
+    <a class="btn btn--contorno" href="/legal/privacidade/">Política de privacidade</a>
+    <a class="btn btn--contorno" href="/legal/cookies/">Política de cookies</a>
+  </nav>
+</Pagina>
+
+<style>
+  .outras-legais { display: flex; flex-wrap: wrap; gap: var(--e-3); margin-top: var(--e-7); padding-top: var(--e-5); border-top: 1px solid var(--borda); }
+</style>

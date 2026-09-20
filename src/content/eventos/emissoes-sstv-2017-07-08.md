@@ -1,0 +1,47 @@
+---
+titulo: "Emissões em SSTV 08/07/2017"
+resumo: "O período de emissões em SSTV (tradicional) decorrerá amanhã, Sábado, 08/07/2017 entre as 21:30 e as 00:00 (hora de Portugal continental)."
+data: "2017-07-11"
+atualizado: "2018-05-26"
+categoria: "SSTV"
+etiquetas:
+  - "SSTV"
+  - "VHF"
+  - "CQ0VARB"
+historico: false
+destaque: false
+urlAntigo: "/site/2017/07/11/emissoes-em-sstv-08072017/"
+inicio: "2017-07-08"
+tipo: "atividade"
+---
+
+Prezados Colegas,
+
+O período de emissões em SSTV (tradicional) decorrerá amanhã, Sábado, 08/07/2017  
+entre as 21:30 e as 00:00 (hora de Portugal continental).
+
+Relembramos as principais características da estação repetidora em VHF;
+
+Canal: RV59
+
+Indicativo: CQ0VARB
+
+Frequência de Emissão: 145,7375 MHz
+
+Frequência de recepção: 145,1375 MHz
+
+Tom de Protecção: 74,4 Hz
+
+Designação de Emissão: 11K0F3E (FM de banda estreita)
+
+Quadrícula (QTH Locator): IM58ml  
+Localização: Serra da Arrábida, Setúbal
+
+Esta emissão poderá ser efectuada no formato SSTV (tradicional) com  
+recurso ao programa MMSTV (ou outro programa similar).
+
+Não deixe de participar nesta actividade mensal, agora em VHF,  
+organizada pela Associação de Radioamadores do Litoral Alentejano
+
+73’s de Miguel Andrade ( CT1ETL )  
+Promotor e Responsável pela Actividade para 2017 e 2018

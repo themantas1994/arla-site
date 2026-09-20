@@ -1,0 +1,145 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import { noticias, tecnica, eventos } from '@lib/conteudo';
+import { dataCurta } from '@lib/sitio';
+
+type Item = { tipo: string; href: string; titulo: string; data: Date; categoria: string; historico: boolean };
+
+const itens: Item[] = [
+  ...(await noticias()).map((n) => ({
+    tipo: 'Notícia', href: `/noticias/${n.id}/`, titulo: n.data.titulo,
+    data: n.data.data, categoria: n.data.categoria, historico: n.data.historico,
+  })),
+  ...(await tecnica()).map((a) => ({
+    tipo: 'Artigo técnico', href: `/tecnica/${a.id}/`, titulo: a.data.titulo,
+    data: a.data.data, categoria: a.data.categoria, historico: a.data.historico,
+  })),
+  ...(await eventos()).map((e) => ({
+    tipo: 'Evento', href: `/eventos/${e.id}/`, titulo: e.data.titulo,
+    data: e.data.inicio, categoria: e.data.categoria, historico: false,
+  })),
+].sort((a, b) => b.data.getTime() - a.data.getTime());
+
+const porAno = new Map<number, Item[]>();
+for (const i of itens) {
+  const ano = i.data.getUTCFullYear();
+  if (!porAno.has(ano)) porAno.set(ano, []);
+  porAno.get(ano)!.push(i);
+}
+const anos = [...porAno.keys()].sort((a, b) => b - a);
+---
+<Pagina
+  titulo="Arquivo"
+  descricao="Todo o conteúdo publicado pela ARLA — notícias, eventos e artigos técnicos — organizado por ano. Nada é removido."
+  sobretitulo="Tudo o que publicámos"
+  migalhas={[{ rotulo: 'Arquivo' }]}
+>
+  <div slot="cabecalho-extra" class="resumo-arquivo">
+    <p><strong>{itens.length}</strong> conteúdos entre {anos[anos.length - 1]} e {anos[0]}</p>
+    <nav class="anos" aria-label="Saltar para um ano">
+      {anos.map((a) => <a class="etiqueta" href={`#ano-${a}`}>{a}</a>)}
+    </nav>
+  </div>
+
+  <div class="ferramentas nao-imprimir">
+    <div class="campo campo--pesquisa">
+      <label class="invisivel" for="filtro-arquivo">Filtrar o arquivo</label>
+      <Icone nome="pesquisa" class="campo__icone" />
+      <input type="search" id="filtro-arquivo" placeholder="Filtrar por título ou categoria…" autocomplete="off" data-filtro-arquivo />
+    </div>
+    <p class="contagem" data-contagem-arquivo aria-live="polite">{itens.length} conteúdos</p>
+  </div>
+
+  {anos.map((ano) => (
+    <section class="ano" aria-labelledby={`ano-${ano}`} data-ano>
+      <h2 class="ano__titulo" id={`ano-${ano}`}>
+        {ano} <span class="fraco">({porAno.get(ano)!.length})</span>
+      </h2>
+      <ul class="lista">
+        {porAno.get(ano)!.map((i) => (
+          <li data-item data-texto={`${i.titulo} ${i.categoria} ${i.tipo}`.toLowerCase()}>
+            <a href={i.href}>
+              <time datetime={i.data.toISOString().slice(0, 10)} class="mono lista__data">{dataCurta(i.data)}</time>
+              <span class={`lista__tipo lista__tipo--${i.tipo.split(' ')[0].toLowerCase()}`}>{i.tipo}</span>
+              <span class="lista__titulo">{i.titulo}</span>
+              {i.historico && <span class="etiqueta lista__arquivo">Arquivo</span>}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+
+  <p class="vazio" data-vazio-arquivo hidden>Nenhum conteúdo corresponde a este filtro.</p>
+</Pagina>
+
+<style>
+  .resumo-arquivo { margin-top: var(--e-5); display: flex; flex-direction: column; gap: var(--e-3); }
+  .resumo-arquivo p { font-size: var(--t-sm); color: var(--texto-fraco); }
+  .resumo-arquivo strong { color: var(--accent); font-size: var(--t-lg); }
+  .anos { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+  .anos .etiqueta { font-variant-numeric: tabular-nums; min-height: 2.25rem; padding: 0.3rem 0.7rem; }
+
+  .ferramentas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin-bottom: var(--e-6); }
+  .campo--pesquisa { position: relative; flex: 1 1 18rem; }
+  .campo--pesquisa :global(.campo__icone) {
+    position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%);
+    width: 1.05rem; height: 1.05rem; color: var(--texto-fraco); pointer-events: none;
+  }
+  .campo--pesquisa input { padding-left: 2.5rem; }
+  .contagem { font-size: var(--t-sm); color: var(--texto-fraco); margin-left: auto; }
+
+  .ano + .ano { margin-top: var(--e-7); }
+  .ano__titulo {
+    font-size: var(--t-xl); color: var(--accent); scroll-margin-top: 6rem;
+    padding-bottom: var(--e-2); margin-bottom: var(--e-3);
+    border-bottom: 1px solid var(--borda); font-variant-numeric: tabular-nums;
+  }
+  .ano__titulo .fraco { font-size: var(--t-sm); font-weight: 400; }
+
+  .lista { list-style: none; padding: 0; }
+  .lista li + li { border-top: 1px solid var(--borda); }
+  .lista a {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.35rem var(--e-3);
+    padding: 0.75rem 0.25rem; min-height: 2.75rem;
+    text-decoration: none; color: var(--texto);
+  }
+  .lista a:hover { color: var(--accent); }
+  .lista a:hover .lista__titulo { text-decoration: underline; }
+  .lista__data { font-size: var(--t-xs); color: var(--texto-fraco); min-width: 5.5rem; flex: none; }
+  .lista__tipo {
+    font-size: 0.66rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 0.12rem 0.5rem; border-radius: 999px; flex: none;
+    border: 1px solid var(--borda-forte); color: var(--texto-fraco);
+  }
+  .lista__tipo--evento { color: var(--sinal); border-color: color-mix(in srgb, var(--sinal) 40%, transparent); }
+  .lista__tipo--artigo { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+  .lista__titulo { flex: 1 1 14rem; font-size: var(--t-sm); font-weight: 500; }
+  .lista__arquivo { color: var(--alerta); border-color: color-mix(in srgb, var(--alerta) 40%, transparent); }
+</style>
+
+<script>
+  const campo = document.querySelector<HTMLInputElement>('[data-filtro-arquivo]');
+  const itens = Array.from(document.querySelectorAll<HTMLElement>('[data-item]'));
+  const anos = Array.from(document.querySelectorAll<HTMLElement>('[data-ano]'));
+  const contagem = document.querySelector<HTMLElement>('[data-contagem-arquivo]');
+  const vazio = document.querySelector<HTMLElement>('[data-vazio-arquivo]');
+  const semAcentos = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+  campo?.addEventListener('input', () => {
+    const termo = semAcentos(campo.value.trim());
+    let n = 0;
+    for (const i of itens) {
+      const mostrar = termo === '' || semAcentos(i.dataset.texto ?? '').includes(termo);
+      i.hidden = !mostrar;
+      if (mostrar) n++;
+    }
+    // Esconde os anos que ficaram sem resultados.
+    for (const a of anos) {
+      a.hidden = !Array.from(a.querySelectorAll<HTMLElement>('[data-item]')).some((i) => !i.hidden);
+    }
+    if (contagem) contagem.textContent = n === 1 ? '1 conteúdo' : `${n} conteúdos`;
+    if (vazio) vazio.hidden = n > 0;
+  });
+</script>

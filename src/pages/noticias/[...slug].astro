@@ -1,0 +1,78 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Artigo from '@layouts/Artigo.astro';
+import { render } from 'astro:content';
+import { noticias, relacionados, textoSimples } from '@lib/conteudo';
+import { SITIO } from '@lib/sitio';
+
+export const getStaticPaths = (async () => {
+  const { noticias } = await import('@lib/conteudo');
+  const todas = await noticias();
+  return todas.map((n, i) => ({
+    params: { slug: n.id },
+    // As notícias estão por data decrescente: «anterior» é a mais antiga.
+    props: { entrada: n, seguinte: todas[i - 1], anterior: todas[i + 1] },
+  }));
+}) satisfies GetStaticPaths;
+
+const { entrada, anterior, seguinte } = Astro.props;
+const { Content, headings } = await render(entrada);
+const d = entrada.data;
+
+const todas = await noticias();
+const proximos = relacionados(entrada, todas, 3);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'NewsArticle',
+  headline: d.titulo,
+  description: d.resumo,
+  datePublished: d.data.toISOString(),
+  dateModified: (d.atualizado ?? d.data).toISOString(),
+  inLanguage: 'pt-PT',
+  articleSection: d.categoria,
+  keywords: d.etiquetas.join(', '),
+  ...(d.imagem ? { image: new URL(d.imagem, Astro.site).href } : {}),
+  author: d.autor
+    ? { '@type': 'Person', name: d.indicativo ? `${d.autor} (${d.indicativo})` : d.autor }
+    : { '@type': 'Organization', name: SITIO.nomeCompleto },
+  publisher: { '@id': new URL('/#organizacao', Astro.site).href },
+  mainEntityOfPage: new URL(Astro.url.pathname, Astro.site).href,
+};
+---
+<Artigo
+  titulo={d.titulo}
+  resumo={d.resumo}
+  data={d.data}
+  atualizado={d.atualizado}
+  autor={d.autor}
+  indicativo={d.indicativo}
+  categoria={d.categoria}
+  etiquetas={d.etiquetas}
+  imagem={d.imagem}
+  imagemAlt={d.imagemAlt}
+  historico={d.historico}
+  notaHistorica={d.notaHistorica}
+  titulos={headings}
+  mostrarIndice={false}
+  corpoTexto={textoSimples(entrada.body ?? '')}
+  migalhas={[
+    { rotulo: 'Notícias', href: '/noticias/' },
+    { rotulo: d.categoria, href: `/noticias/categoria/${d.categoria.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/` },
+    { rotulo: d.titulo },
+  ]}
+  anterior={anterior ? { href: `/noticias/${anterior.id}/`, titulo: anterior.data.titulo } : undefined}
+  seguinte={seguinte ? { href: `/noticias/${seguinte.id}/`, titulo: seguinte.data.titulo } : undefined}
+  relacionados={proximos.map((r) => ({
+    href: `/noticias/${r.id}/`,
+    titulo: r.data.titulo,
+    resumo: r.data.resumo,
+    data: r.data.data,
+    categoria: r.data.categoria,
+    imagem: r.data.imagem,
+  }))}
+  jsonLd={jsonLd}
+  tipoArtigo="noticia"
+>
+  <Content />
+</Artigo>

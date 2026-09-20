@@ -1,0 +1,32 @@
+{
+  "mandato": "2022-2023",
+  "notaMandato": "Composição em vigor após a alteração ocorrida a 26/03/2022, conforme publicado pela ARLA.",
+  "orgaos": [
+    {
+      "nome": "Mesa da Assembleia-Geral",
+      "membros": [
+        { "cargo": "Presidente", "nome": "Miguel Andrade", "indicativo": "CT1ETL", "numeroAssociado": 5 },
+        { "cargo": "Vice-Presidente", "nome": "Jorge Guimarães", "indicativo": "CT1FKF", "numeroAssociado": 44 },
+        { "cargo": "Secretário", "nome": "João Pires", "indicativo": "CT1EYQ", "numeroAssociado": 2 }
+      ]
+    },
+    {
+      "nome": "Direção",
+      "membros": [
+        { "cargo": "Presidente", "nome": "Carlos Mourato", "indicativo": "CT4RK", "numeroAssociado": 34 },
+        { "cargo": "Vice-Presidente", "nome": "Sérgio Matias", "indicativo": "CT1HMN", "numeroAssociado": 21 },
+        { "cargo": "Secretário-Geral", "nome": "Paulo Martins", "indicativo": "CS7AGH", "numeroAssociado": 100 },
+        { "cargo": "Tesoureiro", "nome": "António Vilela", "indicativo": "CT7ASZ", "numeroAssociado": 87 },
+        { "cargo": "Vogal", "nome": "Jorge Santos", "indicativo": "CT1CVT", "numeroAssociado": 107 }
+      ]
+    },
+    {
+      "nome": "Conselho Fiscal",
+      "membros": [
+        { "cargo": "Presidente", "nome": "João Lázaro", "indicativo": "CT2GQL", "numeroAssociado": 14 },
+        { "cargo": "Secretário", "nome": "Fernando Pereira", "indicativo": "CT2GXB", "numeroAssociado": 11 },
+        { "cargo": "Relator", "nome": "João Pastorinho", "indicativo": "CS7AMP", "numeroAssociado": 108 }
+      ]
+    }
+  ]
+}

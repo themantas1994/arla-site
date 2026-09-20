@@ -1,0 +1,76 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import CartaoArtigo from '@components/CartaoArtigo.astro';
+import Paginacao from '@components/Paginacao.astro';
+import EstadoVazio from '@components/EstadoVazio.astro';
+import Icone from '@components/Icone.astro';
+import { noticias, slugCategoria } from '@lib/conteudo';
+
+const todas = await noticias();
+const POR_PAGINA = 12;
+const pagina = todas.slice(0, POR_PAGINA);
+const totalPaginas = Math.ceil(todas.length / POR_PAGINA);
+
+const categorias = [...new Set(todas.map((n) => n.data.categoria))].sort((a, b) =>
+  a.localeCompare(b, 'pt-PT'),
+);
+const contagem = (c: string) => todas.filter((n) => n.data.categoria === c).length;
+---
+<Pagina
+  titulo="Notícias"
+  descricao="Comunicados, notícias e atualidade da Associação de Radioamadores do Litoral Alentejano — da rede de repetidores à legislação do serviço de amador."
+  sobretitulo="Atualidade"
+  migalhas={[{ rotulo: 'Notícias' }]}
+>
+  <nav slot="cabecalho-extra" class="categorias" aria-label="Filtrar notícias por categoria">
+    <a class="etiqueta etiqueta--accent" href="/noticias/" aria-current="page">Todas ({todas.length})</a>
+    {categorias.map((c) => (
+      <a class="etiqueta" href={`/noticias/categoria/${slugCategoria(c)}/`}>{c} ({contagem(c)})</a>
+    ))}
+  </nav>
+
+  {pagina.length > 0 ? (
+    <>
+      <div class="grelha grelha--auto">
+        {pagina.map((n, i) => (
+          <CartaoArtigo
+            href={`/noticias/${n.id}/`}
+            titulo={n.data.titulo}
+            resumo={n.data.resumo}
+            data={n.data.data}
+            categoria={n.data.categoria}
+            imagem={n.data.imagem}
+            imagemAlt={n.data.imagemAlt}
+            historico={n.data.historico}
+          nivel={2}
+            prioritaria={i < 3}
+          />
+        ))}
+      </div>
+      <Paginacao
+        paginaAtual={1}
+        totalPaginas={totalPaginas}
+        urlSeguinte={totalPaginas > 1 ? '/noticias/pagina/2/' : undefined}
+        base="/noticias/"
+      />
+    </>
+  ) : (
+    <EstadoVazio titulo="Ainda não há notícias publicadas." icone="onda" />
+  )}
+
+  <aside class="atalhos-fim">
+    <a class="btn btn--contorno" href="/eventos/"><Icone nome="calendario" /> Eventos e atividades</a>
+    <a class="btn btn--contorno" href="/tecnica/"><Icone nome="ferramenta" /> Artigos técnicos</a>
+    <a class="btn btn--contorno" href="/arquivo/"><Icone nome="livro" /> Arquivo por ano</a>
+    <a class="btn btn--fantasma" href="/rss.xml"><Icone nome="onda" /> Feed RSS</a>
+  </aside>
+</Pagina>
+
+<style>
+  .categorias { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-5); }
+  .categorias .etiqueta { text-transform: none; letter-spacing: 0; font-weight: 600; padding: 0.35rem 0.75rem; min-height: 2.25rem; }
+  .atalhos-fim {
+    display: flex; flex-wrap: wrap; gap: var(--e-3);
+    margin-top: var(--e-7); padding-top: var(--e-5); border-top: 1px solid var(--borda);
+  }
+</style>

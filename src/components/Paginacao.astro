@@ -1,0 +1,95 @@
+---
+import Icone from './Icone.astro';
+interface Props {
+  paginaAtual: number;
+  totalPaginas: number;
+  urlAnterior?: string;
+  urlSeguinte?: string;
+  /** Função que gera o URL de cada página: (n) => '/noticias/pagina/2/' */
+  base: string;
+}
+const { paginaAtual, totalPaginas, urlAnterior, urlSeguinte, base } = Astro.props;
+const url = (n: number) => (n === 1 ? base : `${base}pagina/${n}/`);
+
+// Mostra no máximo 5 números, sempre com a primeira e a última.
+const numeros: (number | '…')[] = [];
+if (totalPaginas <= 7) {
+  for (let i = 1; i <= totalPaginas; i++) numeros.push(i);
+} else {
+  const inicio = Math.max(2, paginaAtual - 1);
+  const fim = Math.min(totalPaginas - 1, paginaAtual + 1);
+  numeros.push(1);
+  if (inicio > 2) numeros.push('…');
+  for (let i = inicio; i <= fim; i++) numeros.push(i);
+  if (fim < totalPaginas - 1) numeros.push('…');
+  numeros.push(totalPaginas);
+}
+---
+{totalPaginas > 1 && (
+  <nav class="paginacao" aria-label="Paginação">
+    <a
+      class="paginacao__seta"
+      href={urlAnterior}
+      aria-disabled={!urlAnterior ? 'true' : undefined}
+      tabindex={!urlAnterior ? -1 : undefined}
+      rel="prev"
+    >
+      <Icone nome="seta" class="rodar" /> <span>Anterior</span>
+    </a>
+
+    <ol class="paginacao__numeros">
+      {numeros.map((n) =>
+        n === '…' ? (
+          <li class="paginacao__reticencias" aria-hidden="true">…</li>
+        ) : (
+          <li>
+            <a href={url(n)} aria-current={n === paginaAtual ? 'page' : undefined} aria-label={`Página ${n}`}>
+              {n}
+            </a>
+          </li>
+        ),
+      )}
+    </ol>
+
+    <a
+      class="paginacao__seta"
+      href={urlSeguinte}
+      aria-disabled={!urlSeguinte ? 'true' : undefined}
+      tabindex={!urlSeguinte ? -1 : undefined}
+      rel="next"
+    >
+      <span>Seguinte</span> <Icone nome="seta" />
+    </a>
+  </nav>
+)}
+
+<style>
+  .paginacao {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: var(--e-3);
+    margin-top: var(--e-7); padding-top: var(--e-5);
+    border-top: 1px solid var(--borda);
+  }
+  .paginacao__seta {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    min-height: 2.75rem; padding: 0.5rem 0.9rem;
+    border: 1px solid var(--borda-forte); border-radius: var(--raio);
+    font-size: var(--t-sm); font-weight: 600; color: var(--texto); text-decoration: none;
+  }
+  .paginacao__seta:hover { border-color: var(--accent); color: var(--accent); }
+  .paginacao__seta[aria-disabled='true'] { opacity: 0.4; pointer-events: none; }
+  .paginacao__seta :global(svg) { width: 1rem; height: 1rem; }
+  .paginacao__seta :global(.rodar) { transform: rotate(180deg); }
+
+  .paginacao__numeros { display: flex; gap: 0.25rem; list-style: none; padding: 0; order: 3; width: 100%; justify-content: center; }
+  @media (min-width: 560px) { .paginacao__numeros { order: 0; width: auto; } }
+  .paginacao__numeros a {
+    display: grid; place-items: center;
+    min-width: 2.6rem; min-height: 2.6rem; padding: 0 0.5rem;
+    border-radius: var(--raio-sm); font-size: var(--t-sm); font-weight: 600;
+    color: var(--texto-suave); text-decoration: none;
+  }
+  .paginacao__numeros a:hover { background: var(--superficie-2); color: var(--texto); }
+  .paginacao__numeros a[aria-current='page'] { background: var(--accent); color: var(--accent-contraste); }
+  .paginacao__reticencias { display: grid; place-items: center; min-width: 1.6rem; color: var(--texto-fraco); }
+</style>

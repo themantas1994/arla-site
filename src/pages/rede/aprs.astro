@@ -1,0 +1,102 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import DistintivoEstado from '@components/DistintivoEstado.astro';
+import BotaoCopiar from '@components/BotaoCopiar.astro';
+import Icone from '@components/Icone.astro';
+import Aviso from '@components/Aviso.astro';
+import { getCollection } from 'astro:content';
+
+const todos = await getCollection('repetidores');
+const aprs = todos.filter((r) => r.data.filtros.includes('aprs'));
+---
+<Pagina
+  titulo="APRS"
+  descricao="Os digipeaters APRS da ARLA em 144.800 MHz, instalados em Aldeia dos Chãos (CQ0PLA) e Setúbal (CQ0PST)."
+  sobretitulo="Rede ARLA"
+  migalhas={[{ rotulo: 'Rede ARLA', href: '/rede/' }, { rotulo: 'APRS' }]}
+>
+  <p class="intro">
+    O APRS (<em>Automatic Packet Reporting System</em>) é um sistema de transmissão de dados
+    em AX.25 usado sobretudo para posição, telemetria e mensagens curtas. Na Região 1 da IARU
+    a frequência normalizada é <strong class="mono">144.800 MHz</strong>. A ARLA opera dois
+    digipeaters nessa frequência.
+  </p>
+
+  <ul class="grelha grelha--2 estacoes">
+    {aprs.map((r) => (
+      <li class="cartao estacao">
+        <div class="estacao__topo">
+          <div>
+            <p class="estacao__indicativo mono">{r.data.indicativo}</p>
+            <p class="estacao__local">
+              <Icone nome="local" /> {r.data.localizacao}
+              {r.data.quadricula && <span class="mono fraco"> · {r.data.quadricula}</span>}
+            </p>
+          </div>
+          <DistintivoEstado estado={r.data.estado} />
+        </div>
+        <p class="estacao__frequencia mono">
+          {r.data.frequenciaTx} <small>MHz</small>
+          <BotaoCopiar valor={r.data.frequenciaTx} rotulo={`Copiar frequência ${r.data.frequenciaTx} MHz`} />
+        </p>
+        <dl class="estacao__dados">
+          <div><dt>Banda</dt><dd>{r.data.banda}</dd></div>
+          <div><dt>Modo</dt><dd>{r.data.modo}</dd></div>
+          <div><dt>P.A.R.</dt><dd>{r.data.potencia ? `${r.data.potencia} W` : '—'}</dd></div>
+        </dl>
+      </li>
+    ))}
+  </ul>
+
+  <section class="explicacao" aria-labelledby="t-explicacao">
+    <h2 id="t-explicacao">Para que serve um digipeater</h2>
+    <p>
+      Um digipeater recebe as tramas APRS das estações ao seu alcance e retransmite-as,
+      alargando a cobertura da rede. Colocado num ponto alto, permite que estações móveis
+      ou portáteis de baixa potência sejam ouvidas a muito maior distância do que
+      conseguiriam em ligação direta.
+    </p>
+    <p>
+      As estações da ARLA estão em Aldeia dos Chãos, no ponto mais elevado do concelho de
+      Santiago do Cacém, e em Setúbal — os mesmos locais onde estão instalados vários dos
+      <a href="/rede/repetidores/">repetidores da associação</a>.
+    </p>
+  </section>
+
+  <Aviso tipo="tarefa" titulo="Nota para a direção">
+    <p>
+      Esta página apresenta apenas os dados de APRS publicados pela ARLA (indicativo,
+      localização, quadrícula, frequência e potência). Se a associação quiser acrescentar
+      informação sobre <em>paths</em> recomendados, iGates, cobertura verificada ou ligações
+      para serviços externos de acompanhamento, basta editar este conteúdo — ver
+      <code>docs/gestao-de-conteudos.md</code>.
+    </p>
+  </Aviso>
+</Pagina>
+
+<style>
+  .intro { font-size: var(--t-lg); color: var(--texto-suave); max-width: 64ch; margin-bottom: var(--e-6); }
+  .estacoes { list-style: none; padding: 0; }
+  .estacao { padding: var(--e-5); gap: var(--e-3); }
+  .estacao__topo { display: flex; align-items: start; justify-content: space-between; gap: var(--e-3); }
+  .estacao__indicativo { font-size: var(--t-xl); font-weight: 800; letter-spacing: 0.04em; }
+  .estacao__local { display: flex; align-items: center; gap: 0.3rem; font-size: var(--t-sm); color: var(--texto-suave); margin-top: 0.15rem; }
+  .estacao__local :global(svg) { width: 0.95rem; height: 0.95rem; color: var(--accent); }
+  .estacao__frequencia {
+    display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;
+    font-size: var(--t-2xl); font-weight: 700; color: var(--accent);
+    padding-block: var(--e-2);
+  }
+  .estacao__frequencia small { font-size: var(--t-sm); color: var(--texto-fraco); font-weight: 400; }
+  .estacao__dados {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--e-3);
+    padding-top: var(--e-3); border-top: 1px solid var(--borda);
+  }
+  .estacao__dados dt { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--texto-fraco); }
+  .estacao__dados dd { margin: 0.15rem 0 0; font-size: var(--t-sm); font-weight: 600; }
+
+  .explicacao { margin: var(--e-8) 0 var(--e-6); max-width: 68ch; }
+  .explicacao h2 { font-size: var(--t-xl); margin-bottom: var(--e-3); }
+  .explicacao p + p { margin-top: var(--e-3); }
+  .explicacao p { color: var(--texto-suave); }
+</style>

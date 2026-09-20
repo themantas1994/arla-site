@@ -1,0 +1,82 @@
+---
+import Icone from './Icone.astro';
+import { dataExtenso, tempoLeitura } from '@lib/sitio';
+
+interface Props {
+  href: string;
+  titulo: string;
+  resumo: string;
+  data: Date;
+  categoria?: string;
+  imagem?: string;
+  imagemAlt?: string;
+  autor?: string;
+  indicativo?: string;
+  historico?: boolean;
+  /** 'destaque' aumenta a imagem e o título; usado no primeiro cartão das listas. */
+  variante?: 'normal' | 'destaque' | 'compacto';
+  minutos?: number;
+  /** Carrega a imagem com prioridade (apenas para o cartão acima da dobra). */
+  prioritaria?: boolean;
+  /** Nível do título do cartão. Ajustar para manter a hierarquia da página. */
+  nivel?: 2 | 3 | 4;
+}
+const {
+  href, titulo, resumo, data, categoria, imagem, imagemAlt,
+  autor, indicativo, historico = false, variante = 'normal', minutos, prioritaria = false,
+  nivel = 3,
+} = Astro.props;
+const Titulo = `h${nivel}` as 'h2' | 'h3' | 'h4';
+---
+<article class={`cartao cartao-artigo cartao-artigo--${variante}`}>
+  {imagem && (
+    <div class="cartao__media">
+      <img
+        src={imagem}
+        alt={imagemAlt ?? ''}
+        loading={prioritaria ? 'eager' : 'lazy'}
+        decoding="async"
+        fetchpriority={prioritaria ? 'high' : 'auto'}
+        width={variante === 'destaque' ? 960 : 640}
+        height={variante === 'destaque' ? 540 : 360}
+      />
+    </div>
+  )}
+  <div class="cartao__corpo">
+    <div class="cartao__meta">
+      {categoria && <span class="etiqueta etiqueta--accent">{categoria}</span>}
+      <time datetime={data.toISOString().slice(0, 10)}>{dataExtenso(data)}</time>
+      {minutos && <span class="meta-leitura"><Icone nome="relogio" /> {minutos} min</span>}
+      {historico && <span class="etiqueta etiqueta--historico">Arquivo</span>}
+    </div>
+    <Titulo class="cartao__titulo"><a href={href}>{titulo}</a></Titulo>
+    {variante !== 'compacto' && <p class="cartao__resumo">{resumo}</p>}
+    {(autor || indicativo) && (
+      <p class="cartao__autor">
+        {autor}{autor && indicativo ? ' · ' : ''}{indicativo && <span class="mono">{indicativo}</span>}
+      </p>
+    )}
+    <p class="cartao__rodape">Ler mais <Icone nome="seta" /></p>
+  </div>
+</article>
+
+<style>
+  .cartao-artigo :global(.cartao__rodape) { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .cartao-artigo :global(.cartao__rodape svg) { width: 1em; height: 1em; transition: transform var(--transicao); }
+  .cartao-artigo:has(a:hover) :global(.cartao__rodape svg) { transform: translateX(3px); }
+  .cartao__autor { font-size: var(--t-xs); color: var(--texto-fraco); }
+  .meta-leitura { display: inline-flex; align-items: center; gap: 0.25rem; }
+  .meta-leitura :global(svg) { width: 0.85em; height: 0.85em; }
+  .etiqueta--historico { color: var(--alerta); border-color: color-mix(in srgb, var(--alerta) 40%, transparent); }
+
+  .cartao-artigo--destaque :global(.cartao__media) { aspect-ratio: 16 / 10; }
+  .cartao-artigo--destaque :global(.cartao__titulo) { font-size: var(--t-2xl); }
+  .cartao-artigo--destaque :global(.cartao__corpo) { padding: var(--e-6); }
+  @media (min-width: 880px) {
+    .cartao-artigo--destaque { display: grid; grid-template-columns: 1.15fr 1fr; align-items: stretch; }
+    .cartao-artigo--destaque :global(.cartao__media) { height: 100%; aspect-ratio: auto; min-height: 20rem; }
+  }
+  .cartao-artigo--compacto :global(.cartao__corpo) { padding: var(--e-4); gap: var(--e-2); }
+  .cartao-artigo--compacto :global(.cartao__titulo) { font-size: var(--t-base); }
+  .cartao-artigo--compacto :global(.cartao__rodape) { display: none; }
+</style>

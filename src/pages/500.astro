@@ -1,0 +1,41 @@
+---
+import Base from '@layouts/Base.astro';
+import FundoEspectro from '@components/FundoEspectro.astro';
+import Icone from '@components/Icone.astro';
+---
+<Base
+  titulo="Erro no servidor"
+  descricao="Ocorreu um erro inesperado ao servir esta página do sítio da ARLA. Tente novamente dentro de instantes ou volte à página inicial."
+  semIndexacao
+>
+  <section class="erro">
+    <FundoEspectro />
+    <div class="envolvente erro__interior">
+      <p class="erro__codigo mono" aria-hidden="true">500</p>
+      <h1>Perdemos o sinal por instantes</h1>
+      <p class="erro__texto">
+        Houve um erro do lado do servidor ao preparar esta página. Não é nada que tenha
+        feito — tente novamente daqui a pouco.
+      </p>
+      <div class="linha">
+        <a class="btn btn--principal" href="/">Voltar ao início</a>
+        <button class="btn btn--contorno" type="button" onclick="location.reload()">
+          <Icone nome="onda" /> Tentar de novo
+        </button>
+        <a class="btn btn--fantasma" href="/contactos/">Comunicar o problema</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .erro { position: relative; isolation: isolate; overflow: hidden; min-height: 70dvh; display: grid; align-items: center; }
+  .erro__interior { position: relative; z-index: 1; padding-block: var(--e-9); max-width: 42rem; }
+  .erro__codigo {
+    font-size: clamp(4rem, 14vw, 8rem); font-weight: 800; line-height: 0.85;
+    color: transparent; -webkit-text-stroke: 2px var(--borda-forte); letter-spacing: 0.04em;
+  }
+  .erro h1 { margin-top: var(--e-4); font-size: var(--t-3xl); }
+  .erro__texto { margin-top: var(--e-4); font-size: var(--t-lg); color: var(--texto-suave); max-width: 52ch; }
+  .erro .linha { margin-top: var(--e-6); }
+</style>

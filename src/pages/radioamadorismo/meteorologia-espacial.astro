@@ -1,0 +1,128 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import Aviso from '@components/Aviso.astro';
+
+/**
+ * Painéis de dados solares gerados por terceiros (HamQSL e NOAA/SWPC).
+ * São imagens externas carregadas com lazy loading; se a fonte estiver
+ * indisponível, o texto alternativo e a ligação continuam a informar.
+ */
+const paineis = [
+  {
+    titulo: 'Condições solares e de propagação',
+    src: 'https://www.hamqsl.com/solar101pic.php',
+    alt: 'Painel com os índices solares e as condições de propagação por banda, gerado pelo HamQSL.',
+    fonte: 'HamQSL / N0NBH',
+    url: 'https://www.hamqsl.com/solar.html',
+    largura: 400,
+    altura: 300,
+  },
+  {
+    titulo: 'Condições em VHF',
+    src: 'https://www.hamqsl.com/solar101vhf.php',
+    alt: 'Painel com as condições de propagação em VHF (aurora, E esporádico e MUF), gerado pelo HamQSL.',
+    fonte: 'HamQSL / N0NBH',
+    url: 'https://www.hamqsl.com/solar.html',
+    largura: 300,
+    altura: 200,
+  },
+  {
+    titulo: 'Panorama de meteorologia espacial',
+    src: 'https://services.swpc.noaa.gov/images/swx-overview-small.gif',
+    alt: 'Panorama das últimas 24 horas de meteorologia espacial: fluxo de raios X, protões e índice Kp, do NOAA SWPC.',
+    fonte: 'NOAA / SWPC',
+    url: 'https://www.swpc.noaa.gov/',
+    largura: 425,
+    altura: 320,
+  },
+];
+
+const indices = [
+  { nome: 'SFI', descricao: 'Fluxo solar a 10,7 cm. Valores mais altos tendem a corresponder a melhor propagação nas bandas altas de HF.' },
+  { nome: 'Índice A / K', descricao: 'Medem a perturbação do campo geomagnético. Valores baixos são bom sinal; valores altos costumam degradar HF, sobretudo em rotas polares.' },
+  { nome: 'Manchas solares', descricao: 'Número de manchas visíveis, associado ao nível de atividade do ciclo solar.' },
+  { nome: 'MUF', descricao: 'Frequência máxima utilizável numa dada rota: acima dela, o sinal atravessa a ionosfera em vez de voltar à Terra.' },
+];
+---
+<Pagina
+  titulo="Meteorologia espacial"
+  descricao="Índices solares, vento solar e campo geomagnético — os dados que condicionam a propagação das ondas de rádio, com painéis do HamQSL e do NOAA SWPC."
+  sobretitulo="Radioamadorismo"
+  migalhas={[{ rotulo: 'Radioamadorismo', href: '/radioamadorismo/' }, { rotulo: 'Meteorologia espacial' }]}
+>
+  <p class="intro">
+    A propagação em HF, e em boa medida em VHF, depende do estado da ionosfera — que por sua
+    vez depende do Sol. Estes painéis, atualizados pelas respetivas fontes, dão uma leitura
+    rápida das condições no momento.
+  </p>
+
+  <div class="grelha grelha--auto paineis">
+    {paineis.map((p) => (
+      <figure class="cartao painel">
+        <h2 class="painel__titulo">{p.titulo}</h2>
+        <div class="painel__imagem">
+          <img
+            src={p.src}
+            alt={p.alt}
+            width={p.largura}
+            height={p.altura}
+            loading="lazy"
+            decoding="async"
+            referrerpolicy="no-referrer"
+          />
+        </div>
+        <figcaption>
+          Fonte: <a href={p.url} rel="noopener noreferrer" target="_blank">{p.fonte} <Icone nome="externo" /></a>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+
+  <section class="glossario" aria-labelledby="t-glossario">
+    <h2 id="t-glossario">Como ler estes números</h2>
+    <dl>
+      {indices.map((i) => (
+        <div>
+          <dt>{i.nome}</dt>
+          <dd>{i.descricao}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <Aviso tipo="info" titulo="Dados de terceiros">
+    <p>
+      Os painéis são gerados e mantidos pelo HamQSL (N0NBH) e pelo Space Weather Prediction
+      Center do NOAA. A ARLA apenas os apresenta; se alguma imagem não carregar, é porque a
+      fonte está temporariamente indisponível. As páginas originais estão ligadas em cada painel.
+    </p>
+  </Aviso>
+</Pagina>
+
+<style>
+  .intro { font-size: var(--t-lg); color: var(--texto-suave); max-width: 66ch; margin-bottom: var(--e-6); }
+  .paineis { align-items: start; }
+  .painel { padding: var(--e-4); gap: var(--e-3); margin: 0; }
+  .painel__titulo { font-size: var(--t-base); }
+  .painel__imagem {
+    background: #fff;
+    border-radius: var(--raio);
+    border: 1px solid var(--borda);
+    padding: var(--e-2);
+    display: grid;
+    place-items: center;
+    min-height: 8rem;
+  }
+  .painel__imagem img { max-width: 100%; height: auto; }
+  .painel figcaption { font-size: var(--t-xs); color: var(--texto-fraco); }
+  .painel figcaption a { display: inline-flex; align-items: center; gap: 0.25rem; }
+  .painel figcaption :global(svg) { width: 0.85em; height: 0.85em; }
+
+  .glossario { margin: var(--e-8) 0 var(--e-6); }
+  .glossario h2 { font-size: var(--t-xl); margin-bottom: var(--e-4); }
+  .glossario dl { display: grid; gap: var(--e-4); }
+  @media (min-width: 760px) { .glossario dl { grid-template-columns: 1fr 1fr; } }
+  .glossario dt { font-weight: 700; color: var(--accent); }
+  .glossario dd { margin: 0.2rem 0 0; font-size: var(--t-sm); color: var(--texto-suave); }
+</style>

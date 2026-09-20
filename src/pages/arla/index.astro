@@ -1,0 +1,84 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import { getEntry, render } from 'astro:content';
+import { SITIO } from '@lib/sitio';
+
+const pagina = await getEntry('paginas', 'a-arla');
+if (!pagina) throw new Error('Falta o conteúdo src/content/paginas/a-arla.md');
+const { Content, headings } = await render(pagina);
+
+const seccoes = [
+  { rotulo: 'História', href: '/arla/historia/', icone: 'relogio', texto: 'A cronologia da associação desde a primeira reunião, em 1999.' },
+  { rotulo: 'Quem somos', href: '/arla/quem-somos/', icone: 'pessoas', texto: 'Os associados da ARLA, com número e indicativo.' },
+  { rotulo: 'Órgãos Sociais', href: '/arla/orgaos-sociais/', icone: 'escudo', texto: 'Mesa da Assembleia-Geral, Direção e Conselho Fiscal.' },
+  { rotulo: 'Direção Técnica', href: '/arla/direcao-tecnica/', icone: 'ferramenta', texto: 'Quem mantém repetidores, balizas, energia e sistemas.' },
+  { rotulo: 'Ser associado/a', href: '/arla/ser-associado/', icone: 'estrela', texto: 'Como aderir, passo a passo.' },
+  { rotulo: 'Quotização', href: '/arla/quotizacao/', icone: 'documento', texto: 'Valor da quota, IBAN e envio do comprovativo.' },
+];
+---
+<Pagina
+  titulo="A ARLA"
+  descricao="A Associação de Radioamadores do Litoral Alentejano: fins e objetivos fixados nos Estatutos, área geográfica de implantação e como nos organizamos."
+  sobretitulo="A associação"
+  migalhas={[{ rotulo: 'ARLA', href: '/arla/' }]}
+  largura="estreito"
+>
+  <div class="prosa">
+    <Content />
+  </div>
+
+  <section class="sub-seccoes" aria-labelledby="t-sub">
+    <h2 id="t-sub">Saber mais</h2>
+    <ul class="grelha grelha--auto-sm">
+      {seccoes.map((s) => (
+        <li class="cartao sub-cartao">
+          <Icone nome={s.icone as any} />
+          <h3><a href={s.href}>{s.rotulo}</a></h3>
+          <p>{s.texto}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <aside class="caixa-morada">
+    <h2>Onde estamos</h2>
+    <address>
+      {SITIO.nomeCompleto}<br />
+      {SITIO.morada.linha1} {SITIO.morada.linha2}<br />
+      {SITIO.morada.codigoPostal} {SITIO.morada.localidade}
+    </address>
+    <p class="suave">
+      Área de intervenção: distrito de Setúbal, com sede nos concelhos do Litoral Alentejano
+      ({SITIO.areaGeografica.join(', ')}). Qualquer pessoa se pode associar,
+      independentemente de onde resida.
+    </p>
+    <a class="btn btn--contorno btn--pequeno" href="/contactos/">
+      <Icone nome="local" /> Contactos e mapa
+    </a>
+  </aside>
+</Pagina>
+
+<style>
+  .sub-seccoes { margin-top: var(--e-8); }
+  .sub-seccoes h2 { margin-bottom: var(--e-5); }
+  .sub-seccoes ul { list-style: none; padding: 0; }
+  .sub-cartao { padding: var(--e-4); gap: var(--e-2); }
+  .sub-cartao > :global(svg) { width: 1.6rem; height: 1.6rem; color: var(--accent); }
+  .sub-cartao h3 { font-size: var(--t-base); }
+  .sub-cartao h3 a { color: inherit; text-decoration: none; }
+  .sub-cartao h3 a::after { content: ''; position: absolute; inset: 0; }
+  .sub-cartao h3 a:hover { color: var(--accent); }
+  .sub-cartao p { font-size: var(--t-sm); color: var(--texto-suave); }
+
+  .caixa-morada {
+    margin-top: var(--e-7);
+    padding: var(--e-5);
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio-lg);
+  }
+  .caixa-morada h2 { font-size: var(--t-lg); }
+  .caixa-morada address { font-style: normal; margin-top: var(--e-3); line-height: 1.7; color: var(--texto-suave); }
+  .caixa-morada .suave { margin: var(--e-3) 0 var(--e-4); font-size: var(--t-sm); }
+</style>

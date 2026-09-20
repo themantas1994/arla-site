@@ -1,0 +1,410 @@
+---
+import Base from '@layouts/Base.astro';
+import Heroi from '@components/Heroi.astro';
+import Icone from '@components/Icone.astro';
+import CartaoArtigo from '@components/CartaoArtigo.astro';
+import CartaoEvento from '@components/CartaoEvento.astro';
+import TabelaRepetidores from '@components/TabelaRepetidores.astro';
+import EstadoVazio from '@components/EstadoVazio.astro';
+import Mapa from '@components/Mapa.astro';
+import { getCollection } from 'astro:content';
+import { noticias, tecnica, eventosFuturos, eventosPassados } from '@lib/conteudo';
+import { SITIO, email, emailVisivel } from '@lib/sitio';
+
+const ultimasNoticias = (await noticias()).slice(0, 4);
+const artigosTecnicos = (await tecnica()).slice(0, 3);
+const proximos = (await eventosFuturos()).slice(0, 3);
+const recentes = (await eventosPassados()).slice(0, 3);
+const repetidores = await getCollection('repetidores');
+const balizas = await getCollection('balizas');
+
+const destaque = ultimasNoticias[0];
+const restantes = ultimasNoticias.slice(1);
+
+const estatisticas = [
+  { valor: String(repetidores.length), rotulo: 'Repetidores' },
+  { valor: String(balizas.length), rotulo: 'Balizas' },
+  { valor: '2000', rotulo: 'Fundada em' },
+  { valor: SITIO.quadricula, rotulo: 'Quadrícula' },
+];
+
+const atalhos = [
+  { rotulo: 'Repetidores', href: '/rede/repetidores/', icone: 'repetidor', texto: 'VHF, UHF, DMR e D-STAR com frequências, tons e estado.' },
+  { rotulo: 'Balizas', href: '/rede/balizas/', icone: 'antena', texto: 'CS5BLA em 50, 144, 432 e 1296 MHz.' },
+  { rotulo: 'APRS', href: '/rede/aprs/', icone: 'rede', texto: 'Digipeaters CQ0PLA e CQ0PST em 144.800 MHz.' },
+  { rotulo: 'CS5ARLA', href: '/rede/cs5arla/', icone: 'onda', texto: 'A estação de uso coletivo da associação.' },
+  { rotulo: 'Satélites e QO-100', href: '/radioamadorismo/satelites/', icone: 'satelite', texto: 'Receção, modos digitais e estação portátil.' },
+  { rotulo: 'Artigos técnicos', href: '/tecnica/', icone: 'ferramenta', texto: 'Micro-ondas, EME, SSTV e experimentação.' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: `ARLA — ${SITIO.nomeCompleto}`,
+  url: new URL('/', Astro.site).href,
+  inLanguage: 'pt-PT',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: new URL('/pesquisa/?q={search_term_string}', Astro.site).href },
+    'query-input': 'required name=search_term_string',
+  },
+};
+---
+<Base
+  titulo="ARLA"
+  descricao={`${SITIO.nomeCompleto}: repetidores, balizas, notícias, eventos e conteúdos técnicos de radioamadorismo no Litoral Alentejano.`}
+  jsonLd={jsonLd}
+>
+  <Heroi estatisticas={estatisticas} />
+
+  <!-- ------------------------------ Notícias ------------------------------ -->
+  <section class="seccao" aria-labelledby="t-noticias">
+    <div class="envolvente">
+      <div class="cabecalho-seccao">
+        <div>
+          <p class="sobretitulo">Atualidade</p>
+          <h2 id="t-noticias">Últimas notícias</h2>
+          <p>Comunicados, atividades e novidades da rede e da associação.</p>
+        </div>
+        <a class="btn btn--contorno" href="/noticias/">
+          Ver todas as notícias <Icone nome="seta" />
+        </a>
+      </div>
+
+      {destaque ? (
+        <div class="grelha-noticias">
+          <CartaoArtigo
+            href={`/noticias/${destaque.id}/`}
+            titulo={destaque.data.titulo}
+            resumo={destaque.data.resumo}
+            data={destaque.data.data}
+            categoria={destaque.data.categoria}
+            imagem={destaque.data.imagem}
+            imagemAlt={destaque.data.imagemAlt}
+            historico={destaque.data.historico}
+            variante="destaque"
+            prioritaria
+          />
+          <div class="grelha grelha--auto-sm grelha-noticias__resto">
+            {restantes.map((n) => (
+              <CartaoArtigo
+                href={`/noticias/${n.id}/`}
+                titulo={n.data.titulo}
+                resumo={n.data.resumo}
+                data={n.data.data}
+                categoria={n.data.categoria}
+                imagem={n.data.imagem}
+                imagemAlt={n.data.imagemAlt}
+                historico={n.data.historico}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <EstadoVazio titulo="Ainda não há notícias publicadas." icone="onda" />
+      )}
+    </div>
+  </section>
+
+  <!-- -------------------------- Acesso rápido ----------------------------- -->
+  <section class="seccao seccao--alt" aria-labelledby="t-atalhos">
+    <div class="envolvente">
+      <div class="cabecalho-seccao">
+        <div>
+          <p class="sobretitulo">Para radioamadores</p>
+          <h2 id="t-atalhos">Acesso rápido</h2>
+          <p>O que procura com mais frequência, a um clique de distância.</p>
+        </div>
+      </div>
+      <ul class="grelha grelha--auto-sm atalhos">
+        {atalhos.map((a) => (
+          <li class="cartao atalho">
+            <Icone nome={a.icone as any} />
+            <h3><a href={a.href}>{a.rotulo}</a></h3>
+            <p>{a.texto}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ----------------------------- Repetidores ---------------------------- -->
+  <section class="seccao" aria-labelledby="t-rede">
+    <div class="envolvente">
+      <div class="cabecalho-seccao">
+        <div>
+          <p class="sobretitulo">Rede ARLA</p>
+          <h2 id="t-rede">Repetidores</h2>
+          <p>
+            {repetidores.length} estações repetidoras em VHF e UHF, analógicas e digitais,
+            em Aldeia dos Chãos, Serra da Arrábida e Setúbal.
+          </p>
+        </div>
+        <a class="btn btn--contorno" href="/rede/repetidores/">
+          Diretório completo <Icone nome="seta" />
+        </a>
+      </div>
+      <TabelaRepetidores repetidores={repetidores} comFiltros={false} />
+      <p class="nota-rede">
+        <Icone nome="info" />
+        Dados publicados pela ARLA. Pode filtrar por banda e modo, copiar frequências
+        e ver as estações no <a href="/rede/mapa/">mapa da rede</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ------------------------------- Eventos ------------------------------ -->
+  <section class="seccao seccao--alt" aria-labelledby="t-eventos">
+    <div class="envolvente">
+      <div class="cabecalho-seccao">
+        <div>
+          <p class="sobretitulo">Agenda</p>
+          <h2 id="t-eventos">{proximos.length > 0 ? 'Próximos eventos' : 'Eventos e atividades'}</h2>
+          <p>Atividades, workshops e concursos organizados ou divulgados pela ARLA.</p>
+        </div>
+        <a class="btn btn--contorno" href="/eventos/">
+          Ver todos os eventos <Icone nome="seta" />
+        </a>
+      </div>
+
+      {proximos.length > 0 ? (
+        <div class="grelha grelha--2">
+          {proximos.map((e) => (
+            <CartaoEvento
+              href={`/eventos/${e.id}/`}
+              titulo={e.data.titulo}
+              resumo={e.data.resumo}
+              inicio={e.data.inicio}
+              fim={e.data.fim}
+              dataTexto={e.data.dataTexto}
+              local={e.data.local}
+              tipo={e.data.tipo}
+              cancelado={e.data.cancelado}
+            />
+          ))}
+        </div>
+      ) : (
+        <>
+          <EstadoVazio
+            titulo="Não existem eventos programados de momento."
+            descricao="Assim que houver novas atividades, são anunciadas aqui e nas notícias. Entretanto, fica o registo das últimas que realizámos."
+            icone="calendario"
+            accaoHref="/eventos/"
+            accaoRotulo="Ver o arquivo de eventos"
+          />
+          {recentes.length > 0 && (
+            <>
+              <h3 class="subtitulo-eventos">Realizaram-se recentemente</h3>
+              <div class="grelha grelha--2">
+                {recentes.map((e) => (
+                  <CartaoEvento
+                    href={`/eventos/${e.id}/`}
+                    titulo={e.data.titulo}
+                    resumo={e.data.resumo}
+                    inicio={e.data.inicio}
+                    fim={e.data.fim}
+                    dataTexto={e.data.dataTexto}
+                    local={e.data.local}
+                    tipo={e.data.tipo}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  </section>
+
+  <!-- ------------------------------ A ARLA -------------------------------- -->
+  <section class="seccao" aria-labelledby="t-arla">
+    <div class="envolvente duas-colunas">
+      <div>
+        <p class="sobretitulo">A associação</p>
+        <h2 id="t-arla">Uma associação técnica, aberta a quem ainda não é licenciado</h2>
+        <p class="texto-grande">
+          A ARLA é uma associação de carácter científico e técnico, apolítica e sem fins
+          lucrativos, com sede em Santiago do Cacém. Agrupa quem se dedica ao estudo e à
+          prática das radiocomunicações, representa os seus associados junto das entidades
+          oficiais e colabora com a Proteção Civil.
+        </p>
+        <p class="suave">
+          Não é preciso ser radioamador licenciado para se associar — as atividades da ARLA
+          são extensíveis a quem ainda não tem o Certificado de Amador Nacional.
+        </p>
+        <div class="linha">
+          <a class="btn btn--principal" href="/arla/">Conheça a ARLA</a>
+          <a class="btn btn--contorno" href="/arla/historia/">A nossa história</a>
+        </div>
+      </div>
+
+      <div class="grelha grelha--auto-sm">
+        {artigosTecnicos.map((a) => (
+          <CartaoArtigo
+            href={`/tecnica/${a.id}/`}
+            titulo={a.data.titulo}
+            resumo={a.data.resumo}
+            data={a.data.data}
+            categoria={a.data.categoria}
+            autor={a.data.autor}
+            indicativo={a.data.indicativo}
+            variante="compacto"
+          />
+        ))}
+        <a class="btn btn--fantasma" href="/tecnica/">
+          Todos os artigos técnicos <Icone nome="seta" />
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------------------------- Ser associado --------------------------- -->
+  <section class="seccao cta-associar" aria-labelledby="t-associar">
+    <div class="envolvente cta-associar__interior">
+      <div>
+        <p class="sobretitulo">Comunidade</p>
+        <h2 id="t-associar">Faça parte da comunidade ARLA</h2>
+        <p>
+          Ser associado/a dá-lhe acesso às atividades, formações e instalações da associação,
+          e apoia a manutenção dos repetidores e balizas que toda a comunidade usa.
+          A quota anual é de {SITIO.quotaAnual} e não há jóia de inscrição.
+        </p>
+        <ul class="cta-associar__lista">
+          <li><Icone nome="escudo" /> Sem jóia de inscrição</li>
+          <li><Icone nome="ferramenta" /> Formação e apoio técnico</li>
+          <li><Icone nome="pessoas" /> Aberta a não licenciados</li>
+        </ul>
+        <div class="linha">
+          <a class="btn btn--principal" href="/arla/ser-associado/">Ser associado/a</a>
+          <a class="btn btn--contorno" href="/arla/quotizacao/">Informação sobre quotas</a>
+        </div>
+      </div>
+      <div class="cta-associar__nota">
+        <Icone nome="estrela" />
+        <p>
+          Desde 2016, por deliberação da Assembleia-Geral, todas as senhoras e meninas
+          radioamadoras — ou em vias de o ser — estão isentas do pagamento de quotas.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------ Contactos ----------------------------- -->
+  <section class="seccao seccao--alt" aria-labelledby="t-contacto">
+    <div class="envolvente duas-colunas duas-colunas--equilibrado">
+      <div>
+        <p class="sobretitulo">Onde estamos</p>
+        <h2 id="t-contacto">Contactos</h2>
+        <address class="contacto-morada">
+          <strong>{SITIO.nomeCompleto}</strong><br />
+          {SITIO.morada.linha1}<br />
+          {SITIO.morada.linha2}<br />
+          {SITIO.morada.codigoPostal} {SITIO.morada.localidade}<br />
+          {SITIO.morada.pais}
+        </address>
+        <dl class="contacto-dados">
+          <div>
+            <dt>Correio eletrónico</dt>
+            <dd><a href={`mailto:${email()}`}>{emailVisivel()}</a></dd>
+          </div>
+          <div>
+            <dt>Quadrícula Maidenhead</dt>
+            <dd class="mono">{SITIO.quadricula}</dd>
+          </div>
+          <div>
+            <dt>Coordenadas</dt>
+            <dd class="mono">{SITIO.coordenadas.lat}, {SITIO.coordenadas.lon}</dd>
+          </div>
+        </dl>
+        <div class="linha">
+          <a class="btn btn--principal" href="/contactos/">Página de contactos</a>
+          {SITIO.redes.map((r) => (
+            <a class="btn btn--contorno" href={r.url} rel="noopener noreferrer" target="_blank">
+              <Icone nome={r.icone as any} /> {r.nome}
+            </a>
+          ))}
+        </div>
+      </div>
+      <Mapa
+        id="mapa-inicio"
+        rotulo="Mapa com a localização da sede da ARLA em Santiago do Cacém"
+        zoom={14}
+        altura="22rem"
+        centro={{ lat: SITIO.coordenadas.lat, lon: SITIO.coordenadas.lon }}
+        marcadores={[{
+          lat: SITIO.coordenadas.lat,
+          lon: SITIO.coordenadas.lon,
+          titulo: 'Sede da ARLA',
+          descricao: `${SITIO.morada.linha1}, ${SITIO.morada.codigoPostal} ${SITIO.morada.localidade}`,
+          tipo: 'sede',
+          origem: 'exata',
+        }]}
+      />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .grelha-noticias { display: grid; gap: var(--e-5); }
+  .grelha-noticias__resto { grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+
+  .atalhos { list-style: none; padding: 0; }
+  .atalho { padding: var(--e-5); gap: var(--e-2); }
+  .atalho > :global(svg) { width: 1.9rem; height: 1.9rem; color: var(--accent); margin-bottom: var(--e-2); }
+  .atalho h3 { font-size: var(--t-lg); }
+  .atalho h3 a { color: inherit; text-decoration: none; }
+  .atalho h3 a::after { content: ''; position: absolute; inset: 0; }
+  .atalho h3 a:hover { color: var(--accent); }
+  .atalho p { font-size: var(--t-sm); color: var(--texto-suave); }
+
+  .nota-rede {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-top: var(--e-4); font-size: var(--t-sm); color: var(--texto-fraco);
+  }
+  .nota-rede :global(svg) { width: 1.05rem; height: 1.05rem; color: var(--accent); flex: none; }
+
+  .subtitulo-eventos {
+    margin: var(--e-6) 0 var(--e-4);
+    font-size: var(--t-lg); color: var(--texto-suave);
+  }
+
+  .duas-colunas { display: grid; gap: var(--e-7); align-items: start; }
+  @media (min-width: 960px) {
+    .duas-colunas { grid-template-columns: 1fr 1fr; gap: var(--e-8); }
+    .duas-colunas--equilibrado { grid-template-columns: 0.9fr 1.1fr; }
+  }
+  .duas-colunas h2 { margin-top: var(--e-2); }
+  .texto-grande { margin-top: var(--e-4); font-size: var(--t-lg); color: var(--texto-suave); }
+  .duas-colunas .suave { margin-top: var(--e-4); }
+  .duas-colunas .linha { margin-top: var(--e-5); }
+
+  .cta-associar { background: var(--fundo-2); border-block: 1px solid var(--borda); }
+  .cta-associar__interior { display: grid; gap: var(--e-6); align-items: center; }
+  @media (min-width: 960px) { .cta-associar__interior { grid-template-columns: 1.4fr 1fr; gap: var(--e-8); } }
+  .cta-associar h2 { margin-top: var(--e-2); }
+  .cta-associar > div > div > p { margin-top: var(--e-4); font-size: var(--t-lg); color: var(--texto-suave); max-width: 56ch; }
+  .cta-associar__lista {
+    display: flex; flex-wrap: wrap; gap: var(--e-4);
+    margin-top: var(--e-5); font-size: var(--t-sm); color: var(--texto-suave);
+  }
+  .cta-associar__lista li { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .cta-associar__lista :global(svg) { width: 1.1rem; height: 1.1rem; color: var(--accent); }
+
+  .cta-associar__nota {
+    display: flex; gap: var(--e-3);
+    padding: var(--e-5);
+    background: color-mix(in srgb, var(--accent) 9%, var(--superficie));
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius: var(--raio-lg);
+  }
+  .cta-associar__nota :global(svg) { width: 1.5rem; height: 1.5rem; color: var(--accent); flex: none; }
+  .cta-associar__nota p { font-size: var(--t-sm); color: var(--texto-suave); }
+
+  .contacto-morada { font-style: normal; margin-top: var(--e-4); line-height: 1.8; color: var(--texto-suave); }
+  .contacto-morada strong { color: var(--texto); }
+  .contacto-dados { display: grid; gap: var(--e-3); margin-top: var(--e-5); }
+  .contacto-dados dt { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-fraco); }
+  .contacto-dados dd { margin: 0.2rem 0 0; font-size: var(--t-sm); color: var(--texto-suave); }
+  /* A ligação é o único conteúdo da linha, por isso é o alvo de toque: dá-se-lhe altura. */
+  .contacto-dados dd a { display: inline-block; padding-block: 0.45rem; }
+</style>

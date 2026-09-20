@@ -1,0 +1,48 @@
+---
+import Icone from './Icone.astro';
+import BotaoCopiar from './BotaoCopiar.astro';
+interface Props { titulo: string; url: string }
+const { titulo, url } = Astro.props;
+---
+<div class="partilhar nao-imprimir">
+  <span class="partilhar__rotulo">Partilhar</span>
+  <button type="button" class="btn btn--contorno btn--pequeno" data-partilhar data-titulo={titulo} data-url={url} hidden>
+    <Icone nome="partilhar" /> Partilhar
+  </button>
+  <a
+    class="btn btn--contorno btn--pequeno"
+    href={`mailto:?subject=${encodeURIComponent(titulo)}&body=${encodeURIComponent(url)}`}
+  >
+    <Icone nome="correio" /> E-mail
+  </a>
+  <BotaoCopiar valor={url} rotulo="Copiar endereço desta página" texto="Copiar ligação" />
+  <button type="button" class="btn btn--contorno btn--pequeno" data-imprimir>
+    <Icone nome="imprimir" /> Imprimir
+  </button>
+</div>
+
+<style>
+  .partilhar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
+  .partilhar__rotulo {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--texto-fraco); margin-right: 0.2rem;
+  }
+</style>
+
+<script>
+  // O botão nativo de partilha só aparece onde a API existe (sobretudo telemóveis).
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-partilhar]')) {
+    if (!navigator.share) continue;
+    b.hidden = false;
+    b.addEventListener('click', async () => {
+      try {
+        await navigator.share({ title: b.dataset.titulo, url: b.dataset.url });
+      } catch {
+        /* partilha cancelada pelo utilizador */
+      }
+    });
+  }
+  for (const b of document.querySelectorAll('[data-imprimir]')) {
+    b.addEventListener('click', () => window.print());
+  }
+</script>

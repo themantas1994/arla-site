@@ -1,0 +1,148 @@
+---
+import '@/styles/global.css';
+import Cabecalho from '@components/Cabecalho.astro';
+import Rodape from '@components/Rodape.astro';
+import { SITIO, email } from '@lib/sitio';
+
+export interface Props {
+  titulo: string;
+  descricao: string;
+  /** Caminho da imagem social (Open Graph). Absoluto ou relativo à raiz. */
+  imagem?: string;
+  tipo?: 'website' | 'article';
+  /** Dados estruturados JSON-LD adicionais desta página. */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Não indexar (páginas utilitárias, como a área reservada). */
+  semIndexacao?: boolean;
+  publicado?: Date;
+  modificado?: Date;
+  /** Excluir esta página do índice de pesquisa (páginas utilitárias). */
+  semPesquisa?: boolean;
+  /** Classe extra no <body>, para páginas com fundo próprio. */
+  classeCorpo?: string;
+}
+
+const {
+  titulo,
+  descricao,
+  imagem = '/imagens/icone-512.png',
+  tipo = 'website',
+  jsonLd,
+  semIndexacao = false,
+  publicado,
+  modificado,
+  semPesquisa = false,
+  classeCorpo,
+} = Astro.props;
+
+// Data mostrada nos resultados de pesquisa.
+const dataPesquisa = publicado
+  ? publicado.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })
+  : undefined;
+
+/**
+ * A descrição meta é truncada a ~160 caracteres, que é o que os motores de busca
+ * mostram. O resumo completo continua a ser usado nos cartões e na pesquisa.
+ */
+function descricaoMeta(texto: string): string {
+  const limpo = texto.replace(/\s+/g, ' ').trim();
+  if (limpo.length <= 160) return limpo;
+  const corte = limpo.slice(0, 157);
+  const espaco = corte.lastIndexOf(' ');
+  return (espaco > 100 ? corte.slice(0, espaco) : corte).replace(/[ ,;:.]+$/, '') + '…';
+}
+const descricaoCurta = descricaoMeta(descricao);
+
+const canonico = new URL(Astro.url.pathname, Astro.site).href;
+const imagemAbs = new URL(imagem, Astro.site).href;
+const tituloCompleto = titulo === SITIO.nome ? `${SITIO.nome} — ${SITIO.nomeCompleto}` : `${titulo} · ARLA`;
+
+const organizacao = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': new URL('/#organizacao', Astro.site).href,
+  name: SITIO.nomeCompleto,
+  alternateName: [SITIO.sigla, SITIO.indicativo],
+  url: new URL('/', Astro.site).href,
+  logo: new URL('/imagens/icone-512.png', Astro.site).href,
+  email: email(),
+  foundingDate: SITIO.fundacao,
+  description: SITIO.descricao,
+  sameAs: SITIO.redes.map((r) => r.url),
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: SITIO.morada.linha1,
+    postalCode: SITIO.morada.codigoPostal,
+    addressLocality: SITIO.morada.localidade,
+    addressCountry: 'PT',
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: SITIO.coordenadas.lat, longitude: SITIO.coordenadas.lon },
+};
+
+const blocos = [organizacao, ...(Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [])];
+---
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descricaoCurta} />
+    <link rel="canonical" href={canonico} />
+    {semIndexacao && <meta name="robots" content="noindex, follow" />}
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#070d14" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f9fb" media="(prefers-color-scheme: light)" />
+    <link rel="alternate" type="application/rss+xml" title="Notícias da ARLA" href="/rss.xml" />
+
+    <meta property="og:type" content={tipo} />
+    <meta property="og:site_name" content={`ARLA — ${SITIO.nomeCompleto}`} />
+    <meta property="og:locale" content="pt_PT" />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descricaoCurta} />
+    <meta property="og:url" content={canonico} />
+    <meta property="og:image" content={imagemAbs} />
+    {publicado && <meta property="article:published_time" content={publicado.toISOString()} />}
+    {modificado && <meta property="article:modified_time" content={modificado.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={titulo} />
+    <meta name="twitter:description" content={descricaoCurta} />
+    <meta name="twitter:image" content={imagemAbs} />
+
+    {/* Aplica o tema guardado antes da primeira pintura, evitando o salto de cor. */}
+    <script is:inline>
+      try {
+        const t = localStorage.getItem('arla-tema');
+        if (t === 'claro' || t === 'escuro') document.documentElement.dataset.tema = t;
+      } catch (e) {
+        /* armazenamento indisponível — fica a preferência do sistema */
+      }
+    </script>
+
+    <script type="application/ld+json" set:html={JSON.stringify(blocos)} is:inline />
+    <slot name="cabeca" />
+  </head>
+  <body class={classeCorpo}>
+    <a class="saltar-para-conteudo" href="#conteudo">Saltar para o conteúdo principal</a>
+    <div data-pagefind-ignore>
+      <Cabecalho />
+    </div>
+    <main
+      id="conteudo"
+      tabindex="-1"
+      data-pagefind-body={semIndexacao || semPesquisa ? undefined : true}
+      data-pagefind-meta={dataPesquisa ? `data:${dataPesquisa}` : undefined}
+    >
+      <slot />
+    </main>
+    <div data-pagefind-ignore>
+      <Rodape />
+    </div>
+    {/* Região viva usada para anunciar ações (cópia de frequências, filtros) a leitores de ecrã. */}
+    <div id="anuncio-acessibilidade" class="invisivel" role="status" aria-live="polite" data-pagefind-ignore></div>
+  </body>
+</html>

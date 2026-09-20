@@ -1,0 +1,111 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import Aviso from '@components/Aviso.astro';
+---
+<Pagina
+  titulo="Política de cookies"
+  descricao="Este sítio não utiliza cookies. Guarda apenas a sua preferência de tema no armazenamento local do navegador."
+  sobretitulo="Informação legal"
+  migalhas={[{ rotulo: 'Cookies' }]}
+  largura="estreito"
+>
+  <div class="destaque">
+    <Icone nome="escudo" />
+    <div>
+      <p class="destaque__titulo">Este sítio não utiliza cookies.</p>
+      <p>
+        Não há cookies próprios nem de terceiros, e por isso também não há pedido de
+        consentimento a incomodá-lo.
+      </p>
+    </div>
+  </div>
+
+  <section class="detalhe">
+    <h2>O que é guardado no seu navegador</h2>
+    <div class="tabela-envolvente">
+    <table class="dados">
+      <caption class="invisivel">Dados guardados localmente pelo sítio da ARLA</caption>
+      <thead>
+        <tr>
+          <th scope="col">Nome</th>
+          <th scope="col">Tipo</th>
+          <th scope="col">Para que serve</th>
+          <th scope="col">Duração</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">arla-tema</td>
+          <td>Armazenamento local<br /><span class="fraco">(não é um cookie)</span></td>
+          <td>Guardar se prefere o tema claro ou escuro, para que a sua escolha se mantenha entre visitas.</td>
+          <td>Até limpar os dados do navegador</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="suave">
+      Ao contrário de um cookie, o armazenamento local <strong>nunca é enviado para o
+      servidor</strong>: fica no seu dispositivo e a ARLA não lhe tem acesso. Pode
+      apagá-lo a qualquer momento nas definições do navegador, sem que isso afete o
+      funcionamento do sítio — apenas volta a usar a preferência de tema do seu sistema.
+    </p>
+  </section>
+
+  <section class="detalhe">
+    <h2>Pedidos a servidores externos</h2>
+    <p>
+      Alguns conteúdos são servidos por terceiros e, ao carregá-los, o seu navegador
+      contacta esses servidores:
+    </p>
+    <ul class="lista-terceiros">
+      <li>
+        <strong>OpenStreetMap</strong> — telas dos mapas nas páginas de contactos, rede e
+        eventos. Só são carregadas quando o mapa entra no ecrã.
+      </li>
+      <li>
+        <strong>HamQSL e NOAA/SWPC</strong> — painéis de dados solares na página de
+        meteorologia espacial.
+      </li>
+    </ul>
+    <p class="suave">
+      Estes serviços não colocam cookies através deste sítio, mas conhecem o seu endereço
+      IP no momento do pedido, como sucede em qualquer acesso à Internet.
+    </p>
+  </section>
+
+  <Aviso tipo="info">
+    <p>
+      Se a ARLA vier a adicionar ferramentas que usem cookies — estatísticas de visitas,
+      vídeos incorporados, formulários alojados por terceiros — esta página tem de ser
+      atualizada e passa a ser necessário um mecanismo de consentimento.
+      Ver <a href="/legal/privacidade/">política de privacidade</a>.
+    </p>
+  </Aviso>
+</Pagina>
+
+<style>
+  .destaque {
+    display: flex; gap: var(--e-4); padding: var(--e-5);
+    background: color-mix(in srgb, var(--sinal) 10%, var(--superficie));
+    border: 1px solid color-mix(in srgb, var(--sinal) 35%, transparent);
+    border-radius: var(--raio-lg);
+  }
+  .destaque > :global(svg) { width: 1.9rem; height: 1.9rem; color: var(--sinal); flex: none; }
+  .destaque__titulo { font-size: var(--t-lg); font-weight: 700; }
+  .destaque p + p { margin-top: var(--e-2); color: var(--texto-suave); }
+
+  .detalhe { margin-top: var(--e-7); }
+  .detalhe h2 { font-size: var(--t-xl); margin-bottom: var(--e-3); }
+  .detalhe > p { color: var(--texto-suave); }
+  .detalhe .tabela-envolvente { margin-top: var(--e-3); }
+  /* Em ecrãs estreitos a tabela desloca-se na horizontal dentro do seu contentor,
+     em vez de empurrar a página inteira. */
+  .detalhe table.dados { min-width: 34rem; }
+  .detalhe .suave { margin-top: var(--e-4); font-size: var(--t-sm); }
+  .lista-terceiros {
+    list-style: disc; padding-left: 1.3rem; margin-top: var(--e-3);
+    display: flex; flex-direction: column; gap: var(--e-2); color: var(--texto-suave);
+  }
+  .lista-terceiros li::marker { color: var(--accent); }
+</style>

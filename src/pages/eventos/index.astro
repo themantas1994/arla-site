@@ -1,0 +1,130 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import CartaoEvento from '@components/CartaoEvento.astro';
+import EstadoVazio from '@components/EstadoVazio.astro';
+import Icone from '@components/Icone.astro';
+import { eventos } from '@lib/conteudo';
+import { estadoEvento } from '@lib/sitio';
+
+const todos = await eventos();
+const futuros = todos
+  .filter((e) => estadoEvento(e.data.inicio, e.data.fim) === 'futuro')
+  .sort((a, b) => a.data.inicio.getTime() - b.data.inicio.getTime());
+const aDecorrer = todos.filter((e) => estadoEvento(e.data.inicio, e.data.fim) === 'adecorrer');
+const passados = todos.filter((e) => estadoEvento(e.data.inicio, e.data.fim) === 'terminado');
+
+// Os eventos passados são agrupados por ano, para navegar no arquivo.
+const porAno = new Map<number, typeof passados>();
+for (const e of passados) {
+  const ano = e.data.inicio.getUTCFullYear();
+  if (!porAno.has(ano)) porAno.set(ano, []);
+  porAno.get(ano)!.push(e);
+}
+const anos = [...porAno.keys()].sort((a, b) => b - a);
+---
+<Pagina
+  titulo="Eventos e atividades"
+  descricao="Atividades, workshops, concursos e encontros organizados ou divulgados pela ARLA — o que vem aí e o arquivo completo do que já se realizou."
+  sobretitulo="Agenda"
+  migalhas={[{ rotulo: 'Eventos' }]}
+>
+  <dl slot="cabecalho-extra" class="contagens">
+    <div><dt>A decorrer</dt><dd>{aDecorrer.length}</dd></div>
+    <div><dt>Programados</dt><dd>{futuros.length}</dd></div>
+    <div><dt>No arquivo</dt><dd>{passados.length}</dd></div>
+  </dl>
+
+  {aDecorrer.length > 0 && (
+    <section class="bloco" aria-labelledby="t-decorrer">
+      <h2 id="t-decorrer"><span class="ponto-vivo" aria-hidden="true"></span> A decorrer</h2>
+      <div class="grelha grelha--2">
+        {aDecorrer.map((e) => (
+          <CartaoEvento
+            href={`/eventos/${e.id}/`} titulo={e.data.titulo} resumo={e.data.resumo}
+            inicio={e.data.inicio} fim={e.data.fim} dataTexto={e.data.dataTexto}
+            local={e.data.local} tipo={e.data.tipo} imagem={e.data.imagem}
+            imagemAlt={e.data.imagemAlt} cancelado={e.data.cancelado}
+          />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="bloco" aria-labelledby="t-futuros">
+    <h2 id="t-futuros">Próximos eventos</h2>
+    {futuros.length > 0 ? (
+      <div class="grelha grelha--2">
+        {futuros.map((e) => (
+          <CartaoEvento
+            href={`/eventos/${e.id}/`} titulo={e.data.titulo} resumo={e.data.resumo}
+            inicio={e.data.inicio} fim={e.data.fim} dataTexto={e.data.dataTexto}
+            local={e.data.local} tipo={e.data.tipo} imagem={e.data.imagem}
+            imagemAlt={e.data.imagemAlt} cancelado={e.data.cancelado}
+          />
+        ))}
+      </div>
+    ) : (
+      <EstadoVazio
+        titulo="Não existem eventos programados de momento."
+        descricao="As novas atividades são anunciadas aqui e nas notícias. Pode acompanhar pelo feed RSS ou pela página de Facebook da associação."
+        icone="calendario"
+        accaoHref="/noticias/"
+        accaoRotulo="Ver as últimas notícias"
+      />
+    )}
+  </section>
+
+  <section class="bloco" aria-labelledby="t-arquivo">
+    <div class="cabecalho-seccao">
+      <div>
+        <h2 id="t-arquivo">Arquivo de eventos</h2>
+        <p>Tudo o que a ARLA organizou ou divulgou, por ano. Nada é removido.</p>
+      </div>
+      <nav class="anos" aria-label="Saltar para um ano">
+        {anos.map((a) => <a class="etiqueta" href={`#ano-${a}`}>{a}</a>)}
+      </nav>
+    </div>
+
+    {anos.map((ano) => (
+      <div class="ano-bloco">
+        <h3 class="ano-titulo" id={`ano-${ano}`}>{ano} <span class="fraco">({porAno.get(ano)!.length})</span></h3>
+        <div class="grelha grelha--2">
+          {porAno.get(ano)!.map((e) => (
+            <CartaoEvento
+              href={`/eventos/${e.id}/`} titulo={e.data.titulo} resumo={e.data.resumo}
+              inicio={e.data.inicio} fim={e.data.fim} dataTexto={e.data.dataTexto}
+              local={e.data.local} tipo={e.data.tipo} cancelado={e.data.cancelado}
+            />
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+</Pagina>
+
+<style>
+  .contagens { display: flex; flex-wrap: wrap; gap: var(--e-6); margin-top: var(--e-5); }
+  .contagens dt { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-fraco); }
+  .contagens dd { margin: 0.15rem 0 0; font-size: var(--t-2xl); font-weight: 800; color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums; }
+
+  .bloco + .bloco { margin-top: var(--e-8); }
+  .bloco > h2 { display: flex; align-items: center; gap: 0.55rem; font-size: var(--t-2xl); margin-bottom: var(--e-5); }
+  .ponto-vivo {
+    width: 0.65rem; height: 0.65rem; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent);
+    animation: pulsar 2s ease-out infinite;
+  }
+  @keyframes pulsar { 70% { box-shadow: 0 0 0 0.55rem transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+  @media (prefers-reduced-motion: reduce) { .ponto-vivo { animation: none; } }
+
+  .anos { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+  .anos .etiqueta { font-variant-numeric: tabular-nums; min-height: 2.25rem; padding: 0.3rem 0.7rem; }
+
+  .ano-bloco + .ano-bloco { margin-top: var(--e-7); }
+  .ano-titulo {
+    font-size: var(--t-xl); color: var(--accent); scroll-margin-top: 6rem;
+    padding-bottom: var(--e-2); margin-bottom: var(--e-4);
+    border-bottom: 1px solid var(--borda); font-variant-numeric: tabular-nums;
+  }
+  .ano-titulo .fraco { font-size: var(--t-sm); font-weight: 400; }
+</style>

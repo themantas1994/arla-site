@@ -1,0 +1,536 @@
+# ---------------------------------------------------------------------------
+# Decap CMS — gestão de conteúdos do sítio da ARLA
+#
+# O editor grava diretamente no repositório Git: cada alteração é um commit,
+# tudo fica com histórico e nada se perde. Depois de gravar, o sítio é
+# reconstruído automaticamente (ver docs/implantacao.md).
+#
+# ANTES DE USAR: acertar "repo" ao repositório real da associação.
+# ---------------------------------------------------------------------------
+backend:
+  name: github
+  repo: themantas1994/arla
+  branch: main
+  commit_messages:
+    create: 'Conteúdo: criar {{collection}} "{{slug}}"'
+    update: 'Conteúdo: atualizar {{collection}} "{{slug}}"'
+    delete: 'Conteúdo: remover {{collection}} "{{slug}}"'
+    uploadMedia: 'Conteúdo: carregar {{path}}'
+    deleteMedia: 'Conteúdo: apagar {{path}}'
+
+# Permite experimentar o editor localmente com "npx decap-server".
+local_backend: true
+
+media_folder: public/imagens/conteudo
+public_folder: /imagens/conteudo
+
+locale: pt
+site_url: https://www.cs5arla.pt
+display_url: https://www.cs5arla.pt
+logo_url: /imagens/icone-512.png
+
+# Campos reutilizados em várias coleções -------------------------------------
+_comuns:
+  - &titulo { label: Título, name: titulo, widget: string }
+  - &resumo
+    label: Resumo
+    name: resumo
+    widget: text
+    hint: Uma ou duas frases. Aparece nos cartões, na pesquisa e nas redes sociais.
+  - &data { label: Data de publicação, name: data, widget: datetime, date_format: 'DD/MM/YYYY', time_format: false, format: 'YYYY-MM-DD' }
+  - &atualizado { label: Data de atualização, name: atualizado, widget: datetime, date_format: 'DD/MM/YYYY', time_format: false, format: 'YYYY-MM-DD', required: false }
+  - &imagem { label: Imagem principal, name: imagem, widget: image, required: false, allow_multiple: false }
+  - &imagemAlt
+    label: Descrição da imagem
+    name: imagemAlt
+    widget: string
+    required: false
+    hint: Descreve a imagem para quem não a consegue ver. Obrigatório sempre que houver imagem.
+  - &etiquetas { label: Etiquetas, name: etiquetas, widget: list, required: false, default: [] }
+  - &corpo { label: Conteúdo, name: body, widget: markdown }
+
+collections:
+  # --------------------------------------------------------------- Notícias --
+  - name: noticias
+    label: Notícias
+    label_singular: Notícia
+    folder: src/content/noticias
+    create: true
+    slug: '{{slug}}'
+    identifier_field: titulo
+    summary: '{{titulo}} — {{data}}'
+    sortable_fields: [data, titulo, categoria]
+    view_filters:
+      - { label: 'Só arquivo histórico', field: historico, pattern: true }
+    fields:
+      - *titulo
+      - *resumo
+      - *data
+      - *atualizado
+      - label: Categoria
+        name: categoria
+        widget: select
+        default: Geral
+        create: true
+        options: [Geral, Associação, Atividades, Comunicados, Divulgação, Emergência, Instalações, Legislação, Radioamadorismo, Rede ARLA, SSTV]
+      - *etiquetas
+      - *imagem
+      - *imagemAlt
+      - { label: Autor, name: autor, widget: string, required: false }
+      - { label: Indicativo do autor, name: indicativo, widget: string, required: false }
+      - label: Conteúdo histórico
+        name: historico
+        widget: boolean
+        default: false
+        hint: Marque quando o texto já não reflete a situação atual. O sítio mostra um aviso de contexto.
+      - label: Nota histórica
+        name: notaHistorica
+        widget: text
+        required: false
+        hint: Texto do aviso. Se ficar vazio é usado um texto genérico com a data.
+      - { label: Destaque na página inicial, name: destaque, widget: boolean, default: false, required: false }
+      - { label: Rascunho (não publicar), name: rascunho, widget: boolean, default: false, required: false }
+      - label: URL no sítio antigo
+        name: urlAntigo
+        widget: string
+        required: false
+        hint: Não alterar. Serve para manter as redireções do sítio WordPress.
+      - *corpo
+
+  # -------------------------------------------------------- Artigos técnicos --
+  - name: tecnica
+    label: Artigos técnicos
+    label_singular: Artigo técnico
+    folder: src/content/tecnica
+    create: true
+    slug: '{{slug}}'
+    identifier_field: titulo
+    summary: '{{titulo}} — {{categoria}}'
+    sortable_fields: [data, titulo, categoria]
+    fields:
+      - *titulo
+      - *resumo
+      - *data
+      - *atualizado
+      - label: Categoria
+        name: categoria
+        widget: select
+        create: true
+        options: [Satélites, Micro-ondas, Antenas, Modos digitais, Propagação, Eletrónica, Geral]
+      - *etiquetas
+      - label: Nível
+        name: nivel
+        widget: select
+        default: intermedio
+        options:
+          - { label: Introdução, value: introducao }
+          - { label: Intermédio, value: intermedio }
+          - { label: Avançado, value: avancado }
+      - { label: Autor, name: autor, widget: string, required: false }
+      - { label: Indicativo do autor, name: indicativo, widget: string, required: false }
+      - *imagem
+      - *imagemAlt
+      - label: Mostrar índice de conteúdos
+        name: indice
+        widget: boolean
+        default: true
+        hint: Só aparece em artigos com três ou mais subtítulos.
+      - label: Referências
+        name: referencias
+        widget: list
+        required: false
+        fields:
+          - { label: Título, name: titulo, widget: string }
+          - { label: Endereço, name: url, widget: string }
+      - { label: Conteúdo histórico, name: historico, widget: boolean, default: false, required: false }
+      - { label: Nota histórica, name: notaHistorica, widget: text, required: false }
+      - { label: Destaque, name: destaque, widget: boolean, default: false, required: false }
+      - { label: Rascunho (não publicar), name: rascunho, widget: boolean, default: false, required: false }
+      - { label: URL no sítio antigo, name: urlAntigo, widget: string, required: false }
+      - *corpo
+
+  # ---------------------------------------------------------------- Eventos --
+  - name: eventos
+    label: Eventos e atividades
+    label_singular: Evento
+    folder: src/content/eventos
+    create: true
+    slug: '{{slug}}'
+    identifier_field: titulo
+    summary: '{{titulo}} — {{inicio}}'
+    sortable_fields: [inicio, titulo]
+    fields:
+      - *titulo
+      - *resumo
+      - label: Data de início
+        name: inicio
+        widget: datetime
+        date_format: 'DD/MM/YYYY'
+        time_format: false
+        format: 'YYYY-MM-DD'
+        hint: O sítio classifica sozinho o evento como programado, a decorrer ou terminado.
+      - { label: Data de fim, name: fim, widget: datetime, date_format: 'DD/MM/YYYY', time_format: false, format: 'YYYY-MM-DD', required: false }
+      - label: Datas por extenso
+        name: dataTexto
+        widget: string
+        required: false
+        hint: 'Use quando as datas exatas não servem, por exemplo: «Todos os domingos de julho».'
+      - { label: Hora de início, name: horaInicio, widget: string, required: false, hint: 'Ex.: 09:00' }
+      - { label: Hora de fim, name: horaFim, widget: string, required: false }
+      - { label: Local, name: local, widget: string, required: false }
+      - label: Coordenadas do local
+        name: coordenadas
+        widget: object
+        required: false
+        collapsed: true
+        hint: Só preencher se souber as coordenadas reais. Sem isto, não é mostrado mapa.
+        fields:
+          - { label: Latitude, name: lat, widget: number, value_type: float }
+          - { label: Longitude, name: lon, widget: number, value_type: float }
+      - label: Tipo
+        name: tipo
+        widget: select
+        default: atividade
+        options:
+          - { label: Atividade, value: atividade }
+          - { label: Workshop / formação, value: workshop }
+          - { label: Concurso, value: concurso }
+          - { label: Encontro / convívio, value: encontro }
+          - { label: Divulgação (organizado por terceiros), value: divulgacao }
+      - { label: Organizador, name: organizador, widget: string, required: false, hint: 'Deixe vazio se for a ARLA.' }
+      - { label: Inscrições, name: inscricoes, widget: text, required: false }
+      - { label: Ligação externa, name: ligacaoExterna, widget: string, required: false }
+      - { label: Evento cancelado, name: cancelado, widget: boolean, default: false, required: false }
+      - label: Categoria
+        name: categoria
+        widget: select
+        create: true
+        options: [Atividades, Formação, 'Fim de Semana AM', SSTV, 'Modos digitais', Divulgação, Geral]
+      - *etiquetas
+      - *imagem
+      - *imagemAlt
+      - *data
+      - { label: Rascunho (não publicar), name: rascunho, widget: boolean, default: false, required: false }
+      - { label: URL no sítio antigo, name: urlAntigo, widget: string, required: false }
+      - *corpo
+
+  # ---------------------------------------------------- Páginas editoriais ---
+  - name: paginas
+    label: Páginas de texto
+    label_singular: Página
+    folder: src/content/paginas
+    create: false
+    delete: false
+    slug: '{{slug}}'
+    identifier_field: titulo
+    fields:
+      - *titulo
+      - *resumo
+      - { label: Autor, name: autor, widget: string, required: false }
+      - { label: Indicativo do autor, name: indicativo, widget: string, required: false }
+      - { label: Data de atualização, name: atualizado, widget: datetime, date_format: 'DD/MM/YYYY', time_format: false, format: 'YYYY-MM-DD', required: false }
+      - { label: Mostrar índice de conteúdos, name: indice, widget: boolean, default: false }
+      - { label: URL no sítio antigo, name: urlAntigo, widget: string, required: false }
+      - *corpo
+
+  # -------------------------------------------------------- Dados da rede ----
+  - name: rede
+    label: Rede ARLA
+    editor: { preview: false }
+    files:
+      - name: repetidores
+        label: Repetidores
+        file: src/data/repetidores.json
+        description: Dados publicados de cada repetidor. Alterar aqui atualiza a tabela, os filtros e o mapa.
+        fields:
+          - label: Repetidores
+            name: repetidores
+            widget: list
+            label_singular: Repetidor
+            summary: '{{fields.indicativo}} — {{fields.banda}} {{fields.modo}} ({{fields.estado}})'
+            fields:
+              - { label: Identificador, name: id, widget: string, hint: 'Minúsculas, sem espaços. Ex.: cq0varb' }
+              - { label: Indicativo, name: indicativo, widget: string }
+              - { label: Canal, name: canal, widget: string, required: false, hint: 'Ex.: RV56' }
+              - label: Banda
+                name: banda
+                widget: select
+                options: [VHF, UHF, SHF, HF]
+              - { label: Modo, name: modo, widget: string, hint: 'Ex.: Analógico, Digital DMR, Digital AX.25 (APRS)' }
+              - label: Filtros
+                name: filtros
+                widget: select
+                multiple: true
+                options: [vhf, uhf, analogico, digital, dmr, dstar, aprs]
+                hint: Determina a que botões de filtro o repetidor responde.
+              - { label: Localização, name: localizacao, widget: string }
+              - { label: Quadrícula Maidenhead, name: quadricula, widget: string, required: false, hint: 'Ex.: IM57px. Usada para o colocar no mapa.' }
+              - label: Coordenadas exatas
+                name: coordenadas
+                widget: object
+                required: false
+                collapsed: true
+                hint: Opcional. Se preencher, o mapa deixa de usar a posição aproximada da quadrícula.
+                fields:
+                  - { label: Latitude, name: lat, widget: number, value_type: float }
+                  - { label: Longitude, name: lon, widget: number, value_type: float }
+              - { label: Frequência de emissão (MHz), name: frequenciaTx, widget: string }
+              - { label: Frequência de receção (MHz), name: frequenciaRx, widget: string }
+              - { label: Tom, name: tom, widget: string, required: false }
+              - { label: Acesso, name: acesso, widget: string, required: false, hint: 'Tom CTCSS, talkgroup e color code, ou reflector.' }
+              - { label: Potência (W), name: potencia, widget: string, required: false }
+              - label: Estado
+                name: estado
+                widget: select
+                default: operacional
+                options:
+                  - { label: Operacional, value: operacional }
+                  - { label: Em manutenção, value: manutencao }
+                  - { label: Indisponível, value: indisponivel }
+                  - { label: Por confirmar, value: desconhecido }
+              - { label: Notas, name: notas, widget: text, required: false }
+
+      - name: balizas
+        label: Balizas
+        file: src/data/balizas.json
+        fields:
+          - label: Balizas
+            name: balizas
+            widget: list
+            label_singular: Baliza
+            summary: '{{fields.indicativo}} — {{fields.banda}} ({{fields.estado}})'
+            fields:
+              - { label: Identificador, name: id, widget: string }
+              - { label: Indicativo, name: indicativo, widget: string }
+              - { label: Banda, name: banda, widget: string, hint: 'Ex.: VHF 144 MHz' }
+              - { label: Frequência (MHz), name: frequencia, widget: string }
+              - { label: Modo, name: modo, widget: string, hint: 'Ex.: CW (A1A)' }
+              - { label: Potência (W), name: potencia, widget: string, required: false }
+              - { label: Antena, name: antena, widget: string, required: false }
+              - { label: Localização, name: localizacao, widget: string }
+              - { label: Quadrícula Maidenhead, name: quadricula, widget: string, required: false }
+              - label: Coordenadas exatas
+                name: coordenadas
+                widget: object
+                required: false
+                collapsed: true
+                fields:
+                  - { label: Latitude, name: lat, widget: number, value_type: float }
+                  - { label: Longitude, name: lon, widget: number, value_type: float }
+              - label: Estado
+                name: estado
+                widget: select
+                default: operacional
+                options:
+                  - { label: Operacional, value: operacional }
+                  - { label: Em manutenção, value: manutencao }
+                  - { label: Indisponível, value: indisponivel }
+                  - { label: Por confirmar, value: desconhecido }
+              - { label: Notas, name: notas, widget: text, required: false }
+
+  # ------------------------------------------------------- Dados da ARLA -----
+  - name: associacao
+    label: Associação
+    editor: { preview: false }
+    files:
+      - name: sitio
+        label: Dados gerais e contactos
+        file: src/data/sitio.json
+        description: Morada, correio eletrónico, IBAN, valor da quota e redes sociais. Usados em todo o sítio.
+        fields:
+          - { label: Nome curto, name: nome, widget: string }
+          - { label: Nome completo, name: nomeCompleto, widget: string }
+          - { label: Sigla, name: sigla, widget: string }
+          - { label: Indicativo coletivo, name: indicativo, widget: string }
+          - { label: Descrição curta, name: descricaoCurta, widget: text }
+          - { label: Descrição, name: descricao, widget: text }
+          - { label: Data de fundação, name: fundacao, widget: string }
+          - label: Morada
+            name: morada
+            widget: object
+            fields:
+              - { label: Linha 1, name: linha1, widget: string }
+              - { label: Linha 2, name: linha2, widget: string, required: false }
+              - { label: Código postal, name: codigoPostal, widget: string }
+              - { label: Localidade, name: localidade, widget: string }
+              - { label: País, name: pais, widget: string }
+          - label: Coordenadas
+            name: coordenadas
+            widget: object
+            fields:
+              - { label: Latitude, name: lat, widget: number, value_type: float }
+              - { label: Longitude, name: lon, widget: number, value_type: float }
+          - { label: Coordenadas por extenso, name: coordenadasTexto, widget: string }
+          - { label: Quadrícula Maidenhead, name: quadricula, widget: string }
+          - { label: Ligação para direções, name: mapaExterno, widget: string }
+          - label: Correio eletrónico
+            name: email
+            widget: object
+            hint: Guardado em duas partes para dificultar a recolha automática por programas de spam.
+            fields:
+              - { label: Antes do @, name: utilizador, widget: string }
+              - { label: Depois do @, name: dominio, widget: string }
+          - { label: Quota anual, name: quotaAnual, widget: string }
+          - { label: IBAN, name: iban, widget: string }
+          - { label: NIB, name: nib, widget: string }
+          - { label: Titular da conta, name: titularConta, widget: string }
+          - label: Redes sociais
+            name: redes
+            widget: list
+            required: false
+            fields:
+              - { label: Nome, name: nome, widget: string }
+              - { label: Endereço, name: url, widget: string }
+              - { label: Ícone, name: icone, widget: select, options: [facebook, externo, partilhar] }
+          - { label: Concelhos da área geográfica, name: areaGeografica, widget: list }
+
+      - name: orgaos_sociais
+        label: Órgãos Sociais
+        file: src/data/orgaos-sociais.json
+        fields:
+          - { label: Mandato, name: mandato, widget: string, hint: 'Ex.: 2022-2023' }
+          - { label: Nota sobre o mandato, name: notaMandato, widget: text }
+          - label: Órgãos
+            name: orgaos
+            widget: list
+            label_singular: Órgão
+            summary: '{{fields.nome}}'
+            fields:
+              - { label: Nome do órgão, name: nome, widget: string }
+              - label: Membros
+                name: membros
+                widget: list
+                label_singular: Membro
+                summary: '{{fields.cargo}} — {{fields.nome}} ({{fields.indicativo}})'
+                fields:
+                  - { label: Cargo, name: cargo, widget: string }
+                  - { label: Nome, name: nome, widget: string }
+                  - { label: Indicativo, name: indicativo, widget: string, required: false }
+                  - { label: Número de associado, name: numeroAssociado, widget: number, value_type: int }
+
+      - name: direcao_tecnica
+        label: Direção Técnica
+        file: src/data/direcao-tecnica.json
+        fields:
+          - label: Áreas
+            name: areas
+            widget: list
+            label_singular: Área
+            summary: '{{fields.nome}}'
+            fields:
+              - { label: Nome da área, name: nome, widget: string }
+              - label: Ícone
+                name: icone
+                widget: select
+                options: [antena, rede, energia, codigo, ferramenta, onda]
+              - label: Responsáveis
+                name: responsaveis
+                widget: list
+                label_singular: Responsável
+                summary: '{{fields.nome}} ({{fields.indicativo}})'
+                fields:
+                  - { label: Nome, name: nome, widget: string }
+                  - { label: Indicativo, name: indicativo, widget: string, required: false }
+
+      - name: associados
+        label: Lista de associados
+        file: src/data/associados.json
+        description: Lista pública de associados. Publicar apenas o que a associação decidir tornar público — nunca dados de contacto.
+        fields:
+          - { label: Nota apresentada na página, name: nota, widget: text }
+          - label: Associados
+            name: associados
+            widget: list
+            label_singular: Associado
+            summary: '#{{fields.numero}} {{fields.indicativo}} — {{fields.nome}}'
+            fields:
+              - { label: Número, name: numero, widget: number, value_type: int }
+              - { label: Indicativo, name: indicativo, widget: string, required: false }
+              - { label: Nome, name: nome, widget: string }
+
+      - name: cronologia
+        label: História (cronologia)
+        file: src/data/cronologia.json
+        fields:
+          - { label: Introdução, name: introducao, widget: text }
+          - { label: Nota metodológica, name: nota, widget: text }
+          - { label: Historial em atualização, name: emAtualizacao, widget: boolean, default: true }
+          - label: Entradas
+            name: entradas
+            widget: list
+            label_singular: Acontecimento
+            summary: '{{fields.dataTexto}} — {{fields.texto}}'
+            fields:
+              - { label: Data (AAAA-MM-DD), name: data, widget: string, required: false }
+              - { label: Data como aparece, name: dataTexto, widget: string, required: false, hint: 'Ex.: 04.04.1999' }
+              - { label: Ordenação, name: ordenacao, widget: string, required: false, hint: 'Data usada para ordenar. Copie a data.' }
+              - { label: Texto, name: texto, widget: text }
+
+  # ------------------------------------------------------------- Recursos ---
+  - name: recursos
+    label: Recursos
+    editor: { preview: false }
+    files:
+      - name: documentos
+        label: Documentos
+        file: src/data/documentos.json
+        description: Biblioteca de documentos. Carregue primeiro o ficheiro em «Media», depois indique aqui o caminho.
+        fields:
+          - label: Documentos
+            name: documentos
+            widget: list
+            label_singular: Documento
+            summary: '{{fields.nome}} ({{fields.categoria}})'
+            fields:
+              - { label: Identificador, name: id, widget: string }
+              - { label: Nome, name: nome, widget: string }
+              - { label: Descrição, name: descricao, widget: text, required: false }
+              - label: Categoria
+                name: categoria
+                widget: select
+                create: true
+                options: [Estatutos, Regulamentos, 'Documentação ARLA', 'Documentação técnica', Legislação, Formulários]
+              - { label: Caminho do ficheiro, name: ficheiro, widget: string, hint: 'Ex.: /documentos/estatutos-arla.pdf' }
+              - { label: Tipo, name: tipo, widget: string, default: PDF }
+              - { label: Tamanho, name: tamanho, widget: string, required: false, hint: 'Ex.: 109 KB' }
+              - { label: Data, name: data, widget: datetime, date_format: 'DD/MM/YYYY', time_format: false, format: 'YYYY-MM-DD', required: false }
+              - { label: Ficheiro externo, name: externo, widget: boolean, default: false, required: false }
+
+      - name: ligacoes
+        label: Ligações úteis
+        file: src/data/ligacoes.json
+        fields:
+          - label: Ligações
+            name: ligacoes
+            widget: list
+            label_singular: Ligação
+            summary: '{{fields.nome}} ({{fields.categoria}})'
+            fields:
+              - { label: Identificador, name: id, widget: string }
+              - { label: Nome, name: nome, widget: string }
+              - { label: Endereço, name: url, widget: string }
+              - { label: Descrição, name: descricao, widget: text, required: false }
+              - label: Categoria
+                name: categoria
+                widget: select
+                create: true
+                options: [ARLA, Comunidade, Licenciamento, Propagação, Satélites, Ferramentas]
+
+      - name: faq
+        label: Perguntas frequentes
+        file: src/data/faq.json
+        fields:
+          - label: Perguntas
+            name: faq
+            widget: list
+            label_singular: Pergunta
+            summary: '{{fields.pergunta}}'
+            fields:
+              - { label: Identificador, name: id, widget: string }
+              - { label: Pergunta, name: pergunta, widget: string }
+              - { label: Resposta, name: resposta, widget: text }
+              - label: Categoria
+                name: categoria
+                widget: select
+                create: true
+                options: [Associar-se, Quotas, 'Rede ARLA', Radioamadorismo, Geral]

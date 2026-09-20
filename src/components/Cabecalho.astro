@@ -1,0 +1,340 @@
+---
+import Logotipo from './Logotipo.astro';
+import Icone from './Icone.astro';
+import AlternarTema from './AlternarTema.astro';
+import { NAVEGACAO, estaAtivo } from '@lib/navegacao';
+
+const caminho = Astro.url.pathname;
+---
+<header class="site-cabecalho">
+  <div class="envolvente cabecalho__interior">
+    <Logotipo />
+
+    <nav class="nav-principal" aria-label="Navegação principal">
+      <ul class="nav-principal__lista">
+        {NAVEGACAO.map((item) => {
+          const ativo = estaAtivo(item.href, caminho);
+          return (
+            <li class={item.filhos ? 'tem-submenu' : ''}>
+              {item.filhos ? (
+                <>
+                  <button
+                    type="button"
+                    class="nav-principal__ligacao"
+                    aria-expanded="false"
+                    aria-current={ativo ? 'true' : undefined}
+                    data-abre-submenu
+                  >
+                    {item.rotulo}
+                    <Icone nome="seta" class="seta-baixo" />
+                  </button>
+                  <div class="submenu" hidden>
+                    <ul class="submenu__lista">
+                      {item.filhos.map((f) => (
+                        <li>
+                          <a href={f.href} aria-current={estaAtivo(f.href, caminho) && f.href !== item.href ? 'page' : undefined}>
+                            {f.icone && <Icone nome={f.icone as any} />}
+                            <span>
+                              <strong>{f.rotulo}</strong>
+                              {f.descricao && <small>{f.descricao}</small>}
+                            </span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </>
+              ) : (
+                <a
+                  class="nav-principal__ligacao"
+                  href={item.href}
+                  aria-current={ativo ? 'page' : undefined}
+                >
+                  {item.rotulo}
+                </a>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+
+    <div class="cabecalho__acoes">
+      <a class="acao-icone" href="/pesquisa/" aria-label="Pesquisar no sítio">
+        <Icone nome="pesquisa" />
+      </a>
+      <AlternarTema />
+      <a class="btn btn--principal btn--pequeno cabecalho__reservada" href="/area-reservada/">
+        Área reservada
+      </a>
+      <button
+        type="button"
+        class="acao-icone abrir-menu"
+        id="abrir-menu"
+        aria-expanded="false"
+        aria-controls="menu-movel"
+        aria-label="Abrir menu de navegação"
+      >
+        <Icone nome="menu" />
+      </button>
+    </div>
+  </div>
+
+  <!-- Menu para ecrãs pequenos: <details> por secção, sem dependência de hover -->
+  <div class="menu-movel" id="menu-movel" hidden>
+    <nav class="envolvente" aria-label="Navegação principal (ecrãs pequenos)">
+      <ul class="menu-movel__lista">
+        {NAVEGACAO.map((item) => (
+          <li>
+            {item.filhos ? (
+              <details open={estaAtivo(item.href, caminho)}>
+                <summary>
+                  {item.rotulo}
+                  <Icone nome="seta" class="seta-baixo" />
+                </summary>
+                <ul>
+                  {item.filhos.map((f) => (
+                    <li>
+                      <a href={f.href} aria-current={estaAtivo(f.href, caminho) && f.href !== item.href ? 'page' : undefined}>
+                        {f.rotulo}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : (
+              <a class="menu-movel__ligacao" href={item.href} aria-current={estaAtivo(item.href, caminho) ? 'page' : undefined}>
+                {item.rotulo}
+              </a>
+            )}
+          </li>
+        ))}
+        <li><a class="menu-movel__ligacao" href="/pesquisa/">Pesquisar</a></li>
+        <li><a class="menu-movel__ligacao" href="/area-reservada/">Área reservada</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-cabecalho {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: color-mix(in srgb, var(--fundo) 88%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--borda);
+  }
+  /* O cabeçalho pode usar mais largura do que o conteúdo: com o menu completo,
+     1200px não chegam para logótipo + navegação + ações sem transbordar. */
+  .cabecalho__interior {
+    display: flex;
+    align-items: center;
+    gap: var(--e-3);
+    min-height: 4.4rem;
+    max-width: 1440px;
+  }
+  @media (min-width: 1180px) { .cabecalho__interior { gap: var(--e-4); } }
+
+  /* ------------------------------ Escritório ----------------------------- */
+  .nav-principal { margin-left: auto; display: none; }
+  @media (min-width: 1180px) { .nav-principal { display: block; } }
+
+  .nav-principal__lista { display: flex; align-items: center; gap: 0.1rem; }
+  @media (min-width: 1400px) {
+    .nav-principal__lista { gap: 0.15rem; }
+    .nav-principal__ligacao { padding-inline: 0.7rem; font-size: 0.925rem; }
+  }
+  .nav-principal__lista > li { position: relative; }
+
+  .nav-principal__ligacao {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.55rem 0.55rem;
+    border-radius: var(--raio-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    text-decoration: none;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color var(--transicao), background var(--transicao);
+  }
+  .nav-principal__ligacao:hover { color: var(--texto); background: var(--superficie-2); }
+  .nav-principal__ligacao[aria-current] { color: var(--accent); }
+  :global(.seta-baixo) { width: 0.85em; height: 0.85em; transform: rotate(90deg); opacity: 0.6; }
+  .nav-principal__ligacao[aria-expanded='true'] { color: var(--texto); background: var(--superficie-2); }
+  .nav-principal__ligacao[aria-expanded='true'] :global(.seta-baixo) { transform: rotate(-90deg); }
+
+  .submenu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    min-width: 21rem;
+    padding: var(--e-2);
+    background: var(--superficie);
+    border: 1px solid var(--borda-forte);
+    border-radius: var(--raio-lg);
+    box-shadow: var(--sombra-alta);
+  }
+  .submenu[hidden] { display: none; }
+  .submenu__lista { display: grid; gap: 0.1rem; }
+  .submenu__lista a {
+    display: flex;
+    align-items: start;
+    gap: 0.7rem;
+    padding: 0.6rem 0.7rem;
+    border-radius: var(--raio);
+    text-decoration: none;
+    color: var(--texto);
+  }
+  .submenu__lista a:hover { background: var(--superficie-2); }
+  .submenu__lista a[aria-current='page'] { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .submenu__lista :global(svg) { width: 1.15rem; height: 1.15rem; color: var(--accent); margin-top: 0.15rem; flex: none; }
+  .submenu__lista strong { display: block; font-size: 0.92rem; font-weight: 600; }
+  .submenu__lista small { display: block; font-size: 0.78rem; color: var(--texto-fraco); line-height: 1.35; }
+
+  /* -------------------------------- Ações -------------------------------- */
+  .cabecalho__acoes { display: flex; align-items: center; gap: var(--e-2); margin-left: auto; }
+  @media (min-width: 1180px) { .cabecalho__acoes { margin-left: var(--e-3); } }
+
+  .acao-icone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--raio);
+    border: 1px solid var(--borda);
+    background: var(--superficie);
+    color: var(--texto-suave);
+    cursor: pointer;
+  }
+  .acao-icone:hover { color: var(--accent); border-color: var(--accent); }
+  .acao-icone :global(svg) { width: 1.2rem; height: 1.2rem; }
+
+  .cabecalho__reservada { display: none; white-space: nowrap; }
+  @media (min-width: 1180px) { .cabecalho__reservada { display: inline-flex; } }
+  .abrir-menu { display: inline-flex; }
+  @media (min-width: 1180px) { .abrir-menu { display: none; } }
+
+  /* ------------------------------ Ecrãs pequenos -------------------------- */
+  .menu-movel {
+    border-top: 1px solid var(--borda);
+    background: var(--fundo-2);
+    max-height: min(74dvh, 40rem);
+    overflow-y: auto;
+    padding-block: var(--e-3) var(--e-5);
+  }
+  .menu-movel[hidden] { display: none; }
+  @media (min-width: 1180px) { .menu-movel { display: none !important; } }
+
+  .menu-movel__lista { display: flex; flex-direction: column; }
+  .menu-movel__lista > li + li { border-top: 1px solid var(--borda); }
+
+  .menu-movel summary,
+  .menu-movel__ligacao {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e-2);
+    min-height: 3.1rem;
+    padding: 0.5rem 0.25rem;
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: var(--texto);
+    text-decoration: none;
+    cursor: pointer;
+    list-style: none;
+  }
+  .menu-movel summary::-webkit-details-marker { display: none; }
+  .menu-movel details[open] > summary { color: var(--accent); }
+  .menu-movel details[open] > summary :global(.seta-baixo) { transform: rotate(-90deg); }
+  .menu-movel details ul { padding: 0 0 var(--e-3) var(--e-4); display: flex; flex-direction: column; }
+  .menu-movel details ul a {
+    display: block;
+    min-height: 2.75rem;
+    padding: 0.6rem 0.25rem;
+    font-size: 0.95rem;
+    color: var(--texto-suave);
+    text-decoration: none;
+    border-left: 2px solid var(--borda);
+    padding-left: var(--e-4);
+  }
+  .menu-movel details ul a:hover,
+  .menu-movel details ul a[aria-current='page'] { color: var(--accent); border-left-color: var(--accent); }
+</style>
+
+<script>
+  /* --- Submenus de escritório: clique + teclado, sem dependência de hover --- */
+  const cabecalho = document.querySelector('.site-cabecalho');
+  const gatilhos = Array.from(
+    cabecalho?.querySelectorAll<HTMLButtonElement>('[data-abre-submenu]') ?? [],
+  );
+
+  function fecharTodos(exceto?: HTMLButtonElement) {
+    for (const g of gatilhos) {
+      if (g === exceto) continue;
+      g.setAttribute('aria-expanded', 'false');
+      g.nextElementSibling?.setAttribute('hidden', '');
+    }
+  }
+
+  for (const gatilho of gatilhos) {
+    const painel = gatilho.nextElementSibling as HTMLElement | null;
+    if (!painel) continue;
+
+    gatilho.addEventListener('click', () => {
+      const aberto = gatilho.getAttribute('aria-expanded') === 'true';
+      fecharTodos(gatilho);
+      gatilho.setAttribute('aria-expanded', String(!aberto));
+      painel.hidden = aberto;
+    });
+
+    const item = gatilho.parentElement!;
+    // Em dispositivos com rato o hover abre, mas nunca é a única forma.
+    item.addEventListener('pointerenter', (e) => {
+      if ((e as PointerEvent).pointerType !== 'mouse') return;
+      fecharTodos(gatilho);
+      gatilho.setAttribute('aria-expanded', 'true');
+      painel.hidden = false;
+    });
+    item.addEventListener('pointerleave', (e) => {
+      if ((e as PointerEvent).pointerType !== 'mouse') return;
+      gatilho.setAttribute('aria-expanded', 'false');
+      painel.hidden = true;
+    });
+    item.addEventListener('focusout', (e) => {
+      if (!item.contains(e.relatedTarget as Node)) {
+        gatilho.setAttribute('aria-expanded', 'false');
+        painel.hidden = true;
+      }
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const aberto = gatilhos.find((g) => g.getAttribute('aria-expanded') === 'true');
+    if (aberto) {
+      fecharTodos();
+      aberto.focus();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!(e.target as Element)?.closest('.tem-submenu')) fecharTodos();
+  });
+
+  /* ------------------------ Menu para ecrãs pequenos ----------------------- */
+  const abrir = document.getElementById('abrir-menu');
+  const menu = document.getElementById('menu-movel');
+  abrir?.addEventListener('click', () => {
+    const aberto = abrir.getAttribute('aria-expanded') === 'true';
+    abrir.setAttribute('aria-expanded', String(!aberto));
+    abrir.setAttribute('aria-label', aberto ? 'Abrir menu de navegação' : 'Fechar menu de navegação');
+    if (menu) menu.hidden = aberto;
+  });
+</script>

@@ -1,0 +1,131 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import CartaoArtigo from '@components/CartaoArtigo.astro';
+import { tecnica } from '@lib/conteudo';
+
+const artigos = (await tecnica()).slice(0, 3);
+
+const caminhos = [
+  {
+    publico: 'Está a descobrir agora',
+    titulo: 'Quero começar',
+    texto: 'O que é isto, o que se faz, que equipamento é preciso e como se obtém a licença — explicado sem jargão.',
+    href: '/radioamadorismo/comecar/',
+    icone: 'estrela',
+    destaque: true,
+  },
+  {
+    publico: 'Já é radioamador',
+    titulo: 'Artigos técnicos',
+    texto: 'QO-100, micro-ondas, EME, SSTV, modos digitais e experimentação, por associados da ARLA.',
+    href: '/tecnica/',
+    icone: 'ferramenta',
+  },
+];
+
+const temas = [
+  { rotulo: 'O que é o radioamadorismo', href: '/radioamadorismo/o-que-e/', icone: 'livro',
+    texto: 'Da telegrafia de Marconi às comunicações digitais: mais de um século de história.' },
+  { rotulo: 'Ser radioamador', href: '/radioamadorismo/ser-radioamador/', icone: 'onda',
+    texto: 'DX, propagação, modos digitais, satélites, EME, antenas e eletrónica.' },
+  { rotulo: 'Satélites e QO-100', href: '/radioamadorismo/satelites/', icone: 'satelite',
+    texto: 'Como receber o satélite geoestacionário e que modos usar.' },
+  { rotulo: 'Meteorologia espacial', href: '/radioamadorismo/meteorologia-espacial/', icone: 'onda',
+    texto: 'Atividade solar, vento solar e campo magnético: o que condiciona a propagação.' },
+  { rotulo: 'Rede ARLA', href: '/rede/', icone: 'repetidor',
+    texto: 'Repetidores, balizas e APRS abertos à comunidade.' },
+  { rotulo: 'Perguntas frequentes', href: '/recursos/faq/', icone: 'info',
+    texto: 'Licenças, quotas, utilização dos repetidores e formação.' },
+];
+---
+<Pagina
+  titulo="Radioamadorismo"
+  descricao="O que é o radioamadorismo, como começar, e os conteúdos técnicos da ARLA — para quem está a descobrir e para quem já opera há anos."
+  sobretitulo="Aprender e praticar"
+  migalhas={[{ rotulo: 'Radioamadorismo' }]}
+>
+  <ul class="caminhos">
+    {caminhos.map((c) => (
+      <li class={`cartao caminho ${c.destaque ? 'caminho--destaque' : ''}`}>
+        <p class="caminho__publico">{c.publico}</p>
+        <Icone nome={c.icone as any} />
+        <h2><a href={c.href}>{c.titulo}</a></h2>
+        <p class="caminho__texto">{c.texto}</p>
+        <span class="cartao__rodape">Começar aqui <Icone nome="seta" /></span>
+      </li>
+    ))}
+  </ul>
+
+  <section class="temas" aria-labelledby="t-temas">
+    <h2 id="t-temas">Explorar</h2>
+    <ul class="grelha grelha--auto-sm">
+      {temas.map((t) => (
+        <li class="cartao tema">
+          <Icone nome={t.icone as any} />
+          <h3><a href={t.href}>{t.rotulo}</a></h3>
+          <p>{t.texto}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="ultimos" aria-labelledby="t-ultimos">
+    <div class="cabecalho-seccao">
+      <div>
+        <h2 id="t-ultimos">Últimos artigos técnicos</h2>
+      </div>
+      <a class="btn btn--contorno" href="/tecnica/">Ver todos <Icone nome="seta" /></a>
+    </div>
+    <div class="grelha grelha--auto">
+      {artigos.map((a) => (
+        <CartaoArtigo
+          href={`/tecnica/${a.id}/`}
+          titulo={a.data.titulo}
+          resumo={a.data.resumo}
+          data={a.data.data}
+          categoria={a.data.categoria}
+          imagem={a.data.imagem}
+          imagemAlt={a.data.imagemAlt}
+          autor={a.data.autor}
+          indicativo={a.data.indicativo}
+        />
+      ))}
+    </div>
+  </section>
+</Pagina>
+
+<style>
+  .caminhos { display: grid; gap: var(--e-5); list-style: none; padding: 0; }
+  @media (min-width: 800px) { .caminhos { grid-template-columns: 1fr 1fr; } }
+  .caminho { padding: var(--e-6); gap: var(--e-2); }
+  .caminho--destaque {
+    background: linear-gradient(140deg, color-mix(in srgb, var(--accent) 13%, var(--superficie)), var(--superficie));
+    border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+  .caminho__publico {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .caminho > :global(svg) { width: 2.2rem; height: 2.2rem; color: var(--accent); margin: var(--e-3) 0 var(--e-2); }
+  .caminho h2 { font-size: var(--t-2xl); }
+  .caminho h2 a { color: inherit; text-decoration: none; }
+  .caminho h2 a::after { content: ''; position: absolute; inset: 0; }
+  .caminho h2 a:hover { color: var(--accent); }
+  .caminho__texto { color: var(--texto-suave); }
+  .caminho :global(.cartao__rodape) { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .caminho :global(.cartao__rodape svg) { width: 1em; height: 1em; }
+
+  .temas { margin-top: var(--e-8); }
+  .temas h2 { margin-bottom: var(--e-5); }
+  .temas ul { list-style: none; padding: 0; }
+  .tema { padding: var(--e-4); gap: var(--e-2); }
+  .tema > :global(svg) { width: 1.5rem; height: 1.5rem; color: var(--accent); }
+  .tema h3 { font-size: var(--t-base); }
+  .tema h3 a { color: inherit; text-decoration: none; }
+  .tema h3 a::after { content: ''; position: absolute; inset: 0; }
+  .tema h3 a:hover { color: var(--accent); }
+  .tema p { font-size: var(--t-sm); color: var(--texto-suave); }
+
+  .ultimos { margin-top: var(--e-8); }
+</style>

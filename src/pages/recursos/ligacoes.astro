@@ -1,0 +1,65 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import Aviso from '@components/Aviso.astro';
+import { getCollection } from 'astro:content';
+
+const ligacoes = await getCollection('ligacoes');
+const categorias = [...new Set(ligacoes.map((l) => l.data.categoria))].sort((a, b) =>
+  a.localeCompare(b, 'pt-PT'),
+);
+const dominio = (u: string) => {
+  try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; }
+};
+---
+<Pagina
+  titulo="Ligações úteis"
+  descricao="Sítios de referência para radioamadores: licenciamento, propagação, satélites, ferramentas e comunidade."
+  sobretitulo="Recursos"
+  migalhas={[{ rotulo: 'Recursos', href: '/recursos/' }, { rotulo: 'Ligações úteis' }]}
+>
+  {categorias.map((c) => (
+    <section class="cat">
+      <h2 class="cat__titulo">{c}</h2>
+      <ul class="grelha grelha--2 ligacoes">
+        {ligacoes.filter((l) => l.data.categoria === c).map((l) => (
+          <li class="cartao ligacao">
+            <h3>
+              <a href={l.data.url} rel="noopener noreferrer" target="_blank">
+                {l.data.nome}
+                <Icone nome="externo" />
+              </a>
+            </h3>
+            {l.data.descricao && <p>{l.data.descricao}</p>}
+            <p class="ligacao__dominio mono">{dominio(l.data.url)}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+
+  <Aviso tipo="info">
+    <p>
+      Estas ligações apontam para sítios geridos por terceiros. A ARLA não controla o seu
+      conteúdo nem a sua disponibilidade. Se encontrar uma ligação partida ou quiser sugerir
+      outra, <a href="/contactos/">diga-nos</a>.
+    </p>
+  </Aviso>
+</Pagina>
+
+<style>
+  .cat + .cat { margin-top: var(--e-7); }
+  .cat__titulo {
+    font-size: var(--t-xl); color: var(--accent);
+    padding-bottom: var(--e-2); margin-bottom: var(--e-4); border-bottom: 1px solid var(--borda);
+  }
+  .ligacoes { list-style: none; padding: 0; }
+  .ligacao { padding: var(--e-4); gap: 0.35rem; }
+  .ligacao h3 { font-size: var(--t-base); }
+  .ligacao h3 a { display: inline-flex; align-items: center; gap: 0.4rem; color: inherit; text-decoration: none; }
+  .ligacao h3 a::after { content: ''; position: absolute; inset: 0; }
+  .ligacao h3 a:hover { color: var(--accent); }
+  .ligacao h3 :global(svg) { width: 0.9em; height: 0.9em; color: var(--texto-fraco); }
+  .ligacao p { font-size: var(--t-sm); color: var(--texto-suave); }
+  .ligacao__dominio { margin-top: auto; padding-top: var(--e-2); font-size: var(--t-xs); color: var(--texto-fraco); }
+</style>

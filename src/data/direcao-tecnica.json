@@ -1,0 +1,30 @@
+{
+  "areas": [
+    {
+      "nome": "Instalações de uso comum de telefonia digital e analógica, antenas e linhas de transmissão",
+      "icone": "antena",
+      "responsaveis": [
+        { "nome": "Carlos Mourato", "indicativo": "CT4RK" },
+        { "nome": "Jorge Santos", "indicativo": "CT1JIB" }
+      ]
+    },
+    {
+      "nome": "Sistemas wireless IP, comunicação de dados, APRS",
+      "icone": "rede",
+      "responsaveis": [
+        { "nome": "Pedro Ribeiro", "indicativo": "CT7ABP" },
+        { "nome": "Sérgio Matias", "indicativo": "CT1HMN" }
+      ]
+    },
+    {
+      "nome": "Electricidade e sistemas de alimentação",
+      "icone": "energia",
+      "responsaveis": [{ "nome": "João Lázaro", "indicativo": "CT2GQL" }]
+    },
+    {
+      "nome": "Sistemas informáticos, web design, redes sociais",
+      "icone": "codigo",
+      "responsaveis": [{ "nome": "Paulo Martins", "indicativo": "CS7AGH" }]
+    }
+  ]
+}

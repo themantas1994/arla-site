@@ -1,0 +1,20 @@
+---
+import Icone from './Icone.astro';
+interface Props {
+  titulo: string;
+  descricao?: string;
+  icone?: string;
+  accaoHref?: string;
+  accaoRotulo?: string;
+}
+const { titulo, descricao, icone = 'onda', accaoHref, accaoRotulo } = Astro.props;
+---
+<div class="vazio">
+  <Icone nome={icone as any} />
+  <strong>{titulo}</strong>
+  {descricao && <p>{descricao}</p>}
+  {accaoHref && accaoRotulo && (
+    <a class="btn btn--contorno btn--pequeno" href={accaoHref}>{accaoRotulo}</a>
+  )}
+  <slot />
+</div>

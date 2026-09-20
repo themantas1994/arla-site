@@ -1,0 +1,16 @@
+---
+import Icone from './Icone.astro';
+interface Props {
+  tipo?: 'info' | 'historico' | 'tarefa';
+  titulo?: string;
+}
+const { tipo = 'info', titulo } = Astro.props;
+const ICONE = { info: 'info', historico: 'relogio', tarefa: 'aviso' } as const;
+---
+<aside class={`aviso aviso--${tipo}`} role="note">
+  <Icone nome={ICONE[tipo]} />
+  <div>
+    {titulo && <strong>{titulo}</strong>}
+    <slot />
+  </div>
+</aside>

@@ -1,0 +1,87 @@
+---
+import Base from '@layouts/Base.astro';
+import FundoEspectro from '@components/FundoEspectro.astro';
+import Icone from '@components/Icone.astro';
+
+const atalhos = [
+  { rotulo: 'Página inicial', href: '/', icone: 'onda' },
+  { rotulo: 'Repetidores', href: '/rede/repetidores/', icone: 'repetidor' },
+  { rotulo: 'Notícias', href: '/noticias/', icone: 'calendario' },
+  { rotulo: 'Artigos técnicos', href: '/tecnica/', icone: 'ferramenta' },
+  { rotulo: 'Arquivo', href: '/arquivo/', icone: 'livro' },
+  { rotulo: 'Contactos', href: '/contactos/', icone: 'correio' },
+];
+---
+<Base
+  titulo="Página não encontrada"
+  descricao="A página que procura não existe ou mudou de endereço."
+  semIndexacao
+>
+  <section class="erro">
+    <FundoEspectro />
+    <div class="envolvente erro__interior">
+      <p class="erro__codigo mono" aria-hidden="true">404</p>
+      <h1>Esta frequência parece estar ocupada…</h1>
+      <p class="erro__texto">
+        Não encontrámos nada neste endereço. Pode ter mudado de sítio na reorganização do
+        sítio da ARLA, ou a ligação que seguiu pode estar incorreta.
+      </p>
+
+      <form class="erro__pesquisa" action="/pesquisa/" method="get" role="search">
+        <label class="invisivel" for="q404">Pesquisar no sítio da ARLA</label>
+        <div class="campo--pesquisa">
+          <Icone nome="pesquisa" class="campo__icone" />
+          <input type="search" id="q404" name="q" placeholder="O que procurava?" />
+        </div>
+        <button class="btn btn--principal" type="submit">Pesquisar</button>
+      </form>
+
+      <nav class="erro__atalhos" aria-label="Atalhos úteis">
+        {atalhos.map((a) => (
+          <a class="erro__atalho" href={a.href}>
+            <Icone nome={a.icone as any} />
+            {a.rotulo}
+          </a>
+        ))}
+      </nav>
+
+      <p class="erro__nota fraco">
+        Vinha de uma ligação do sítio antigo (<span class="mono">/site/…</span>)? Essas
+        moradas foram redirecionadas — se esta não funcionou,
+        <a href="/contactos/">avise-nos</a> e corrigimos.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .erro { position: relative; isolation: isolate; overflow: hidden; min-height: 70dvh; display: grid; align-items: center; }
+  .erro__interior { position: relative; z-index: 1; padding-block: var(--e-9); max-width: 46rem; }
+  .erro__codigo {
+    font-size: clamp(4rem, 14vw, 8rem); font-weight: 800; line-height: 0.85;
+    color: transparent; -webkit-text-stroke: 2px var(--borda-forte);
+    letter-spacing: 0.04em;
+  }
+  .erro h1 { margin-top: var(--e-4); font-size: var(--t-3xl); }
+  .erro__texto { margin-top: var(--e-4); font-size: var(--t-lg); color: var(--texto-suave); max-width: 54ch; }
+
+  .erro__pesquisa { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-6); }
+  .campo--pesquisa { position: relative; flex: 1 1 16rem; }
+  .campo--pesquisa :global(.campo__icone) {
+    position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+    width: 1.1rem; height: 1.1rem; color: var(--texto-fraco); pointer-events: none;
+  }
+  .campo--pesquisa input { padding-left: 2.6rem; min-height: 2.875rem; }
+
+  .erro__atalhos { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-6); }
+  .erro__atalho {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    min-height: 2.5rem; padding: 0.4rem 0.85rem;
+    border: 1px solid var(--borda); border-radius: 999px;
+    color: var(--texto-suave); text-decoration: none; font-size: var(--t-sm); font-weight: 600;
+  }
+  .erro__atalho:hover { border-color: var(--accent); color: var(--accent); }
+  .erro__atalho :global(svg) { width: 1rem; height: 1rem; }
+
+  .erro__nota { margin-top: var(--e-6); font-size: var(--t-sm); max-width: 56ch; }
+</style>

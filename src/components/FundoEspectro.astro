@@ -1,0 +1,95 @@
+---
+/**
+ * Fundo decorativo: grelha técnica + traço de espectro de radiofrequência.
+ * É puramente SVG/CSS, não tem imagens nem JavaScript, e a única animação
+ * (uma varredura lenta) é desligada com prefers-reduced-motion.
+ */
+interface Props { variante?: 'hero' | 'faixa' }
+const { variante = 'hero' } = Astro.props;
+---
+<div class={`espectro espectro--${variante}`} aria-hidden="true">
+  <div class="espectro__grelha grelha-tecnica"></div>
+  <svg class="espectro__traco" viewBox="0 0 1440 320" preserveAspectRatio="none" focusable="false">
+    <defs>
+      <linearGradient id="grad-espectro" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0" />
+        <stop offset="18%" stop-color="var(--accent)" stop-opacity="0.75" />
+        <stop offset="82%" stop-color="var(--accent)" stop-opacity="0.75" />
+        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0" />
+      </linearGradient>
+      <linearGradient id="grad-preenche" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.22" />
+        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+    {/* Traço tipo analisador de espectro: ruído de fundo com portadoras destacadas */}
+    <path
+      class="espectro__preenche"
+      fill="url(#grad-preenche)"
+      d="M0,266 L34,258 L52,262 L70,240 L88,261 L104,263 L118,214 L126,150 L134,214 L150,260 L178,255 L196,264 L214,246 L232,262 L252,259 L268,265 L286,232 L300,262 L322,257 L340,263 L358,204 L366,118 L374,204 L392,260 L416,256 L434,264 L452,238 L470,261 L494,258 L512,265 L530,244 L548,262 L570,254 L588,264 L606,190 L614,92 L622,190 L640,259 L664,253 L682,264 L700,236 L718,261 L742,256 L760,265 L778,222 L796,262 L818,250 L836,263 L854,206 L862,134 L870,206 L888,260 L912,254 L930,264 L948,240 L966,261 L990,257 L1008,265 L1026,228 L1044,262 L1066,252 L1084,264 L1102,196 L1110,108 L1118,196 L1136,259 L1160,255 L1178,264 L1196,242 L1214,261 L1238,256 L1256,265 L1274,234 L1292,262 L1314,253 L1332,264 L1350,218 L1368,260 L1396,256 L1414,264 L1440,258 L1440,320 L0,320 Z"
+    />
+    <path
+      class="espectro__linha"
+      fill="none"
+      stroke="url(#grad-espectro)"
+      stroke-width="1.75"
+      stroke-linejoin="round"
+      d="M0,266 L34,258 L52,262 L70,240 L88,261 L104,263 L118,214 L126,150 L134,214 L150,260 L178,255 L196,264 L214,246 L232,262 L252,259 L268,265 L286,232 L300,262 L322,257 L340,263 L358,204 L366,118 L374,204 L392,260 L416,256 L434,264 L452,238 L470,261 L494,258 L512,265 L530,244 L548,262 L570,254 L588,264 L606,190 L614,92 L622,190 L640,259 L664,253 L682,264 L700,236 L718,261 L742,256 L760,265 L778,222 L796,262 L818,250 L836,263 L854,206 L862,134 L870,206 L888,260 L912,254 L930,264 L948,240 L966,261 L990,257 L1008,265 L1026,228 L1044,262 L1066,252 L1084,264 L1102,196 L1110,108 L1118,196 L1136,259 L1160,255 L1178,264 L1196,242 L1214,261 L1238,256 L1256,265 L1274,234 L1292,262 L1314,253 L1332,264 L1350,218 L1368,260 L1396,256 L1414,264 L1440,258"
+    />
+  </svg>
+  {variante === 'hero' && <div class="espectro__varredura"></div>}
+</div>
+
+<style>
+  .espectro {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--realce-hero);
+  }
+  .espectro__grelha {
+    position: absolute;
+    inset: 0;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 35%, #000 25%, transparent 78%);
+  }
+  /* O traço vive na faixa inferior e desvanece-se para cima: as cristas não
+     podem subir até ao texto, ou a leitura sofre — sobretudo em telemóvel,
+     onde o conteúdo ocupa quase toda a altura. */
+  .espectro__traco {
+    position: absolute;
+    inset: auto 0 0;
+    width: 100%;
+    height: 34%;
+    min-height: 6rem;
+    max-height: 14rem;
+    opacity: 0.85;
+    mask-image: linear-gradient(to top, #000 32%, rgb(0 0 0 / 0.35) 68%, transparent 100%);
+  }
+  @media (min-width: 900px) {
+    .espectro__traco { height: 42%; max-height: 18rem; }
+  }
+  .espectro--faixa .espectro__traco {
+    height: 100%;
+    max-height: none;
+    opacity: 0.4;
+    mask-image: linear-gradient(to top, #000 45%, transparent 100%);
+  }
+
+  /* Varredura lenta, tipo analisador de espectro. Discreta e desligável. */
+  .espectro__varredura {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 22rem;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 9%, transparent), transparent);
+    animation: varrer 14s linear infinite;
+  }
+  @keyframes varrer {
+    from { transform: translateX(-24rem); }
+    to { transform: translateX(calc(100vw + 4rem)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .espectro__varredura { display: none; }
+  }
+</style>

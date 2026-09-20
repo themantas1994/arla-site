@@ -1,0 +1,73 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Aviso from '@components/Aviso.astro';
+import Icone from '@components/Icone.astro';
+import orgaos from '@data/orgaos-sociais.json';
+---
+<Pagina
+  titulo="Órgãos Sociais"
+  descricao={`Composição da Mesa da Assembleia-Geral, da Direção e do Conselho Fiscal da ARLA — mandato ${orgaos.mandato}.`}
+  sobretitulo="A associação"
+  migalhas={[{ rotulo: 'ARLA', href: '/arla/' }, { rotulo: 'Órgãos Sociais' }]}
+>
+  <Aviso tipo="info" titulo={`Mandato ${orgaos.mandato}`}>
+    <p>{orgaos.notaMandato}</p>
+  </Aviso>
+
+  <div class="orgaos">
+    {orgaos.orgaos.map((o) => (
+      <section class="orgao" aria-labelledby={`o-${o.nome.replace(/\s+/g, '-').toLowerCase()}`}>
+        <h2 class="orgao__titulo" id={`o-${o.nome.replace(/\s+/g, '-').toLowerCase()}`}>
+          <Icone nome="escudo" /> {o.nome}
+        </h2>
+        <ul class="grelha grelha--auto-sm pessoas">
+          {o.membros.map((m) => (
+            <li class="cartao pessoa">
+              <p class="pessoa__cargo">{m.cargo}</p>
+              <p class="pessoa__nome">{m.nome}</p>
+              <p class="pessoa__dados">
+                {m.indicativo && <span class="mono pessoa__indicativo">{m.indicativo}</span>}
+                <span class="fraco">Associado n.º {m.numeroAssociado}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+
+  <aside class="orgaos__nota">
+    <p class="suave">
+      A direção técnica — quem mantém repetidores, balizas, energia e sistemas informáticos —
+      está listada em <a href="/arla/direcao-tecnica/">Direção Técnica</a>.
+      Os estatutos e regulamentos internos que definem estes órgãos estão disponíveis
+      nos <a href="/recursos/documentos/">documentos da associação</a>.
+    </p>
+  </aside>
+</Pagina>
+
+<style>
+  .orgaos { display: flex; flex-direction: column; gap: var(--e-7); }
+  .orgao__titulo {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-size: var(--t-xl);
+    padding-bottom: var(--e-3); margin-bottom: var(--e-4);
+    border-bottom: 1px solid var(--borda);
+  }
+  .orgao__titulo :global(svg) { width: 1.3rem; height: 1.3rem; color: var(--accent); }
+  .pessoas { list-style: none; padding: 0; }
+  .pessoa { padding: var(--e-4); gap: 0.15rem; }
+  .pessoa__cargo {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.09em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .pessoa__nome { font-size: var(--t-lg); font-weight: 700; margin-top: 0.25rem; }
+  .pessoa__dados {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem;
+    margin-top: 0.3rem; font-size: var(--t-sm);
+  }
+  .pessoa__indicativo { font-weight: 700; color: var(--texto-suave); letter-spacing: 0.04em; }
+  .pessoa__dados .fraco { font-size: var(--t-xs); }
+  .orgaos__nota { margin-top: var(--e-7); padding-top: var(--e-5); border-top: 1px solid var(--borda); }
+  .orgaos__nota p { font-size: var(--t-sm); max-width: 70ch; }
+</style>

@@ -1,0 +1,52 @@
+{
+  "faq": [
+    {
+      "id": "preciso-licenca",
+      "pergunta": "Preciso de ser radioamador licenciado para me associar à ARLA?",
+      "resposta": "Não. Embora seja designada como Associação de Radioamadores, as atividades da ARLA são extensíveis a pessoas que ainda não sejam licenciadas pela Autoridade Nacional de Comunicações nem possuam o respetivo Certificado para o Serviço de Amador e Amador por Satélite.",
+      "categoria": "Associar-se"
+    },
+    {
+      "id": "como-me-associo",
+      "pergunta": "Como me candidato a associado/a?",
+      "resposta": "Preenche a ficha de inscrição em PDF e envia-a para a associação. O pedido é avaliado em reunião de direção e, assim que for aprovado, a ARLA entra em contacto para que possa efetuar o pagamento da quota.",
+      "categoria": "Associar-se"
+    },
+    {
+      "id": "quanto-custa",
+      "pergunta": "Quanto custa ser associado/a?",
+      "resposta": "A quota anual é de 20,00 € (vinte euros). Não é cobrada qualquer jóia de inscrição — a única obrigação de entrada é o pagamento da quota anual.",
+      "categoria": "Quotas"
+    },
+    {
+      "id": "isencao-senhoras",
+      "pergunta": "Existe alguma isenção de quota?",
+      "resposta": "Sim. Em homenagem ao Dia Internacional da Mulher, foi deliberado por unanimidade e aclamação na Assembleia-Geral Ordinária de Associados de 2016 que, a partir dessa data, todas as senhoras ou meninas radioamadoras — ou em vias de o ser — que se queiram associar estão isentas do pagamento de quotas.",
+      "categoria": "Quotas"
+    },
+    {
+      "id": "como-pago",
+      "pergunta": "Como pago a quota e envio o comprovativo?",
+      "resposta": "O pagamento deve ser feito preferencialmente por transferência bancária para o IBAN da associação, indicando na descrição o indicativo (ou o primeiro e último nome), a palavra «Quota» e o ano a que se refere. O comprovativo digitalizado tem de ser sempre enviado para o endereço oficial de correio eletrónico da ARLA.",
+      "categoria": "Quotas"
+    },
+    {
+      "id": "morar-fora",
+      "pergunta": "Posso associar-me se não morar no Litoral Alentejano?",
+      "resposta": "Sim. Os princípios consagrados nos Estatutos não são limitativos: qualquer pessoa, independentemente da área geográfica onde resida, se pode tornar membro da ARLA. A associação prevê inclusivamente Núcleos de Sócios noutras zonas do território nacional.",
+      "categoria": "Associar-se"
+    },
+    {
+      "id": "usar-repetidores",
+      "pergunta": "Quem pode usar os repetidores da ARLA?",
+      "resposta": "Os repetidores e balizas da ARLA fazem parte da rede aberta do Serviço de Amador e podem ser utilizados por qualquer estação devidamente licenciada, nos termos da legislação em vigor. Os dados de acesso — frequências, tons e talkgroups — estão publicados na página de repetidores.",
+      "categoria": "Rede ARLA"
+    },
+    {
+      "id": "comecar-radioamadorismo",
+      "pergunta": "Quero começar no radioamadorismo. Por onde começo?",
+      "resposta": "Comece pela secção «Quero começar», que explica o que é o radioamadorismo e que passos dar. Depois, fale connosco: a ARLA promove cursos de formação destinados sobretudo a associados que se preparam para o exame de aptidão do Certificado de Amador Nacional.",
+      "categoria": "Radioamadorismo"
+    }
+  ]
+}

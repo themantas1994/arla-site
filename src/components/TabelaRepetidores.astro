@@ -1,0 +1,289 @@
+---
+import DistintivoEstado from './DistintivoEstado.astro';
+import BotaoCopiar from './BotaoCopiar.astro';
+import Icone from './Icone.astro';
+import EstadoVazio from './EstadoVazio.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  repetidores: CollectionEntry<'repetidores'>[];
+  /** Mostra a barra de filtros e pesquisa (desativada nos resumos da página inicial). */
+  comFiltros?: boolean;
+  legenda?: string;
+}
+const { repetidores, comFiltros = true, legenda } = Astro.props;
+
+const FILTROS = [
+  { chave: 'vhf', rotulo: 'VHF' },
+  { chave: 'uhf', rotulo: 'UHF' },
+  { chave: 'analogico', rotulo: 'Analógico' },
+  { chave: 'dmr', rotulo: 'DMR' },
+  { chave: 'dstar', rotulo: 'D-STAR' },
+  { chave: 'aprs', rotulo: 'APRS' },
+];
+const disponiveis = new Set(repetidores.flatMap((r) => r.data.filtros));
+const filtrosVisiveis = FILTROS.filter((f) => disponiveis.has(f.chave));
+---
+<div class="repetidores" data-repetidores>
+  {comFiltros && (
+    <div class="barra-filtros nao-imprimir">
+      <div class="campo campo--pesquisa">
+        <label class="invisivel" for="pesquisa-repetidores">Pesquisar repetidores</label>
+        <Icone nome="pesquisa" class="campo__icone" />
+        <input
+          type="search"
+          id="pesquisa-repetidores"
+          placeholder="Indicativo, canal, frequência ou local…"
+          autocomplete="off"
+          data-pesquisa-repetidores
+        />
+      </div>
+      <fieldset class="filtros">
+        <legend class="invisivel">Filtrar por banda e modo</legend>
+        {filtrosVisiveis.map((f) => (
+          <label class="filtro">
+            <input type="checkbox" value={f.chave} data-filtro-repetidor />
+            <span>{f.rotulo}</span>
+          </label>
+        ))}
+        <button type="button" class="btn btn--fantasma btn--pequeno" data-limpar-filtros hidden>
+          <Icone nome="fechar" /> Limpar
+        </button>
+      </fieldset>
+      <p class="contagem" data-contagem aria-live="polite">
+        {repetidores.length} {repetidores.length === 1 ? 'repetidor' : 'repetidores'}
+      </p>
+    </div>
+  )}
+
+  {/* ---------- Tabela para ecrãs médios e grandes ---------- */}
+  <div class="tabela-envolvente so-largo">
+    <table class="dados">
+      {legenda && <caption>{legenda}</caption>}
+      <thead>
+        <tr>
+          <th scope="col">Canal</th>
+          <th scope="col">Banda</th>
+          <th scope="col">Modo</th>
+          <th scope="col">Localização</th>
+          <th scope="col">Tx (MHz)</th>
+          <th scope="col">Rx (MHz)</th>
+          <th scope="col">Acesso</th>
+          <th scope="col">P.A.R.</th>
+          <th scope="col">Indicativo</th>
+          <th scope="col">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {repetidores.map((r) => {
+          const d = r.data;
+          return (
+            <tr
+              data-linha-repetidor
+              data-filtros={d.filtros.join(' ')}
+              data-texto={[d.canal, d.banda, d.modo, d.localizacao, d.quadricula, d.frequenciaTx, d.frequenciaRx, d.indicativo].filter(Boolean).join(' ').toLowerCase()}
+            >
+              <td class="mono">{d.canal || '—'}</td>
+              <td>{d.banda}</td>
+              <td>{d.modo}</td>
+              <td>
+                {d.localizacao}
+                {d.quadricula && <><br /><span class="mono fraco">{d.quadricula}</span></>}
+              </td>
+              <td class="num">
+                <span class="freq">{d.frequenciaTx}</span>
+                <BotaoCopiar valor={d.frequenciaTx} rotulo={`Copiar frequência de emissão ${d.frequenciaTx} MHz de ${d.indicativo}`} class="nao-imprimir" />
+              </td>
+              <td class="num">
+                <span class="freq">{d.frequenciaRx}</span>
+                <BotaoCopiar valor={d.frequenciaRx} rotulo={`Copiar frequência de receção ${d.frequenciaRx} MHz de ${d.indicativo}`} class="nao-imprimir" />
+              </td>
+              <td class="mono">{d.acesso || d.tom || '—'}</td>
+              <td class="num">{d.potencia ? `${d.potencia} W` : '—'}</td>
+              <td class="num">
+                <strong>{d.indicativo}</strong>
+                <BotaoCopiar valor={d.indicativo} rotulo={`Copiar indicativo ${d.indicativo}`} class="nao-imprimir" />
+              </td>
+              <td><DistintivoEstado estado={d.estado} /></td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+
+  {/* ---------- Cartões para telemóvel ---------- */}
+  <ul class="cartoes-repetidores so-estreito">
+    {repetidores.map((r) => {
+      const d = r.data;
+      return (
+        <li
+          class="cartao cartao-repetidor"
+          data-linha-repetidor
+          data-filtros={d.filtros.join(' ')}
+          data-texto={[d.canal, d.banda, d.modo, d.localizacao, d.quadricula, d.frequenciaTx, d.frequenciaRx, d.indicativo].filter(Boolean).join(' ').toLowerCase()}
+        >
+          <div class="cartao-repetidor__topo">
+            <div>
+              <p class="cartao-repetidor__indicativo mono">{d.indicativo}</p>
+              <p class="cartao-repetidor__local">{d.localizacao}{d.quadricula ? ` · ${d.quadricula}` : ''}</p>
+            </div>
+            <DistintivoEstado estado={d.estado} />
+          </div>
+          <dl class="cartao-repetidor__dados">
+            <div><dt>Canal</dt><dd class="mono">{d.canal || '—'}</dd></div>
+            <div><dt>Banda / Modo</dt><dd>{d.banda} · {d.modo}</dd></div>
+            <div>
+              <dt>Emissão (Tx)</dt>
+              <dd class="num">{d.frequenciaTx} MHz
+                <BotaoCopiar valor={d.frequenciaTx} rotulo={`Copiar ${d.frequenciaTx} MHz`} />
+              </dd>
+            </div>
+            <div>
+              <dt>Receção (Rx)</dt>
+              <dd class="num">{d.frequenciaRx} MHz
+                <BotaoCopiar valor={d.frequenciaRx} rotulo={`Copiar ${d.frequenciaRx} MHz`} />
+              </dd>
+            </div>
+            <div><dt>Acesso</dt><dd class="mono">{d.acesso || d.tom || '—'}</dd></div>
+            <div><dt>P.A.R.</dt><dd class="num">{d.potencia ? `${d.potencia} W` : '—'}</dd></div>
+          </dl>
+        </li>
+      );
+    })}
+  </ul>
+
+  <div class="sem-resultados" data-sem-resultados hidden>
+    <EstadoVazio
+      titulo="Nenhum repetidor corresponde aos filtros selecionados."
+      descricao="Experimente retirar algum filtro ou apagar o texto da pesquisa."
+      icone="filtro"
+    />
+  </div>
+</div>
+
+<style>
+  .barra-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e-3);
+    margin-bottom: var(--e-4);
+  }
+  .campo--pesquisa { position: relative; flex: 1 1 18rem; }
+  .campo--pesquisa :global(.campo__icone) {
+    position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%);
+    width: 1.05rem; height: 1.05rem; color: var(--texto-fraco); pointer-events: none;
+  }
+  .campo--pesquisa input { padding-left: 2.5rem; }
+
+  .filtros { display: flex; flex-wrap: wrap; gap: var(--e-2); border: 0; padding: 0; margin: 0; }
+  .filtro {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    min-height: 2.5rem; padding: 0.35rem 0.85rem;
+    border: 1px solid var(--borda-forte); border-radius: 999px;
+    font-size: var(--t-sm); font-weight: 600; color: var(--texto-suave);
+    cursor: pointer; user-select: none;
+    transition: background var(--transicao), color var(--transicao), border-color var(--transicao);
+  }
+  .filtro input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .filtro:hover { border-color: var(--accent); color: var(--accent); }
+  .filtro:has(input:checked) {
+    background: var(--accent); border-color: var(--accent); color: var(--accent-contraste);
+  }
+  .filtro:has(input:focus-visible) { outline: 3px solid var(--accent-forte); outline-offset: 2px; }
+  .filtro:has(input:checked)::before { content: '✓'; font-size: 0.85em; }
+
+  .contagem { font-size: var(--t-sm); color: var(--texto-fraco); margin-left: auto; }
+
+  .freq { font-weight: 600; }
+  table.dados td .copiar { margin-left: 0.4rem; vertical-align: middle; }
+
+  /* Alternância tabela / cartões */
+  .so-largo { display: none; }
+  .so-estreito { display: grid; gap: var(--e-3); }
+  @media (min-width: 860px) {
+    .so-largo { display: block; }
+    .so-estreito { display: none; }
+  }
+  @media print {
+    .so-largo { display: block; }
+    .so-estreito { display: none; }
+  }
+
+  .cartao-repetidor { padding: var(--e-4); gap: var(--e-3); }
+  .cartao-repetidor__topo {
+    display: flex; align-items: start; justify-content: space-between;
+    gap: var(--e-3); padding-bottom: var(--e-3); border-bottom: 1px solid var(--borda);
+  }
+  .cartao-repetidor__indicativo { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.04em; }
+  .cartao-repetidor__local { font-size: var(--t-sm); color: var(--texto-suave); }
+  .cartao-repetidor__dados {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--e-3); margin-top: var(--e-3);
+  }
+  .cartao-repetidor__dados dt {
+    font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--texto-fraco);
+  }
+  .cartao-repetidor__dados dd {
+    margin: 0.15rem 0 0; font-size: var(--t-sm); font-weight: 600;
+    display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
+  }
+</style>
+
+<script>
+  for (const raiz of document.querySelectorAll<HTMLElement>('[data-repetidores]')) {
+    const pesquisa = raiz.querySelector<HTMLInputElement>('[data-pesquisa-repetidores]');
+    const caixas = Array.from(raiz.querySelectorAll<HTMLInputElement>('[data-filtro-repetidor]'));
+    const linhas = Array.from(raiz.querySelectorAll<HTMLElement>('[data-linha-repetidor]'));
+    const contagem = raiz.querySelector<HTMLElement>('[data-contagem]');
+    const vazio = raiz.querySelector<HTMLElement>('[data-sem-resultados]');
+    const limpar = raiz.querySelector<HTMLButtonElement>('[data-limpar-filtros]');
+    const tabela = raiz.querySelector<HTMLElement>('.so-largo');
+    const cartoes = raiz.querySelector<HTMLElement>('.so-estreito');
+
+    /** Remove acentos para que «Arrabida» encontre «Arrábida». */
+    const semAcentos = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+    function aplicar() {
+      const termo = semAcentos(pesquisa?.value.trim() ?? '');
+      const ativos = caixas.filter((c) => c.checked).map((c) => c.value);
+      // Bandas e modos são grupos distintos: entre grupos exige-se «e», dentro de cada um «ou».
+      const bandas = ativos.filter((a) => a === 'vhf' || a === 'uhf');
+      const modos = ativos.filter((a) => a !== 'vhf' && a !== 'uhf');
+
+      let visiveis = 0;
+      const vistos = new Set<string>();
+      for (const linha of linhas) {
+        const f = (linha.dataset.filtros ?? '').split(' ');
+        const texto = linha.dataset.texto ?? '';
+        const okBanda = bandas.length === 0 || bandas.some((b) => f.includes(b));
+        const okModo = modos.length === 0 || modos.some((m) => f.includes(m));
+        const okTexto = termo === '' || semAcentos(texto).includes(termo);
+        const mostrar = okBanda && okModo && okTexto;
+        linha.hidden = !mostrar;
+        // Cada repetidor aparece duas vezes (tabela + cartão); conta-se uma só.
+        if (mostrar && !vistos.has(texto)) { vistos.add(texto); visiveis++; }
+      }
+
+      if (contagem) {
+        contagem.textContent = visiveis === 0
+          ? 'Sem resultados'
+          : `${visiveis} ${visiveis === 1 ? 'repetidor' : 'repetidores'}`;
+      }
+      if (vazio) vazio.hidden = visiveis > 0;
+      if (tabela) tabela.style.display = visiveis === 0 ? 'none' : '';
+      if (cartoes) cartoes.style.display = visiveis === 0 ? 'none' : '';
+      if (limpar) limpar.hidden = ativos.length === 0 && termo === '';
+    }
+
+    pesquisa?.addEventListener('input', aplicar);
+    for (const c of caixas) c.addEventListener('change', aplicar);
+    limpar?.addEventListener('click', () => {
+      if (pesquisa) pesquisa.value = '';
+      for (const c of caixas) c.checked = false;
+      aplicar();
+      pesquisa?.focus();
+    });
+  }
+</script>

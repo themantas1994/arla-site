@@ -1,0 +1,79 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import dt from '@data/direcao-tecnica.json';
+---
+<Pagina
+  titulo="Direção Técnica"
+  descricao="Quem assegura, dentro da ARLA, as instalações de telefonia analógica e digital, as antenas, os sistemas de dados e APRS, a energia e os sistemas informáticos."
+  sobretitulo="A associação"
+  migalhas={[{ rotulo: 'ARLA', href: '/arla/' }, { rotulo: 'Direção Técnica' }]}
+>
+  <p class="intro">
+    Os repetidores, balizas e sistemas da <a href="/rede/">rede ARLA</a> são mantidos por
+    associados voluntários, organizados por áreas técnicas.
+  </p>
+
+  <ul class="grelha grelha--2 areas">
+    {dt.areas.map((a) => (
+      <li class="cartao area">
+        <div class="area__icone"><Icone nome={a.icone as any} /></div>
+        <h2 class="area__titulo">{a.nome}</h2>
+        <ul class="area__pessoas">
+          {a.responsaveis.map((r) => (
+            <li>
+              <span class="area__nome">{r.nome}</span>
+              <span class="mono area__indicativo">{r.indicativo}</span>
+            </li>
+          ))}
+        </ul>
+      </li>
+    ))}
+  </ul>
+
+  <aside class="nota-final">
+    <Icone nome="info" />
+    <p>
+      Para comunicar uma avaria ou anomalia num repetidor ou baliza, use o
+      <a href="/contactos/">correio eletrónico da associação</a>. O estado operacional
+      de cada estação está indicado nas páginas de
+      <a href="/rede/repetidores/">repetidores</a> e <a href="/rede/balizas/">balizas</a>.
+    </p>
+  </aside>
+</Pagina>
+
+<style>
+  .intro { font-size: var(--t-lg); color: var(--texto-suave); max-width: 62ch; margin-bottom: var(--e-6); }
+  .areas { list-style: none; padding: 0; }
+  .area { padding: var(--e-5); gap: var(--e-3); }
+  .area__icone {
+    display: grid; place-items: center;
+    width: 2.75rem; height: 2.75rem;
+    border-radius: var(--raio);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+  }
+  .area__icone :global(svg) { width: 1.4rem; height: 1.4rem; }
+  .area__titulo { font-size: var(--t-base); line-height: 1.45; }
+  .area__pessoas {
+    list-style: none; padding: var(--e-3) 0 0; margin-top: auto;
+    border-top: 1px solid var(--borda);
+    display: flex; flex-direction: column; gap: var(--e-2);
+  }
+  .area__pessoas li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem; }
+  .area__nome { font-weight: 600; font-size: var(--t-sm); }
+  .area__indicativo {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.05em;
+    color: var(--accent); padding: 0.1rem 0.45rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    border-radius: 999px;
+  }
+  .nota-final {
+    display: flex; gap: var(--e-3); align-items: start;
+    margin-top: var(--e-7); padding: var(--e-4);
+    border: 1px solid var(--borda); border-radius: var(--raio-lg);
+    background: var(--superficie);
+  }
+  .nota-final :global(svg) { width: 1.25rem; height: 1.25rem; color: var(--accent); flex: none; margin-top: 0.15rem; }
+  .nota-final p { font-size: var(--t-sm); color: var(--texto-suave); }
+</style>

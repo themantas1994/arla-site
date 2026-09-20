@@ -1,0 +1,144 @@
+---
+import Pagina from '@layouts/Pagina.astro';
+import Icone from '@components/Icone.astro';
+import BotaoCopiar from '@components/BotaoCopiar.astro';
+import Aviso from '@components/Aviso.astro';
+import { SITIO, email, emailVisivel } from '@lib/sitio';
+---
+<Pagina
+  titulo="Quotização"
+  descricao={`A quota anual da ARLA é de ${SITIO.quotaAnual}. Dados bancários, como fazer a transferência e como enviar o comprovativo.`}
+  sobretitulo="A associação"
+  migalhas={[{ rotulo: 'ARLA', href: '/arla/' }, { rotulo: 'Quotização' }]}
+  largura="estreito"
+>
+  <div class="valor">
+    <p class="valor__rotulo">Quota anual</p>
+    <p class="valor__numero">{SITIO.quotaAnual}</p>
+    <p class="valor__nota">Sem jóia de inscrição. Isento para senhoras e meninas radioamadoras, por deliberação da Assembleia-Geral de 2016.</p>
+  </div>
+
+  <section class="dados-bancarios" aria-labelledby="t-iban">
+    <h2 id="t-iban"><Icone nome="documento" /> Dados para transferência</h2>
+    <dl>
+      <div>
+        <dt>IBAN</dt>
+        <dd>
+          <span class="mono valor-copiavel">{SITIO.iban}</span>
+          <BotaoCopiar valor={SITIO.iban.replace(/\s/g, '')} rotulo="Copiar IBAN da ARLA" texto="Copiar" />
+        </dd>
+      </div>
+      <div>
+        <dt>NIB</dt>
+        <dd>
+          <span class="mono valor-copiavel">{SITIO.nib}</span>
+          <BotaoCopiar valor={SITIO.nib.replace(/\s/g, '')} rotulo="Copiar NIB da ARLA" texto="Copiar" />
+        </dd>
+      </div>
+      <div>
+        <dt>Titular</dt>
+        <dd>{SITIO.titularConta}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <Aviso tipo="historico" titulo="O pagamento tem de ser sempre confirmado.">
+    <p>
+      Independentemente do método que utilizar, o pagamento deve ser <strong>sempre e
+      obrigatoriamente confirmado</strong> junto da ARLA, enviando o comprovativo digitalizado
+      para o endereço oficial de correio eletrónico: <a href={`mailto:${email()}`}>{emailVisivel()}</a>.
+    </p>
+  </Aviso>
+
+  <section class="instrucoes" aria-labelledby="t-instrucoes">
+    <h2 id="t-instrucoes">Como proceder</h2>
+    <ol>
+      <li>
+        Sempre que possível, faça a transferência interbancária pela Internet,
+        através do sistema <em>homebanking</em>.
+      </li>
+      <li>
+        Envie <strong>obrigatoriamente e sempre</strong> o comprovativo digitalizado para a
+        ARLA, ou faça o envio do comprovativo diretamente a partir do <em>homebanking</em>,
+        para o endereço oficial de correio eletrónico.
+      </li>
+      <li>
+        No caso da transferência pela Internet, coloque <strong>obrigatoriamente</strong> na
+        «Descrição» da referência da transferência os seguintes dados: o seu indicativo de
+        amador — ou, caso não o possua, o seu primeiro e último nome — a palavra «Quota»
+        e o ano ou anos a que se refere.
+        <p class="exemplo">
+          <span class="exemplo__rotulo">Exemplo</span>
+          <span class="mono">CTXxyz Quota 2019</span>
+          <BotaoCopiar valor="CTXxyz Quota 2019" rotulo="Copiar exemplo de descrição da transferência" />
+        </p>
+      </li>
+    </ol>
+    <p class="suave">
+      Em caso de qualquer dúvida, contacte-nos para o endereço oficial de correio
+      eletrónico: <a href={`mailto:${email()}`}>{emailVisivel()}</a>.
+    </p>
+  </section>
+
+  <div class="linha rodape-accoes">
+    <a class="btn btn--principal" href="/arla/ser-associado/">Como ser associado/a</a>
+    <a class="btn btn--contorno" href="/contactos/">Contactos</a>
+  </div>
+</Pagina>
+
+<style>
+  .valor {
+    padding: var(--e-6);
+    border-radius: var(--raio-xl);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--superficie)), var(--superficie));
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    text-align: center;
+  }
+  .valor__rotulo {
+    font-size: var(--t-xs); font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .valor__numero { font-size: var(--t-4xl); font-weight: 800; line-height: 1.05; margin-top: var(--e-2); }
+  .valor__nota { margin-top: var(--e-3); font-size: var(--t-sm); color: var(--texto-suave); max-width: 46ch; margin-inline: auto; }
+
+  .dados-bancarios { margin-top: var(--e-7); }
+  .dados-bancarios h2 { display: flex; align-items: center; gap: 0.5rem; font-size: var(--t-xl); }
+  .dados-bancarios h2 :global(svg) { width: 1.25rem; height: 1.25rem; color: var(--accent); }
+  .dados-bancarios dl {
+    margin-top: var(--e-4);
+    border: 1px solid var(--borda); border-radius: var(--raio-lg);
+    background: var(--superficie);
+    overflow: hidden;
+  }
+  .dados-bancarios dl > div {
+    display: grid; gap: 0.35rem;
+    padding: var(--e-4);
+  }
+  @media (min-width: 560px) {
+    .dados-bancarios dl > div { grid-template-columns: 7rem minmax(0, 1fr); align-items: center; gap: var(--e-4); }
+  }
+  .dados-bancarios dl > div + div { border-top: 1px solid var(--borda); }
+  .dados-bancarios dt { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-fraco); }
+  .dados-bancarios dd { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); }
+  .valor-copiavel { font-size: var(--t-base); font-weight: 600; word-break: break-all; }
+
+  .instrucoes { margin-top: var(--e-7); }
+  .instrucoes h2 { font-size: var(--t-xl); }
+  .instrucoes ol {
+    margin-top: var(--e-4); padding-left: 1.4rem;
+    display: flex; flex-direction: column; gap: var(--e-4);
+    color: var(--texto-suave);
+  }
+  .instrucoes li::marker { color: var(--accent); font-weight: 700; }
+  .instrucoes .suave { margin-top: var(--e-5); font-size: var(--t-sm); }
+  .exemplo {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2);
+    margin-top: var(--e-3); padding: var(--e-3);
+    background: var(--superficie-2); border: 1px solid var(--borda); border-radius: var(--raio);
+  }
+  .exemplo__rotulo {
+    font-size: var(--t-xs); font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--texto-fraco);
+  }
+  .rodape-accoes { margin-top: var(--e-7); }
+</style>

@@ -1,0 +1,39 @@
+{
+  "name": "arla-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sítio oficial da ARLA — Associação de Radioamadores do Litoral Alentejano",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build && pagefind --site dist",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "lint:links": "node scripts/check-links.mjs",
+    "audit:a11y": "node scripts/audit-a11y.mjs",
+    "qa": "node scripts/qa.mjs",
+    "qa:capturas": "node scripts/capturas.mjs",
+    "audit:seo": "node scripts/auditar-seo.mjs",
+    "audit:desempenho": "node scripts/auditar-desempenho.mjs"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.12",
+    "@astrojs/sitemap": "^3.6.0",
+    "astro": "^5.15.10",
+    "leaflet": "^1.9.4",
+    "sharp": "^0.34.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@axe-core/playwright": "^4.13.0",
+    "@types/leaflet": "^1.9.22",
+    "pagefind": "^1.4.0",
+    "playwright": "^1.63.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20.3.0"
+  }
+}
