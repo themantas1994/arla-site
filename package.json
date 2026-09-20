@@ -12,7 +12,6 @@
     "astro": "astro",
     "check": "astro check",
     "lint:links": "node scripts/check-links.mjs",
-    "audit:a11y": "node scripts/audit-a11y.mjs",
     "qa": "node scripts/qa.mjs",
     "qa:capturas": "node scripts/capturas.mjs",
     "audit:seo": "node scripts/auditar-seo.mjs",

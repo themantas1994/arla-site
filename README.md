@@ -50,7 +50,9 @@ npm run preview      # servir o build de produção localmente
 | `npm run check` | Verificação de tipos TypeScript em todo o projeto |
 | `npm run lint:links` | Procura ligações partidas em `dist/` (`-- --externas` inclui as externas) |
 | `npm run qa` | Acessibilidade, responsivo e testes funcionais num navegador real |
-| `npm run qa:capturas` | O mesmo, gerando capturas de ecrã em `reports/capturas/` |
+| `npm run qa:capturas` | Gera as capturas de ecrã em `reports/capturas/` |
+| `npm run audit:seo` | Metadados, dados estruturados, hierarquia de títulos e sitemap |
+| `npm run audit:desempenho` | Core Web Vitals sob 4G lento, num navegador real |
 
 `npm run qa` precisa do build feito e de um servidor a correr:
 
@@ -58,7 +60,13 @@ npm run preview      # servir o build de produção localmente
 npm run build
 npm run preview &
 npm run qa
+npm run audit:seo
+npm run audit:desempenho
 ```
+
+Os relatórios ficam em `reports/` (fora do controlo de versões, por serem
+regeneráveis). Os resultados da última execução estão em
+[`docs/qualidade.md`](docs/qualidade.md).
 
 ---
 
