@@ -1,151 +1,207 @@
-# ARLA Website
+# ARLA — Sítio Web
 
-The official website of **ARLA — Associação de Radioamadores do Litoral Alentejano** (Amateur Radio Association of the Alentejo Coast), a non-profit amateur radio association based in Santiago do Cacém, Portugal (callsign **CS5ARLA**).
+Sítio oficial da **ARLA — Associação de Radioamadores do Litoral Alentejano**, associação
+sem fins lucrativos sediada em Santiago do Cacém, com o indicativo coletivo **CS5ARLA**.
 
-- **Live site:** [www.cs5arla.pt](https://www.cs5arla.pt)
-- **Repository:** [github.com/themantas1994/arla](https://github.com/themantas1994/arla)
-- **Status:** Complete rebuild of the association's previous WordPress site, migrated content, in production use.
+- **Sítio em produção:** [www.cs5arla.pt](https://www.cs5arla.pt)
+- **Repositório:** [github.com/themantas1994/arla-site](https://github.com/themantas1994/arla-site)
+- **Estado:** reconstrução completa do antigo sítio WordPress, com os conteúdos migrados. Em produção.
 
-The site publishes the association's news, technical amateur-radio articles, events, and — most importantly for its members — live technical data about the ARLA repeater and beacon network (frequencies, tones, operating status). Content is edited by the association's board through an in-browser CMS, with no programming knowledge required; developers work with the same content as plain Markdown and JSON files in this repository.
+O sítio publica notícias e comunicados da associação, artigos técnicos de radioamadorismo,
+eventos e — o que mais importa aos associados — os dados da rede de repetidores e balizas
+da ARLA: frequências, tons, acessos e estado operacional. A direção edita tudo isto num
+editor no navegador, sem escrever código; quem desenvolve trabalha com os mesmos conteúdos
+sob a forma de ficheiros Markdown e JSON neste repositório.
 
-This README is the quick-start reference for developers. For deeper technical documentation, see the **[Wiki](wiki/)** (architecture rationale, content model, deployment, CI/CD, troubleshooting). For the association's own content-editing and deployment guides (in Portuguese, written for non-developers), see [`docs/`](docs/).
-
----
-
-## Features
-
-- **News & communications** (`src/content/noticias/`) — 39 migrated articles: announcements, activity reports, legislation updates.
-- **Technical articles** (`src/content/tecnica/`) — 8 in-depth articles on satellites, QO-100, microwave, propagation, with reading level, table of contents, and references.
-- **Events** (`src/content/eventos/`) — 17 events/activities, automatically classified as upcoming, ongoing, or past based on today's date.
-- **Repeater & beacon directory** (`src/data/repetidores.json`, `src/data/balizas.json`) — frequencies, tone, access mode, power, operating status, with client-side search and band/mode filtering, and a responsive card view on mobile.
-- **Interactive network map** (Leaflet + OpenStreetMap) — plots repeaters, beacons, and the clubhouse, with a full text-based alternative for accessibility and no-JS fallback.
-- **Site-wide search** — powered by Pagefind, built from the final HTML after `astro build`.
-- **Association information** — governing bodies, technical direction, membership list, history timeline, all editable as structured data.
-- **Document library** — statutes, regulations, membership forms (PDF).
-- **Content-managed by the board via `/admin/`** (Decap CMS) — no code changes needed for day-to-day publishing.
-- **Dark/light theme toggle** — dark by default, persisted in `localStorage`, respects `prefers-color-scheme` and `prefers-reduced-motion`.
-- **Responsive design** — mobile navigation with keyboard-operable submenus, tables that collapse into cards below 860px.
-- **Accessibility targeting WCAG 2.2 AA** — see [Accessibility](wiki/Accessibility.md) for what's implemented and measured.
-- **SEO** — per-page metadata, Open Graph/Twitter Card, JSON-LD structured data (`Organization`, `NewsArticle`, `Event`, `TechArticle`, `FAQPage`, `BreadcrumbList`, `WebSite`), sitemap, RSS feed, and 189 permanent redirects from the legacy WordPress URLs.
-- **Legal pages** — cookie policy, privacy policy, legal notice.
-
-There is no user authentication, no comments system, and no server-side dynamic behavior — the site is fully static.
+Este README é o ponto de entrada rápido. A documentação técnica aprofundada está na
+[Wiki](wiki/Home.md); a documentação dirigida à direção da associação está em [`docs/`](docs/).
+O resultado da última auditoria ao repositório está em
+[`docs/auditoria-do-projeto.md`](docs/auditoria-do-projeto.md).
 
 ---
 
-## Technology Stack
+## Funcionalidades
 
-| Technology | Purpose |
-| --- | --- |
-| [Astro 5](https://astro.build) (static output) | Site generator — renders all pages to HTML at build time, ships zero JS by default |
-| TypeScript (`astro/tsconfigs/strict`) | Type checking for components, data loaders, and library code |
-| Astro Content Collections + Zod | Schema-validated content (Markdown + JSON) — invalid data fails the build instead of publishing |
-| Plain CSS (`src/styles/global.css`) with `@layer` and custom properties | Styling and design tokens — no CSS framework or preprocessor |
-| [Decap CMS](https://decapcms.org) (`public/admin/`) | Git-backed content editor for the association's board, authenticating via GitHub OAuth |
-| [Leaflet](https://leafletjs.com) + OpenStreetMap tiles | Interactive map of the repeater/beacon network, loaded on demand |
-| [Pagefind](https://pagefind.app) | Static full-text search index, built from the generated HTML |
-| [Sharp](https://sharp.pixelplumbing.com) | Image resizing/re-encoding for migrated media (`scripts/otimizar-media.mjs`) |
-| [Playwright](https://playwright.dev) + [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm) | Accessibility, functional, and performance QA scripts (not a unit-test suite) |
-| `@astrojs/sitemap`, `@astrojs/rss` | Sitemap and RSS feed generation |
-| Node.js scripts (`scripts/*.mjs`) | Link checking, SEO auditing, performance auditing, image optimization |
+Tudo o que se segue está **implementado e verificado** no código (ver
+[auditoria](docs/auditoria-do-projeto.md)):
 
-There is no backend, no database, and no server runtime in production — `npm run build` produces a folder of static files served by any web server.
+- **Notícias e comunicados** — 39 artigos migrados, com categorias, etiquetas, paginação e
+  páginas por categoria.
+- **Artigos técnicos** — 8 artigos sobre satélites, QO-100, micro-ondas e propagação, com
+  nível de dificuldade, índice de conteúdos, referências e tempo de leitura.
+- **Eventos** — 17 eventos e atividades, classificados automaticamente como programados, a
+  decorrer ou terminados a partir da data do dia.
+- **Diretório de repetidores e balizas** — 9 repetidores/digipeaters e 4 balizas, com
+  pesquisa e filtros no lado do cliente, botões de cópia de frequências e vista em cartões
+  no telemóvel.
+- **Mapa da rede** — Leaflet + OpenStreetMap, carregado apenas quando entra no ecrã, com
+  lista de localizações em texto como alternativa acessível e sem JavaScript.
+- **Pesquisa em todo o sítio** — Pagefind, com o índice construído a partir do HTML final,
+  depois do `astro build`.
+- **Informação institucional** — órgãos sociais, direção técnica, lista de associados e
+  cronologia, tudo em dados estruturados editáveis.
+- **Biblioteca de documentos** — estatutos, regulamentos e ficha de inscrição em PDF.
+- **Gestão de conteúdos em `/admin/`** (Decap CMS) — publicar não exige alterações ao código.
+- **Tema claro e escuro** — escuro por predefinição, guardado em `localStorage`, respeitando
+  `prefers-color-scheme` e `prefers-reduced-motion`.
+- **Design responsivo** — navegação para telemóvel com submenus operáveis por teclado;
+  tabelas de dados que passam a cartões em ecrãs estreitos.
+- **Acessibilidade com objetivo WCAG 2.2 AA** — ver [Acessibilidade](wiki/Acessibilidade.md)
+  para o que está implementado, o que foi medido e o que não foi testado.
+- **SEO** — metadados por página, Open Graph e Twitter Card, dados estruturados JSON-LD,
+  sitemap, feed RSS e redireções permanentes a partir dos endereços do sítio WordPress.
+- **Páginas legais** — aviso legal, política de privacidade e política de cookies.
+
+Não existe autenticação de utilizadores, sistema de comentários nem comportamento dinâmico
+no servidor: o sítio é totalmente estático.
 
 ---
 
-## Architecture
+## Tecnologia
 
-The site is a static build: every page is generated once, at build time, from content stored as Markdown and JSON files in this Git repository. There is no per-request rendering and no database.
+Versões lidas do `package.json` e do `package-lock.json` deste repositório:
+
+| Tecnologia | Versão declarada | Para que serve |
+| --- | --- | --- |
+| [Astro](https://astro.build) | `^5.15.10` | Gerador do sítio; produz HTML estático no build e não envia JavaScript por predefinição |
+| TypeScript | `^5.9.3` | Verificação de tipos (`astro/tsconfigs/strict`, com `strictNullChecks`) |
+| Astro Content Collections + Zod | incluído no Astro | Conteúdo validado por esquema: dados inválidos fazem falhar o build |
+| CSS nativo (`src/styles/global.css`) | — | Sistema de design em `@layer` e custom properties. Sem framework nem pré-processador |
+| [Decap CMS](https://decapcms.org) | `^3.8.4` (via CDN em `public/admin/index.html`) | Editor de conteúdos ligado ao Git, autenticado por OAuth do GitHub |
+| [Leaflet](https://leafletjs.com) | `^1.9.4` | Mapa da rede, com telas do OpenStreetMap |
+| [Pagefind](https://pagefind.app) | `^1.4.0` | Índice de pesquisa estático, construído a partir do HTML gerado |
+| [Sharp](https://sharp.pixelplumbing.com) | `^0.34.4` | Redimensionamento e recodificação das imagens migradas (`scripts/otimizar-media.mjs`) |
+| [Playwright](https://playwright.dev) + [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm) | `^1.63.0` / `^4.13.0` | Guiões de QA de acessibilidade, responsivo, funcional e desempenho |
+| `@astrojs/sitemap`, `@astrojs/rss` | `^3.6.0` / `^4.0.12` | Sitemap e feed RSS |
+| `@astrojs/check` | `^0.9.4` | Suporte ao `astro check` |
+
+Não há backend, base de dados nem runtime no servidor em produção: `npm run build` produz
+uma pasta de ficheiros estáticos que qualquer servidor Web serve.
+
+---
+
+## Arquitetura
+
+Todas as páginas são geradas uma única vez, no build, a partir de Markdown e JSON guardados
+neste repositório Git. Não há renderização por pedido nem base de dados.
 
 ```mermaid
 flowchart TD
-    subgraph Content["Content sources (this repo)"]
-        MD["Markdown\nsrc/content/*.md\n(noticias, tecnica, eventos, paginas)"]
-        JSON["JSON data\nsrc/data/*.json\n(repetidores, balizas, orgaos-sociais…)"]
+    subgraph Fontes["Conteúdo (neste repositório)"]
+        MD["Markdown<br>src/content/**.md<br>noticias · tecnica · eventos · paginas"]
+        JSON["JSON<br>src/data/*.json<br>repetidores · balizas · documentos · ligacoes · faq"]
+        DIRETO["JSON lido diretamente<br>sitio · orgaos-sociais<br>direcao-tecnica · associados · cronologia"]
     end
 
-    CMS["Decap CMS\n(public/admin/)"] -->|commits via GitHub OAuth| MD
-    CMS -->|commits via GitHub OAuth| JSON
+    CMS["Decap CMS<br>public/admin/"] -->|commit via OAuth do GitHub| MD
+    CMS -->|commit via OAuth do GitHub| JSON
+    CMS -->|commit via OAuth do GitHub| DIRETO
 
-    MD --> Collections["Astro Content Collections\n(src/content.config.ts, Zod schemas)"]
-    JSON --> Collections
+    MD --> Colecoes["Content Collections<br>src/content.config.ts (esquemas Zod)"]
+    JSON --> Colecoes
+    DIRETO --> Paginas
+    Colecoes --> Paginas["Páginas e layouts<br>src/pages · src/layouts"]
+    Componentes["Componentes .astro<br>src/components"] --> Paginas
 
-    Collections --> Pages["Astro pages & layouts\n(src/pages, src/layouts)"]
-    Components["Reusable components\n(src/components/*.astro)"] --> Pages
-
-    Pages --> Build["astro build → dist/ (static HTML/CSS/JS)"]
-    Build --> Pagefind["pagefind --site dist\n(search index)"]
-
-    Build --> Server["Static file server\n(Apache today; any host works)"]
-    Server --> Browser["Browser"]
-
-    Browser -->|on-demand| Leaflet["Leaflet + OpenStreetMap\n(map component)"]
-    Browser -->|after build only| Pagefind
-    Browser -->|lazy, deferred| External["HamQSL / NOAA panels\n(space weather page)"]
+    Paginas --> Build["astro build → dist/"]
+    Build --> Pagefind["pagefind --site dist<br>índice de pesquisa"]
+    Build --> Servidor["Servidor de ficheiros estáticos<br>(hoje: Apache/cPanel)"]
+    Servidor --> Navegador["Navegador"]
+    Navegador -->|a pedido| Leaflet["Leaflet + telas OpenStreetMap"]
 ```
 
-**Rendering.** Astro's static output mode (`output` is unset, i.e. `'static'`) prerenders every route to HTML. Astro ships no client-side JavaScript by default; interactive pieces (the map, repeater search/filtering, theme toggle, search page) each carry their own small `<script>`, loaded only on the pages that use them.
+**Modo de renderização.** O `output` não está definido em `astro.config.mjs`, pelo que o
+Astro usa o modo estático: todas as rotas são pré-renderizadas. `trailingSlash: 'always'` e
+`build.format: 'directory'` fazem com que cada rota seja servida como `.../index.html` e
+todos os endereços terminem em `/`.
 
-**Routing.** File-based routing under `src/pages/`. Static routes are plain `.astro` files (e.g. `src/pages/contactos.astro` → `/contactos/`). Content-backed routes use dynamic segments with `getStaticPaths()` — e.g. `src/pages/noticias/[...slug].astro` generates one page per entry in the `noticias` collection. See the [Routing](wiki/Routing.md) wiki page for the full route table.
+**Encaminhamento.** Baseado em ficheiros, sob `src/pages/` (41 ficheiros de rota: 40
+`.astro` e um `rss.xml.ts`). As rotas de conteúdo usam `getStaticPaths()`. O build gera
+**113 páginas HTML** e mais 183 páginas-stub de redireção. Ver [Rotas](wiki/Rotas.md).
 
-**Data flow.** Content authors (via Decap CMS or a direct Git commit) change a Markdown or JSON file → Astro's content loader (`src/content.config.ts`) parses and validates it against a Zod schema at build time → pages call `getCollection()`/helpers in `src/lib/conteudo.ts` to read the validated data → components render it. A missing required field fails `npm run build` with a specific error rather than shipping bad data — important for a site that publishes repeater frequencies people tune radios to.
+**Fluxo de dados.** Quem edita (pelo CMS ou por commit direto) altera um ficheiro Markdown
+ou JSON → o carregador de conteúdos (`src/content.config.ts`) valida-o contra um esquema
+Zod no build → as páginas leem os dados validados através de `getCollection()` e dos
+auxiliares em `src/lib/conteudo.ts` → os componentes apresentam-nos. Um campo obrigatório em
+falta faz falhar `npm run build` com o ficheiro e o campo identificados, em vez de publicar
+dados errados — o que não é um detalhe num sítio que publica frequências usadas para
+sintonizar rádios.
 
-**Components.** `src/components/` holds ~20 reusable `.astro` components (e.g. `TabelaRepetidores.astro` for the repeater table/filter, `Mapa.astro` for the Leaflet map, `CartaoArtigo.astro`/`CartaoEvento.astro` for listing cards, `DistintivoEstado.astro` for status badges). `src/layouts/` holds three page shells: `Base.astro` (HTML document, header/footer, meta tags), `Pagina.astro` (long-form text pages), `Artigo.astro` (news/technical articles).
+**Componentes.** `src/components/` tem 19 componentes `.astro` reutilizáveis (todos em uso);
+`src/layouts/` tem três invólucros de página: `Base.astro` (documento HTML, cabeçalho,
+rodapé, metadados), `Pagina.astro` (páginas de texto) e `Artigo.astro` (notícias e artigos).
 
-**External services.** None load by default. Three exceptions, all deferred: OpenStreetMap tiles (only when a map scrolls into view), HamQSL/NOAA space-weather panel images (`loading="lazy"`, on one page), and Decap CMS itself (`/admin/`, blocked from indexing via `robots.txt`). Leaflet is bundled as a project dependency and dynamically `import()`-ed, not loaded from a CDN.
+**Serviços externos.** Nenhum carrega por predefinição. Três exceções, todas diferidas:
+telas do OpenStreetMap (só quando um mapa entra no ecrã), painéis do HamQSL/NOAA
+(`loading="lazy"`, numa única página) e o próprio Decap CMS (`/admin/`, bloqueado no
+`robots.txt`). O Leaflet é uma dependência do projeto, carregada por `import()` dinâmico —
+não vem de um CDN.
 
-**Build & deploy.** `npm run build` runs `astro build` then `pagefind --site dist` to index the generated HTML. The output in `dist/` is a plain static folder — see [Deployment](wiki/Deployment.md) for hosting-specific instructions (the site currently runs on Apache/cPanel).
-
-For the reasoning behind these choices (why Astro, why Git-backed content, why no third-party analytics, etc.), see [`docs/arquitetura.md`](docs/arquitetura.md) and the [Wiki Architecture page](wiki/Architecture.md).
+Razões de cada decisão: [`docs/arquitetura.md`](docs/arquitetura.md) e
+[Arquitetura](wiki/Arquitetura.md).
 
 ---
 
-## Installation
+## Requisitos
 
-Requirements:
+- **Node.js ≥ 20.3** (`package.json` → `engines.node`). A versão usada em desenvolvimento
+  está fixada em [`.nvmrc`](.nvmrc) (**22**) — com `nvm`, basta `nvm use`.
+- **npm** (vem com o Node). Existe um único `package-lock.json`; não há outro gestor de
+  pacotes configurado.
 
-- **Node.js ≥ 20.3** (`package.json` → `engines.node`). The version actually used for development is pinned in [`.nvmrc`](.nvmrc) (**22**) — if you use `nvm`, run `nvm use`.
-- npm (ships with Node). There is a single `package-lock.json`; no other package manager is configured.
+## Instalação
 
 ```bash
-git clone https://github.com/themantas1994/arla.git
-cd arla
+git clone https://github.com/themantas1994/arla-site.git
+cd arla-site
 npm install
 ```
 
-No environment variables are required to install or run the project (see [Environment Variables](#environment-variables)).
+Não é preciso definir variáveis de ambiente para instalar ou executar o projeto — ver
+[Variáveis de ambiente](#variáveis-de-ambiente).
 
----
-
-## Development
+## Desenvolvimento
 
 ```bash
 npm run dev
 ```
 
-Starts the Astro dev server at **http://localhost:4321**, with hot module reload for components, styles, and content changes.
+Inicia o servidor de desenvolvimento do Astro em **http://localhost:4321**, com recarga a
+quente de componentes, estilos e conteúdos.
 
-**Search does not work in `npm run dev`.** The Pagefind index is built from the final HTML in `dist/`, so it only exists after `npm run build`. The search page (`/pesquisa/`) will show a message that the index isn't available yet during development — this is expected, not a bug.
+**A pesquisa não funciona em `npm run dev`.** O índice do Pagefind é construído a partir do
+HTML final em `dist/`, pelo que só existe depois de `npm run build`. A página `/pesquisa/`
+indica que o índice não está disponível — é o comportamento esperado, não uma avaria.
 
-No environment variables are needed for local development. See [Local Development](wiki/Local-Development.md) in the Wiki for editing content locally with Decap CMS's local backend, debugging tips, and the full dev→build→preview loop.
+Ver [Desenvolvimento Local](wiki/Desenvolvimento-Local.md) para o ciclo completo
+dev → build → preview e para usar o CMS localmente.
 
 ---
 
-## Available Commands
+## Comandos disponíveis
 
-| Command | What it does |
+| Comando | O que faz |
 | --- | --- |
-| `npm run dev` | Starts the Astro development server with hot reload |
-| `npm run build` | Builds the production site into `dist/`, then builds the Pagefind search index (`astro build && pagefind --site dist`) |
-| `npm run preview` | Serves the `dist/` build locally, as in production |
-| `npm run check` | Runs `astro check` — TypeScript type checking across the whole project |
-| `npm run lint:links` | Checks for broken links in the built `dist/` (internal links and anchors; add `-- --externas` to also check external links) |
-| `npm run qa` | Runs accessibility (axe-core), responsive-layout, and functional tests against a running build in a real browser (Playwright/Chromium) |
-| `npm run qa:capturas` | Generates responsive screenshots into `reports/capturas/` |
-| `npm run audit:seo` | Audits metadata, structured data, heading hierarchy, and the sitemap in `dist/` |
-| `npm run audit:desempenho` | Measures Core Web Vitals (LCP, FCP, CLS) under simulated slow 4G, in a real browser |
+| `npm run dev` | Servidor de desenvolvimento com recarga a quente (`astro dev`) |
+| `npm start` | Igual a `npm run dev` |
+| `npm run build` | Gera o sítio em `dist/` e a seguir o índice de pesquisa (`astro build && pagefind --site dist`) |
+| `npm run preview` | Serve o conteúdo de `dist/` localmente, como em produção |
+| `npm run check` | `astro check` — verificação de tipos em todo o projeto |
+| `npm run lint:links` | Ligações partidas e âncoras no `dist/` gerado (acrescente `-- --externas` para também testar ligações externas) |
+| `npm run qa` | Acessibilidade (axe-core), transbordo responsivo em 7 larguras e testes funcionais num Chromium real |
+| `npm run qa:capturas` | Capturas de ecrã responsivas para `reports/capturas/` (`scripts/capturas.mjs`) |
+| `npm run audit:seo` | Metadados, dados estruturados, hierarquia de títulos e sitemap, sobre o `dist/` |
+| `npm run audit:desempenho` | Core Web Vitals (LCP, FCP, CLS) sob 4G lento, num navegador real |
 
-`npm run qa`, `audit:seo`, and `audit:desempenho` all require a production build served locally first:
+Existem dois guiões utilitários **sem entrada em `package.json`**, executados à mão quando
+necessário:
+
+```bash
+node scripts/otimizar-media.mjs [diretório]   # redimensiona imagens migradas (1600px máx.)
+node scripts/regenerar-resumos.mjs            # pré-visualiza; --escrever para gravar
+```
+
+`npm run qa`, `audit:seo` e `audit:desempenho` precisam de um build servido localmente:
 
 ```bash
 npm run build
@@ -155,157 +211,208 @@ npm run audit:seo
 npm run audit:desempenho
 ```
 
-Reports are written to `reports/` (git-ignored, since they're regenerable). The most recent results are recorded in [`docs/qualidade.md`](docs/qualidade.md).
+Os relatórios são escritos em `reports/` (ignorado pelo Git, por ser regenerável). Os
+resultados registados estão em [`docs/qualidade.md`](docs/qualidade.md).
 
 ---
 
-## Project Structure
+## Estrutura do projeto
 
 ```text
 src/
-  content/                   Editorial content, as Markdown (validated by src/content.config.ts)
-    noticias/                39 news articles / announcements
-    tecnica/                 8 technical articles
-    eventos/                 17 events and activities
-    paginas/                 4 long-form text pages (about ARLA, what is amateur radio…)
-  data/                      Structured data, as JSON, edited via the CMS
-    sitio.json               Address, contacts, IBAN, membership fee, social links
-    repetidores.json         One record per repeater
-    balizas.json             One record per beacon
-    orgaos-sociais.json      General assembly board, board of directors, supervisory board
-    direcao-tecnica.json     Technical direction team, by area
-    associados.json          Public member list
-    cronologia.json          Association history, entry by entry
-    documentos.json          Document library metadata
-    ligacoes.json            Curated external links
-    faq.json                 Frequently asked questions
-  components/                ~20 reusable .astro components
+  content/                   Conteúdo editorial em Markdown (validado por src/content.config.ts)
+    noticias/                39 notícias e comunicados
+    tecnica/                 8 artigos técnicos
+    eventos/                 17 eventos e atividades
+    paginas/                 4 páginas de texto longo
+  data/                      Dados estruturados em JSON, editáveis pelo CMS
+    sitio.json               Morada, contactos, IBAN, quota, redes sociais
+    repetidores.json         Um registo por repetidor (9)
+    balizas.json             Um registo por baliza (4)
+    orgaos-sociais.json      Mesa da AG, direção e conselho fiscal
+    direcao-tecnica.json     Equipa técnica, por área
+    associados.json          Lista pública de associados
+    cronologia.json          História da associação, entrada a entrada
+    documentos.json          Metadados da biblioteca de documentos
+    ligacoes.json            Ligações externas selecionadas
+    faq.json                 Perguntas frequentes
+  components/                19 componentes .astro reutilizáveis
   layouts/                   Base.astro, Pagina.astro, Artigo.astro
-  pages/                     File-based routes (41 route files) — see Wiki: Routing
-  lib/                       Helpers: content queries, Maidenhead grid math, nav, redirects, formatting
-  styles/global.css          The entire design system (tokens, layout, components) in one file
-  content.config.ts          Content Collection definitions and Zod schemas
+  lib/                       Auxiliares: conteúdo, Maidenhead, navegação, rede, redireções, formatação
+  styles/global.css          O sistema de design completo (507 linhas), num único ficheiro
+  content.config.ts          Definição das 9 coleções e respetivos esquemas Zod
 public/
   admin/                     Decap CMS (config.yml + index.html)
-  documentos/                Association PDFs (statutes, regulations, membership form)
-  imagens/conteudo/          Images and videos migrated from the previous site
-  .htaccess                  301 redirects + security headers (Apache)
-  _redirects                 301 redirects (Netlify / Cloudflare Pages format)
-  robots.txt, manifest.webmanifest
-docs/                        Portuguese-language docs for the association (architecture rationale,
-                              content-editing guide, deployment guide, QA results, migration audit)
-scripts/                     QA, SEO/performance auditing, link checking, image optimization (Node.js)
+  documentos/                PDF da associação (estatutos, regulamentos, ficha de inscrição)
+  imagens/                   Logótipos, ícones e, em conteudo/, a media migrada
+  .htaccess                  Redireções 301, cabeçalhos de segurança e de cache (Apache)
+  _redirects                 Redireções 301 no formato Netlify/Cloudflare Pages
+  robots.txt, manifest.webmanifest, favicons
+docs/                        Documentação em português para a direção e para quem mantém o projeto
+scripts/                     QA, auditorias de SEO e desempenho, verificação de ligações, otimização de media
+wiki/                        Wiki técnica para quem desenvolve (português)
 ```
 
-See [Project Structure](wiki/Project-Structure.md) in the Wiki for a file-by-file breakdown of `src/lib/` and the component catalog.
+Detalhe ficheiro a ficheiro: [Estrutura do Projeto](wiki/Estrutura-do-Projeto.md).
 
 ---
 
-## Content Architecture
+## Gestão de conteúdos
 
-All content lives in this repository as text files — Markdown for prose, JSON for structured records — validated against Zod schemas in `src/content.config.ts`. Nothing editorial is hardcoded in components.
+Todo o conteúdo vive neste repositório como ficheiros de texto — Markdown para prosa, JSON
+para registos estruturados — validado contra esquemas Zod em `src/content.config.ts`. Nada
+de editorial está escrito no código.
 
-| Content type | Format | Location | Collection |
+| Tipo de conteúdo | Formato | Localização | Coleção |
 | --- | --- | --- | --- |
-| News | Markdown + frontmatter | `src/content/noticias/*.md` | `noticias` |
-| Technical articles | Markdown + frontmatter | `src/content/tecnica/*.md` | `tecnica` |
-| Events | Markdown + frontmatter | `src/content/eventos/*.md` | `eventos` |
-| Long-form pages | Markdown + frontmatter | `src/content/paginas/*.md` | `paginas` |
-| Repeaters | JSON | `src/data/repetidores.json` | `repetidores` |
-| Beacons | JSON | `src/data/balizas.json` | `balizas` |
-| Documents | JSON | `src/data/documentos.json` | `documentos` |
-| Links | JSON | `src/data/ligacoes.json` | `ligacoes` |
-| FAQ | JSON | `src/data/faq.json` | `faq` |
-| Site-wide settings, governing bodies, member list, history | JSON | `src/data/sitio.json`, `orgaos-sociais.json`, `direcao-tecnica.json`, `associados.json`, `cronologia.json` | *(read directly, not as collections)* |
+| Notícias | Markdown + frontmatter | `src/content/noticias/*.md` | `noticias` |
+| Artigos técnicos | Markdown + frontmatter | `src/content/tecnica/*.md` | `tecnica` |
+| Eventos | Markdown + frontmatter | `src/content/eventos/*.md` | `eventos` |
+| Páginas de texto | Markdown + frontmatter | `src/content/paginas/*.md` | `paginas` |
+| Repetidores | JSON | `src/data/repetidores.json` | `repetidores` |
+| Balizas | JSON | `src/data/balizas.json` | `balizas` |
+| Documentos | JSON | `src/data/documentos.json` | `documentos` |
+| Ligações úteis | JSON | `src/data/ligacoes.json` | `ligacoes` |
+| Perguntas frequentes | JSON | `src/data/faq.json` | `faq` |
+| Dados gerais, órgãos sociais, direção técnica, associados, cronologia | JSON | `src/data/sitio.json`, `orgaos-sociais.json`, `direcao-tecnica.json`, `associados.json`, `cronologia.json` | *(lidos por importação direta, não são coleções)* |
 
-JSON data files store their list inside a named key (e.g. `{ "repetidores": [...] }`) rather than as a bare array — Decap CMS cannot edit a JSON file whose root is an array, so `content.config.ts` unwraps it with a small parser (`listaEm()`).
+Os ficheiros JSON guardam a lista dentro de uma chave (`{ "repetidores": [...] }`) em vez de
+terem um array na raiz: o Decap CMS não consegue editar um JSON cuja raiz seja um array, e o
+`content.config.ts` desembrulha-a com um pequeno parser (`listaEm()`).
 
-Two ways to edit content:
+Há duas formas de editar:
 
-1. **Via `/admin/`** (Decap CMS) — a form-based editor for non-developers; every save is a Git commit. See [`docs/gestao-de-conteudos.md`](docs/gestao-de-conteudos.md) (Portuguese) for the association's own guide.
-2. **Directly in Git** — edit the Markdown/JSON files and commit as usual. `npm run build` will fail with a specific field/file error if something required is missing or malformed.
+1. **Em `/admin/`** (Decap CMS) — formulários para quem não programa; cada gravação é um
+   commit. Guia da associação: [`docs/gestao-de-conteudos.md`](docs/gestao-de-conteudos.md).
+2. **Diretamente em Git** — editar os ficheiros e fazer commit. O `npm run build` falha com
+   o ficheiro e o campo identificados se faltar algo obrigatório.
 
-See [Content Management](wiki/Content-Management.md) in the Wiki for the developer-facing version of this, including how each collection's schema is structured.
+Referência para quem desenvolve: [Coleções de Conteúdo](wiki/Colecoes-de-Conteudo.md) e
+[Gestão de Conteúdos](wiki/Gestao-de-Conteudos.md).
 
 ---
 
-## Repeater System
+## Sistema de repetidores
 
-The repeater directory is defined by the `repetidores` collection (`src/data/repetidores.json`, schema in `src/content.config.ts`) and rendered by `src/components/TabelaRepetidores.astro`.
+Definido pela coleção `repetidores` (`src/data/repetidores.json`, esquema em
+`src/content.config.ts`) e apresentado por `src/components/TabelaRepetidores.astro`.
 
-**Data model** (per repeater, from the actual Zod schema):
+**Modelo de dados** (por repetidor, tal como o esquema Zod o define):
 
 ```ts
 {
-  id: string;                 // unique slug, e.g. "cq0vstc"
-  canal?: string;              // e.g. "RV56"
+  id: string;                  // identificador único, ex.: "cq0vstc"
+  canal?: string;              // ex.: "RV56"
   banda: 'VHF' | 'UHF' | 'SHF' | 'HF';
-  modo: string;                 // free text, e.g. "Analógico", "Digital DMR"
-  filtros: string[];            // e.g. ["vhf", "analogico"] — drives the filter buttons
+  modo: string;                // texto livre, ex.: "Analógico", "Digital DMR"
+  filtros: string[];           // ex.: ["vhf", "analogico"] — governa os botões de filtro
   localizacao: string;
-  quadricula?: string;          // Maidenhead locator, e.g. "IM57px"
-  coordenadas?: { lat: number; lon: number }; // exact coordinates, if known
+  quadricula?: string;         // quadrícula Maidenhead, ex.: "IM57px"
+  coordenadas?: { lat: number; lon: number };  // coordenadas exatas, se conhecidas
   frequenciaTx: string;
   frequenciaRx: string;
   tom?: string;
-  acesso?: string;              // CTCSS tone, DMR talkgroup/color code, or reflector
+  acesso?: string;             // tom CTCSS, talkgroup e color code DMR, ou reflector
   potencia?: string;
-  indicativo: string;           // callsign
+  indicativo: string;
   estado: 'operacional' | 'manutencao' | 'indisponivel' | 'desconhecido';
   notas?: string;
 }
 ```
 
-Beacons (`balizas.json`) follow the same pattern with a slightly different field set (no channel/access, plus `antena`).
+As balizas (`balizas.json`) seguem o mesmo padrão, com um conjunto de campos ligeiramente
+diferente: têm `frequencia` (uma só) e `antena`, e não têm `canal`, `acesso` nem `filtros`.
 
-**Display.** `TabelaRepetidores.astro` renders two synchronized views from the same data: a `<table>` for screens ≥860px and a card list (`<ul>`) below that, switched purely with CSS media queries — no duplicated markup logic, no JS-driven layout switch.
+**Apresentação.** `TabelaRepetidores.astro` gera duas vistas sincronizadas a partir dos
+mesmos dados: uma `<table>` para ecrãs com 860px ou mais e uma lista de cartões (`<ul>`)
+abaixo disso, alternadas apenas por media queries CSS — sem duplicação de lógica e sem
+JavaScript a decidir o layout.
 
-**Search & filtering** are entirely client-side (inline `<script>` in the component, no framework): a text search matches against a precomputed, accent-stripped string per row (so "Arrabida" matches "Arrábida"), and checkbox filters are grouped into *band* (VHF/UHF) and *mode* (analogico/dmr/dstar/aprs) — within a group it's OR, between groups it's AND. An empty-state message (`EstadoVazio.astro`) shows when no rows match.
+**Pesquisa e filtros** correm inteiramente no cliente (um `<script>` no próprio componente,
+sem framework): a pesquisa compara com uma cadeia pré-calculada e sem acentos por linha (por
+isso «Arrabida» encontra «Arrábida»), e as caixas de verificação estão divididas em dois
+grupos — *banda* (`vhf`, `uhf`) e *modo* (`analogico`, `dmr`, `dstar`, `aprs`). Dentro de
+cada grupo a relação é «ou»; entre grupos é «e». Quando nada corresponde, aparece o estado
+vazio (`EstadoVazio.astro`).
 
-**Status.** The `estado` field drives `DistintivoEstado.astro` (status badge), shown consistently in the table, the mobile cards, the homepage, and the network overview — all from the same source field, so there's only one place to update it.
+**Estado.** O campo `estado` alimenta `DistintivoEstado.astro`, usado na tabela, nos cartões,
+na página inicial e no resumo da rede — a mesma fonte em todo o lado. O distintivo nunca
+depende só da cor: tem sempre símbolo (`●` `◐` `✕` `?`) e texto.
 
-**Map placement.** Positions come from `quadricula` (Maidenhead locator) converted to the grid-square center by `src/lib/maidenhead.ts`, unless `coordenadas` (exact lat/lon) is set, in which case that takes priority. When a marker is placed from a grid square, the map UI and marker popup both say so explicitly ("approximate position") — no coordinate is ever presented as more precise than the source data justifies.
+**Posição no mapa.** Vem de `quadricula` (locator Maidenhead) convertida para o centro da
+quadrícula por `src/lib/maidenhead.ts`, a não ser que `coordenadas` esteja preenchido, caso
+em que este tem prioridade. Quando a posição vem da quadrícula, tanto a nota sob o mapa como
+o popup do marcador o dizem. **Hoje nenhum repetidor ou baliza tem `coordenadas`**: todas as
+posições da rede são aproximadas, e o sítio declara-o.
 
-**Adding a repeater:** via `/admin/` → **Rede ARLA → Repetidores → Add Repetidor**, or by adding an object to the `repetidores` array in `src/data/repetidores.json` directly. `id` and `filtros` need care: `id` must be unique, and a repeater missing the right entries in `filtros` will still appear in the table but silently disappear when someone filters.
+**Acrescentar um repetidor:** em `/admin/` → **Rede ARLA → Repetidores → Add Repetidor**, ou
+acrescentando um objeto ao array `repetidores` em `src/data/repetidores.json`. Atenção a
+dois campos: `id` tem de ser único, e um repetidor sem as entradas certas em `filtros`
+aparece na tabela mas desaparece assim que alguém filtrar.
 
-**Editing / changing status:** update the relevant fields (most often `estado` and `notas`) via the CMS or directly in JSON — the change propagates to every page that reads the collection.
+**Editar ou mudar o estado:** alterar os campos (normalmente `estado` e `notas`) pelo CMS ou
+no JSON — a mudança propaga-se a todas as páginas que leem a coleção.
 
-**Removing / archiving:** there is no "archived" flag for repeaters — a decommissioned repeater is simply removed from the JSON array (or its `estado` is set to `indisponivel` with a note, if the association wants to keep publishing the record).
+**Remover ou arquivar:** não existe marcação de «arquivado» para repetidores. Um repetidor
+desativado é removido do array, ou fica com `estado: indisponivel` e uma nota, se a
+associação quiser manter o registo publicado.
 
-**Validation:** enforced by the Zod schema at build time — `npm run build` fails if a required field (`banda`, `modo`, `localizacao`, `frequenciaTx`, `frequenciaRx`, `indicativo`, `estado`) is missing or an enum value (`banda`, `estado`) doesn't match one of the allowed values.
+**Validação:** feita pelo esquema Zod no build. O `npm run build` falha se faltar um campo
+obrigatório (`id`, `banda`, `modo`, `localizacao`, `frequenciaTx`, `frequenciaRx`,
+`indicativo`, `estado`) ou se um valor de enum (`banda`, `estado`) não for um dos permitidos.
 
-Full field-by-field reference: [Repeater Data](wiki/Repeater-Data.md) in the Wiki.
+Referência campo a campo: [Sistema de Repetidores](wiki/Sistema-de-Repetidores.md) e
+[Balizas e Rede](wiki/Balizas-e-Rede.md).
 
 ---
 
-## News and Articles
+## Notícias e artigos
 
-**Data source:** Markdown files with YAML frontmatter, one file per article, in `src/content/noticias/` (news) and `src/content/tecnica/` (technical articles). Both extend a shared base schema (`baseArtigo` in `src/content.config.ts`).
+**Fonte:** ficheiros Markdown com frontmatter YAML, um por artigo, em
+`src/content/noticias/` e `src/content/tecnica/`. Ambos estendem o esquema comum
+(`baseArtigo` em `src/content.config.ts`).
 
-**Common frontmatter fields:** `titulo`, `resumo`, `data`, `atualizado?`, `autor?`, `indicativo?` (author's callsign), `imagem?`, `imagemAlt?`, `categoria` (defaults to `'Geral'`), `etiquetas` (tags, array), `historico` (boolean — marks aged-out content, shows a context warning banner), `notaHistorica?`, `urlAntigo?` (legacy WordPress URL, used for redirect bookkeeping), `destaque` (feature on homepage), `rascunho` (draft — excluded from production builds), `anexos` (attachments).
+**Campos comuns:** `titulo`, `resumo`, `data`, `atualizado?`, `autor?`, `indicativo?`,
+`imagem?`, `imagemAlt?`, `categoria` (predefinição `'Geral'`), `etiquetas` (array),
+`historico` (booleano — marca conteúdo datado e mostra um aviso de contexto),
+`notaHistorica?`, `urlAntigo?` (endereço no WordPress, para o mapa de redireções),
+`destaque`, `rascunho` e `anexos`.
 
-**Technical articles add:** `indice` (show table of contents, default `true`), `nivel` (`introducao`/`intermedio`/`avancado`), `referencias` (array of `{ titulo, url }`).
+**Os artigos técnicos acrescentam:** `indice` (mostrar índice, predefinição `true`), `nivel`
+(`introducao` | `intermedio` | `avancado`) e `referencias` (array de `{ titulo, url }`).
 
-**Routing:** `src/pages/noticias/[...slug].astro` and `src/pages/tecnica/[...slug].astro` generate one page per collection entry via `getStaticPaths()`. **Slugs are the filename** (without `.md`) — e.g. `src/content/noticias/5-ciclo-raid.md` → `/noticias/5-ciclo-raid/`.
+**Rotas:** `src/pages/noticias/[...slug].astro` e `src/pages/tecnica/[...slug].astro` geram
+uma página por entrada com `getStaticPaths()`. **O slug é o nome do ficheiro** sem `.md` —
+`src/content/noticias/5-ciclo-raid.md` → `/noticias/5-ciclo-raid/`.
 
-**Images:** referenced by path under `imagem` (e.g. `/imagens/conteudo/ct1fbf.jpg`), served from `public/imagens/conteudo/`; `imagemAlt` is required in practice for accessibility (the CMS prompts for it).
+**Imagens:** referenciadas por caminho absoluto em `imagem` (ex.:
+`/imagens/conteudo/ct1fbf.jpg`), servidas a partir de `public/imagens/conteudo/`. O
+`imagemAlt` é a descrição acessível; o CMS indica que é obrigatório sempre que houver imagem.
 
-**Dates:** `data` (publish date) drives sort order (`src/lib/conteudo.ts` sorts both collections by `data` descending) and the RSS feed / JSON-LD `datePublished`.
+**Datas:** `data` determina a ordenação (`src/lib/conteudo.ts` ordena por data decrescente),
+o feed RSS e o `datePublished` do JSON-LD.
 
-**Categories & tags:** free-text `categoria` (with a curated suggestion list per collection in the CMS config) and a `etiquetas` array; `/noticias/categoria/[categoria].astro` generates one listing page per category slug.
+**Categorias e etiquetas:** `categoria` é texto livre (com lista de sugestões no CMS) e
+`etiquetas` é um array. `src/pages/noticias/categoria/[categoria].astro` gera uma página de
+listagem por categoria.
 
-**Related content:** `src/lib/conteudo.ts`'s `relacionados()` scores other entries by shared tags (×2) and matching category (×1), falling back to the most recent entries if not enough score.
+**Conteúdo relacionado:** `relacionados()` em `src/lib/conteudo.ts` pontua as outras entradas
+por etiquetas partilhadas (×2) e categoria igual (×1), completando com as mais recentes se
+faltarem.
 
-**Archive behavior:** nothing is ever auto-archived. Aged-out content is marked `historico: true` with an optional `notaHistorica` explaining the context (e.g. a 2019 communication about since-changed regulation) — the article stays live and searchable but shows a dated-content warning and an "Archive" tag in listings.
+**Arquivo:** nada é arquivado automaticamente. O conteúdo datado é marcado com
+`historico: true` e uma `notaHistorica` opcional — o artigo continua publicado e pesquisável,
+mas mostra um aviso de contexto.
 
-**Adding a news article — step by step:**
+**Publicar uma notícia, passo a passo:**
 
-1. Create `src/content/noticias/nome-do-artigo.md` (the filename becomes the URL slug).
-2. Add frontmatter with at least `titulo`, `resumo`, `data`, `categoria`:
+1. Criar `src/content/noticias/nome-do-artigo.md` (o nome do ficheiro passa a ser o slug).
+2. Escrever o frontmatter, com pelo menos `titulo`, `resumo` e `data`:
+
    ```markdown
    ---
    titulo: "Título da notícia"
-   resumo: "Um ou dois períodos — usado nos cartões, na pesquisa e nas redes sociais."
+   resumo: "Uma ou duas frases — usadas nos cartões, na pesquisa e nas redes sociais."
    data: "2026-09-20"
    categoria: "Associação"
    etiquetas: []
@@ -315,173 +422,326 @@ Full field-by-field reference: [Repeater Data](wiki/Repeater-Data.md) in the Wik
 
    Corpo do artigo em Markdown.
    ```
-3. Run `npm run build` (or `npm run check`) — if a required field is missing, the build fails with the file and field name.
-4. Equivalently, use `/admin/` → **Notícias → New Notícia**, which produces the same file.
+
+3. Correr `npm run build` (ou `npm run check`) — se faltar um campo obrigatório, o build
+   falha a indicar o ficheiro e o campo.
+4. Em alternativa, `/admin/` → **Notícias → New Notícia**, que produz exatamente o mesmo
+   ficheiro.
+
+Mais detalhe: [Notícias e Artigos](wiki/Noticias-e-Artigos.md).
 
 ---
 
-## Events
+## Eventos
 
-**Data source:** Markdown files in `src/content/eventos/`, schema extends `baseArtigo` with event-specific fields (`eventos` collection in `src/content.config.ts`).
+**Fonte:** ficheiros Markdown em `src/content/eventos/`; o esquema estende `baseArtigo`.
 
-**Event-specific fields:** `inicio` (start date, required), `fim?` (end date), `dataTexto?` (free-text override for approximate dates, e.g. "every Sunday in July 2023"), `horaInicio?`, `horaFim?`, `local?`, `coordenadas?` (`{ lat, lon }` — only set if genuinely known; no map is shown otherwise), `organizador?`, `inscricoes?`, `ligacaoExterna?`, `tipo` (`atividade` | `workshop` | `concurso` | `encontro` | `divulgacao`, default `atividade`), `cancelado` (boolean).
+**Campos próprios:** `inicio` (obrigatório), `fim?`, `dataTexto?` (texto livre que substitui
+a data formatada quando esta é aproximada), `horaInicio?`, `horaFim?`, `local?`,
+`coordenadas?` (`{ lat, lon }` — sem isto não é mostrado mapa), `organizador?`, `inscricoes?`,
+`ligacaoExterna?`, `tipo` (`atividade` | `workshop` | `concurso` | `encontro` | `divulgacao`,
+predefinição `atividade`) e `cancelado` (booleano).
 
-**Date handling & status logic:** `src/lib/sitio.ts`'s `estadoEvento(inicio, fim)` compares whole UTC days against "today" and returns `'futuro'` (upcoming), `'adecorrer'` (ongoing), or `'terminado'` (past) — labelled "Brevemente" / "A decorrer" / "Terminado" in the UI. `src/lib/conteudo.ts` exposes `eventosFuturos()` and `eventosPassados()`, which filter and sort accordingly; nothing needs to be manually moved between "upcoming" and "past" lists.
+**Datas e estado:** `estadoEvento(inicio, fim)` em `src/lib/sitio.ts` compara dias completos
+em UTC com o dia de hoje e devolve `'futuro'`, `'adecorrer'` ou `'terminado'` — apresentados
+como «Brevemente», «A decorrer» e «Terminado». `eventosFuturos()` e `eventosPassados()` em
+`src/lib/conteudo.ts` filtram e ordenam em conformidade. Não há nada para mover à mão entre
+listas.
 
-**Event pages:** `src/pages/eventos/[...slug].astro` generates one page per entry (slug = filename), rendering the full Markdown body plus the structured fields (dates, location, type, registration link).
+**Páginas:** `src/pages/eventos/[...slug].astro` gera uma página por entrada (slug = nome do
+ficheiro), com o corpo Markdown e os campos estruturados.
 
-**Images:** same mechanism as news/articles (`imagem` + `imagemAlt`).
+**Ligações externas:** `ligacaoExterna` para uma página externa relacionada (use
+`tipo: divulgacao` para eventos de terceiros que a ARLA apenas divulga) e `organizador` para
+creditar quem organiza.
 
-**External links:** `ligacaoExterna` for a related external page (e.g. a third-party event ARLA is only promoting — use `tipo: divulgacao` for those), `organizador` to credit a non-ARLA organizer.
+**Inscrições:** `inscricoes` é texto livre — **não existe formulário nem backend de
+inscrições**. Serve para instruções ou para uma ligação de contacto.
 
-**Registration:** the `inscricoes` field is free text (no registration form/backend exists) — it's meant for instructions or a contact/registration link.
+**Acrescentar:** criar `src/content/eventos/nome-do-evento.md` com pelo menos `titulo`,
+`resumo` e `inicio`, ou usar `/admin/` → **Eventos e atividades → New Evento**. Um evento
+passado nunca deve ser apagado — o arquivo faz parte da história da associação; um evento
+cancelado marca-se com `cancelado: true`.
 
-**Adding an event:** create `src/content/eventos/nome-do-evento.md` with `titulo`, `resumo`, `inicio` at minimum, or use `/admin/` → **Eventos e atividades → New Evento**. Past events should never be deleted — the events archive is part of the association's public history; a cancelled event should be flagged with `cancelado: true`, not removed.
-
-**Modifying:** edit the frontmatter/body directly, or through the CMS; the computed upcoming/past status updates automatically on the next build, no field to toggle.
+Mais detalhe: [Eventos](wiki/Eventos.md).
 
 ---
 
-## Images and Assets
+## Media e imagens
 
-- **Location:** all media lives under `public/imagens/conteudo/` (migrated legacy images and two videos) plus `public/documentos/` (association PDFs), `public/imagens/` (logo, icons), and CMS uploads land in `public/imagens/conteudo/` (`media_folder` in `public/admin/config.yml`).
-- **Supported formats:** `.jpg`/`.jpeg`, `.png` for images (processed by the optimization script below); `.mp4` for the two migrated videos; `.pdf` for documents.
-- **Optimization:** `scripts/otimizar-media.mjs` uses Sharp to resize migrated images to a maximum width of 1600px and re-encode them (mozjpeg for JPEG, palette PNG for PNG), skipping files that are already small; it's idempotent, meant to be run once over a batch of migrated media, not as part of the build. There is no automatic image optimization during `npm run build` for images referenced from Markdown — the Astro `image` integration setting (`layout: 'constrained'`, `responsiveStyles: true`) applies when using Astro's `<Image>`/`getImage()` APIs, but the current pages reference images with plain `<img src="/imagens/conteudo/…">` paths, not the Astro Image component.
-- **Naming:** migrated filenames were kept as close to the original as practical (e.g. `20180818_Torre_ARLA-1.jpg`); new uploads through the CMS keep the name of the uploaded file.
-- **Referencing:** by absolute path from `public/`, e.g. `/imagens/conteudo/ct1fbf.jpg` in a Markdown body or an `imagem` frontmatter field.
-- **Recommended sizes:** no size requirement is enforced by the schema; the optimization script's 1600px cap is the de facto ceiling for migrated content.
-- **Alt text:** `imagemAlt` (frontmatter field) is the accessible description; the CMS labels it as required whenever an image is set. Purely decorative images should leave it empty.
+- **Onde está:** `public/imagens/conteudo/` (imagens e dois vídeos migrados),
+  `public/documentos/` (PDF da associação) e `public/imagens/` (logótipos e ícones). Os
+  carregamentos feitos pelo CMS vão para `public/imagens/conteudo/` (`media_folder` em
+  `public/admin/config.yml`).
+- **Formatos:** `.jpg`/`.jpeg` e `.png` para imagens, `.mp4` para os vídeos migrados, `.pdf`
+  para documentos.
+- **Otimização:** `scripts/otimizar-media.mjs` usa o Sharp para redimensionar a 1600px de
+  largura máxima e recodificar (mozjpeg para JPEG, PNG paletizado para PNG), ignorando o que
+  já é pequeno. É idempotente e **não faz parte do build**: corre-se à mão sobre um lote de
+  media. **Não há otimização automática de imagens durante `npm run build`** — as definições
+  `image` em `astro.config.mjs` (`layout: 'constrained'`, `responsiveStyles: true`) só se
+  aplicam às APIs `<Image>`/`getImage()` do Astro, e as páginas atuais referenciam as imagens
+  com `<img src="/imagens/conteudo/…">`.
+- **Nomes:** os ficheiros migrados mantêm o nome original (ex.: `20180818_Torre_ARLA-1.jpg`);
+  os carregamentos pelo CMS mantêm o nome do ficheiro enviado.
+- **Referenciar:** por caminho absoluto a partir de `public/`, ex.:
+  `/imagens/conteudo/ct1fbf.jpg`.
+- **Texto alternativo:** `imagemAlt` no frontmatter. Imagens decorativas devem ficar com
+  texto alternativo vazio.
+
+Mais detalhe: [Media e Imagens](wiki/Media-e-Imagens.md).
 
 ---
 
-## Styling / Design System
+## Estilos
 
-There is no CSS framework (no Tailwind, no CSS Modules, no Sass) — the entire design system is one file, [`src/styles/global.css`](src/styles/global.css) (~500 lines), imported once from `Base.astro`, using native CSS `@layer` for predictable cascade and CSS custom properties for every token.
+Não há framework de CSS (nem Tailwind, nem CSS Modules, nem Sass): o sistema de design é um
+único ficheiro, [`src/styles/global.css`](src/styles/global.css) (507 linhas), importado uma
+vez a partir de `Base.astro`, com `@layer` nativo para uma cascata previsível e custom
+properties para todos os tokens.
 
-**Design tokens** (all defined as CSS custom properties in `:root`):
+A ordem das camadas é `@layer reset, tokens, base, components, utilities;`.
 
-| Token group | Examples |
+| Grupo de tokens | Exemplos |
 | --- | --- |
-| Brand colors | `--arla-500: #0082c8` through `--arla-200`/`--arla-900` |
-| Status colors | `--sinal` (operational/green), `--alerta` (maintenance/amber), `--falha` (down/red) |
-| Spacing scale | `--e-1` (0.25rem) through `--e-9` (fluid, up to ~7rem) |
-| Type scale | `--t-xs` through `--t-4xl`, several using `clamp()` for fluid sizing |
-| Fonts | `--fonte-base` (system UI stack — no web fonts loaded), `--fonte-mono` |
-| Radii | `--raio-sm` (6px) through `--raio-xl` (26px) |
-| Layout | `--largura` (1200px max content width), `--largura-texto` (72ch prose width) |
-| Motion | `--transicao` (160ms) |
+| Cor de marca | `--arla-500: #0082c8`, mais `--arla-200/300/400/600/700/900` |
+| Cores de estado | `--sinal` (operacional), `--alerta` (manutenção), `--falha` (indisponível) |
+| Espaçamento | `--e-1` (0.25rem) a `--e-7` (3rem); `--e-8` e `--e-9` fluidos com `clamp()` |
+| Tipografia | `--t-xs` a `--t-4xl`, vários com `clamp()` |
+| Tipos de letra | `--fonte-base` (pilha do sistema — nenhum tipo de letra descarregado), `--fonte-mono` |
+| Raios | `--raio-sm` (6px), `--raio` (12px), `--raio-lg` (18px), `--raio-xl` (26px) |
+| Layout | `--largura` (1200px), `--largura-texto` (72ch) |
+| Movimento | `--transicao` (160ms) |
 
-**Theming:** dark theme is the default (`:root` values), with a complete, independently-tuned light theme (not an inversion) applied via `[data-tema='claro']` or `prefers-color-scheme: light`. The active theme is set as `data-tema` on `<html>` by an inline script in `Base.astro` that runs before first paint (to avoid a flash), and persisted to `localStorage` by `AlternarTema.astro` — every `localStorage` access is wrapped so the toggle still works (falling back to system preference) in private browsing or with storage blocked.
+**Temas.** O escuro é a predefinição (valores em `:root`), com um tema claro completo e
+afinado à parte — não uma inversão — aplicado por `[data-tema='claro']` ou por
+`prefers-color-scheme: light`. O tema ativo é escrito em `data-tema` no `<html>` por um
+script em linha em `Base.astro`, antes da primeira pintura, e guardado em `localStorage` por
+`AlternarTema.astro`. Todos os acessos ao `localStorage` estão dentro de `try`/`catch`: em
+janela privada ou com armazenamento bloqueado, o sítio funciona à mesma com a preferência do
+sistema.
 
-**Breakpoints** (from the actual media queries in `global.css` and components): `640px` (content padding), `860px` (table → card layout for repeater/data tables), plus component-level breakpoints for the header/navigation (see [Responsive Design](#responsive-design)).
+**UI nova:** manter o padrão existente — blocos `<style>` com âmbito dentro de cada
+componente `.astro`, referindo as custom properties partilhadas (`var(--accent)`,
+`var(--e-4)`…) em vez de valores fixos.
 
-**Adding new UI:** follow the existing pattern of scoped `<style>` blocks inside each `.astro` component, referencing the shared custom properties (`var(--accent)`, `var(--e-4)`, etc.) rather than hardcoding colors or spacing — this is what keeps light/dark theming and the spacing scale consistent across ~20 components.
-
-Full token reference and component conventions: [Styling and Design System](wiki/Styling-and-Design-System.md) in the Wiki.
-
----
-
-## Responsive Design
-
-- **Breakpoints:** `640px` for base content padding; `860px` is the key structural breakpoint where data tables (repeaters, beacons, etc.) switch from a `<table>` to a card list, controlled purely by CSS (`.so-largo` / `.so-estreito` classes toggled with `@media (min-width: 860px)`), not JavaScript.
-- **Mobile navigation:** the header's dropdown submenus open on click *and* keyboard (not only hover), close on `Escape`, and are fully usable without a pointing device — documented explicitly as a design requirement in `docs/arquitetura.md`.
-- **Responsive tables:** every data table in the site (repeaters, beacons, associates, archive) follows the same table↔card pattern as `TabelaRepetidores.astro`.
-- **Print styles:** a `@media print` block hides non-printable UI (filters, copy buttons) and forces the table layout even below 860px, so a printed repeater list stays a table.
+Referência completa: [Sistema de Design](wiki/Sistema-de-Design.md).
 
 ---
 
-## Accessibility
+## Design responsivo
 
-Target: **WCAG 2.2 AA**. Implemented and structurally verified (see [`docs/qualidade.md`](docs/qualidade.md) for the actual axe-core results — 74 automated scans across 37 pages × two themes, 0 violations at time of writing):
+**Não há uma escala única de breakpoints.** O `global.css` tem um só breakpoint de largura
+(`640px`, para o espaçamento interior do contentor); os restantes são definidos em cada
+componente ou página, conforme o conteúdo:
 
-- Semantic HTML landmarks (`header`, `nav`, `main`, `article`, `section`, `aside`, `footer`) with a verified, unbroken heading hierarchy per page.
-- Nothing depends on hover: dropdown submenus open with click and keyboard (`Enter`), close with `Escape`.
-- Visible focus (`:focus-visible`, 3px outline) throughout; a "skip to content" link is the first focusable element on every page.
-- Data tables use `<caption>`, `<thead>`, and `scope` on header cells, with the card fallback described above rather than a squeezed table on narrow screens.
-- **Status is never color-only:** operational/maintenance/down states use a symbol (`●` `◐` `✕` `?`) plus text, remaining legible in black-and-white print.
-- Touch targets ≥44×44px on primary controls.
-- An `aria-live` region announces to screen readers when a frequency is copied via the copy-to-clipboard button.
-- Every map has a full text-based list of the same locations (`<details>` element in `Mapa.astro`), for both no-JS and non-visual use.
-- `prefers-reduced-motion` disables the hero background animation, status-indicator pulsing, and other transitions.
+| Breakpoint | Onde | O que muda |
+| --- | --- | --- |
+| `640px` | `global.css`, `Rodape.astro`, `Artigo.astro` | Espaçamento interior e layout do rodapé |
+| `700px` | `arla/quem-somos.astro` | Tabela de associados passa a cartões |
+| `860px` | `TabelaRepetidores.astro` | Tabela de repetidores passa a cartões |
+| `900px` | `rede/balizas.astro` | Tabela de balizas passa a cartões |
+| `1100px` | `IndiceConteudos.astro`, `Artigo.astro` | Índice lateral dos artigos |
+| `1180px` | `Cabecalho.astro` | Navegação de topo ↔ menu para telemóvel |
+| `1400px` | `Cabecalho.astro`, `Logotipo.astro` | Ajustes do cabeçalho largo |
 
-**Known limitation, stated plainly rather than glossed over:** automated axe-core scans verify DOM/ARIA structure, not actual usability. Real screen readers (NVDA, VoiceOver), keyboard-only navigation by an experienced user, and comprehension testing with people who have reading difficulties have **not** been performed — see [`docs/qualidade.md`](docs/qualidade.md#o-que-não-foi-testado) for the full list of what remains untested.
+Outras páginas usam breakpoints próprios (560, 620, 720, 760, 800, 880, 960, 1000, 1080px)
+para grelhas locais.
+
+- **Navegação em ecrãs pequenos:** abaixo de 1180px, o menu abre por botão; os submenus
+  abrem por clique **e** por teclado (não só por hover), fecham com `Escape` e mantêm
+  `aria-expanded` correto.
+- **Tabelas:** três tabelas de dados (repetidores, balizas, associados) têm vista em
+  cartões, cada uma com o seu breakpoint, através das classes locais `.so-largo` /
+  `.so-estreito`. **Estas classes não são globais** — estão definidas em cada um desses três
+  ficheiros. A página `/arquivo/` não usa tabela.
+- **Impressão:** o `@media print` de `global.css` esconde cabeçalho, rodapé, filtros,
+  paginação e tudo o que tenha `.nao-imprimir`, e força a vista de tabela nos três casos
+  acima, para que uma lista de repetidores impressa continue a ser uma tabela.
+
+Mais detalhe: [Design Responsivo](wiki/Design-Responsivo.md).
+
+---
+
+## Acessibilidade
+
+Objetivo: **WCAG 2.2 AA**. O que está implementado e verificado estruturalmente (resultados
+medidos em [`docs/qualidade.md`](docs/qualidade.md)):
+
+- Landmarks semânticos (`header`, `nav`, `main`, `article`, `section`, `aside`, `footer`) e
+  hierarquia de títulos verificada página a página.
+- Nada depende de passar o rato: os submenus abrem com clique e com teclado e fecham com
+  `Escape`.
+- Foco sempre visível (`:focus-visible`, contorno de 3px) e ligação «saltar para o conteúdo»
+  como primeiro elemento focável.
+- Tabelas com `<caption>`, `<thead>` e `scope` nas colunas, com vista em cartões em ecrãs
+  estreitos em vez de uma tabela espremida.
+- **O estado nunca é só cor:** operacional, manutenção, indisponível e por confirmar têm
+  símbolo (`●` `◐` `✕` `?`) e texto, legíveis em impressão a preto e branco.
+- Alvos de toque de pelo menos 44 × 44 px nos controlos principais.
+- Região `aria-live` (`#anuncio-acessibilidade`, em `Base.astro`) que anuncia a cópia de uma
+  frequência.
+- Todos os mapas têm a mesma informação em texto (`<details>` em `Mapa.astro`), para uso sem
+  JavaScript e sem visão.
+- `prefers-reduced-motion` desliga a animação do herói, a pulsação dos indicadores e as
+  transições.
+
+**Limite desta medição, dito sem rodeios:** os testes automáticos com axe-core verificam
+estrutura DOM e ARIA, não usabilidade real. **Não foram testados** leitores de ecrã reais
+(NVDA, VoiceOver), navegação exclusivamente por teclado por um utilizador habitual, nem
+compreensão do texto por pessoas com dificuldades de leitura. Um resultado de 0 violações no
+axe-core **não é prova de conformidade WCAG**.
+
+Mais detalhe: [Acessibilidade](wiki/Acessibilidade.md).
 
 ---
 
 ## SEO
 
-- Semantic, Portuguese-language URLs with no dates in the path.
-- Every page sets `<title>`, meta description, canonical URL, Open Graph, and Twitter Card tags (built in `Base.astro` from per-page props).
-- JSON-LD structured data, by page type: `Organization` site-wide, plus `NewsArticle`, `TechArticle`, `Event`, `FAQPage`, `HowTo`, `BreadcrumbList`, and `WebSite` (with a `SearchAction` pointing at `/pesquisa/`) as applicable.
-- `sitemap-index.xml` generated at build time by `@astrojs/sitemap`, explicitly excluding `/area-reservada/` (see the `filter` in `astro.config.mjs`).
-- `robots.txt` blocks `/admin/` and `/area-reservada/`, points to the sitemap.
-- **189 permanent (301) redirects** from the legacy WordPress URL structure, defined once in `src/lib/redirects.mjs` and expressed in three formats for different hosts: Astro's own `redirects` config (works everywhere Astro's generated redirect pages are served), `public/.htaccess` (Apache `mod_rewrite`), and `public/_redirects` (Netlify/Cloudflare Pages).
-- RSS feed at `/rss.xml` (`src/pages/rss.xml.ts`, via `@astrojs/rss`), combining news, articles, and events.
+- Endereços semânticos em português, sem datas no caminho.
+- Todas as páginas definem `<title>`, descrição, canónico, Open Graph e Twitter Card,
+  construídos em `Base.astro` a partir das props de cada página.
+- Dados estruturados JSON-LD: `Organization` em todo o sítio (em `Base.astro`) e
+  `BreadcrumbList` em todas as páginas com migalhas (`MigalhasPao.astro`), mais
+  `NewsArticle`, `TechArticle`, `Event`, `FAQPage`, `HowTo`, `ContactPage` e `WebSite` (este
+  com `SearchAction` para `/pesquisa/`) conforme o tipo de página.
+- `sitemap-index.xml` gerado no build por `@astrojs/sitemap`, excluindo `/area-reservada/`
+  (ver o `filter` em `astro.config.mjs`). A última execução produziu 109 endereços.
+- `robots.txt` bloqueia `/admin/` e `/area-reservada/` e aponta para o sitemap.
+- Feed RSS em `/rss.xml` (`src/pages/rss.xml.ts`, com `@astrojs/rss`), juntando notícias,
+  artigos técnicos e eventos.
+- Redireções permanentes a partir do sítio WordPress — ver abaixo.
 
-Developers add or change SEO metadata by passing props to `Base.astro` (`titulo`, `descricao`, `jsonLd`, etc.) from a page or layout — see [SEO](wiki/SEO.md) in the Wiki for the exact prop shapes and structured-data patterns per page type.
+Referência das props e dos padrões por tipo de página: [SEO](wiki/SEO.md).
+
+### Redireções
+
+Os números, verificados neste repositório:
+
+| Onde | Quantas | O quê |
+| --- | --- | --- |
+| `src/lib/redirects.mjs` | **183** | Redireções de rota, importadas por `astro.config.mjs`; geram páginas-stub com `meta refresh`, que funcionam em qualquer alojamento |
+| `public/.htaccess` | **190** regras `R=301` | As mesmas 183, mais 6 para ficheiros PDF e uma regra final de recolha (`^site/?$` → `/`) |
+| `public/_redirects` | **190** linhas | Idem, no formato Netlify/Cloudflare Pages, com `/site/*` como recolha |
+
+As 183 rotas correspondem a **93 endereços canónicos** (90 deles gerados em duas variantes,
+com e sem o prefixo `/site/`). Os PDF e a regra de recolha existem **apenas** ao nível do
+servidor: gerar uma página HTML num caminho terminado em `.pdf` confundiria quem o
+descarregasse. O mapa completo, endereço a endereço, está em
+[`docs/mapa-de-redirecoes.md`](docs/mapa-de-redirecoes.md) e em
+[Redirecionamentos](wiki/Redirecionamentos.md).
 
 ---
 
-## Environment Variables
+## Variáveis de ambiente
 
-The site builds and runs with **zero required environment variables**. There is exactly one optional variable:
+O sítio constrói e funciona com **zero variáveis obrigatórias**. Existe exatamente uma,
+opcional:
 
-| Variable | Purpose | Required | Secret |
-| --- | --- | --- | --- |
-| `PUBLIC_SITE_URL` | Canonical origin used for `<link rel="canonical">`, Open Graph URLs, the sitemap, and the RSS feed (read in `astro.config.mjs`; defaults to `https://www.cs5arla.pt`) | No | No |
+| Variável | Descrição | Obrigatória | Segredo | Onde é utilizada |
+| --- | --- | --- | --- | --- |
+| `PUBLIC_SITE_URL` | Origem canónica usada em `<link rel="canonical">`, Open Graph, sitemap e RSS. Predefinição: `https://www.cs5arla.pt` | Não | Não | `astro.config.mjs` (`site`) e `scripts/check-links.mjs` (para distinguir ligações próprias de externas) |
 
 ```bash
-PUBLIC_SITE_URL=https://staging.example.pt npm run build
+PUBLIC_SITE_URL=https://ensaio.exemplo.pt npm run build
 ```
 
-**There are no secrets in this repository** — no API keys, no database credentials, no tokens. Decap CMS authenticates editors through GitHub OAuth (configured outside the repo, in a GitHub OAuth App plus an auth service — see [`docs/implantacao.md`](docs/implantacao.md)), so the site itself never handles or stores credentials. `.env`, `.env.production`, and `.env.local` are git-ignored as a precaution even though none currently exist in the repo.
+**Não há segredos neste repositório** — nenhuma chave de API, credencial ou token. O Decap
+CMS autentica quem edita por OAuth do GitHub, configurado fora do repositório, pelo que o
+sítio nunca vê nem guarda palavras-passe. `.env`, `.env.production` e `.env.local` estão no
+`.gitignore` por precaução, embora nenhum exista.
+
+Mais detalhe: [Variáveis de Ambiente](wiki/Variaveis-de-Ambiente.md).
 
 ---
 
-## Deployment
-
-The production build is a static folder — no server-side runtime is required.
+## Build
 
 ```bash
 npm ci
-npm run build      # runs astro build, then pagefind --site dist
+npm run build      # astro build, seguido de pagefind --site dist
 ```
 
-**Current hosting:** Apache with cPanel (where the previous WordPress site ran) — the entire contents of `dist/` are uploaded to the public web root, including the hidden `.htaccess` file (which carries the 301 redirects and security headers; many FTP clients hide it by default, so this is worth double-checking).
+As duas metades contam: o `astro build` gera o HTML/CSS/JS e o `pagefind --site dist`
+percorre esse HTML para criar o índice em `dist/pagefind/`. Publicar só a saída do
+`astro build` deixa a pesquisa vazia, sem qualquer erro visível.
 
-**No CI/CD pipeline currently exists in this repository** — there is no `.github/workflows/` directory. Builds and deploys are done manually today. [`docs/implantacao.md`](docs/implantacao.md) documents a *suggested* GitHub Actions workflow for automating this (build + link-check on every push to `main`), which is not yet implemented.
+O build de referência desta auditoria produziu **296 ficheiros HTML** em `dist/` (113
+páginas reais e 183 páginas-stub de redireção), com o índice do Pagefind a cobrir 108
+páginas.
 
-Other hosts are documented (with real caveats, not assumptions) in [`docs/implantacao.md`](docs/implantacao.md) and [Deployment](wiki/Deployment.md) in the Wiki:
+---
 
-- **Netlify / Cloudflare Pages** — build command `npm run build`, publish directory `dist`; `public/_redirects` is picked up automatically.
-- **Vercel** — same build command/output directory; `_redirects` is *not* read by Vercel, so the 301s would need a `vercel.json` translated from `src/lib/redirects.mjs`, or rely on Astro's generated redirect pages (which work but use `meta refresh`, not a real 301).
-- **GitHub Pages** — works, but has no server-level redirects, so all 189 legacy URLs would fall back to Astro's `meta refresh` redirect pages instead of real 301s — not ideal for a decade of accumulated inbound links.
+## Implantação
 
-**Content-editor deployment (Decap CMS):** requires a GitHub OAuth App pointed at this repository plus an OAuth proxy/gateway (Netlify's Git Gateway, if hosted there, or a small self-hosted OAuth service otherwise) — fully documented in [`docs/implantacao.md`](docs/implantacao.md), including local testing with `npx decap-server`.
+O resultado do build é uma pasta de ficheiros estáticos; não é preciso runtime no servidor.
+
+### Implantação atual — IMPLEMENTADO
+
+**Apache com cPanel**, o mesmo ambiente onde o WordPress corria. O processo é manual:
+`npm run build` e envio de **todo o conteúdo de `dist/`** para a raiz pública, incluindo o
+ficheiro oculto `.htaccess` (que traz as redireções 301 e os cabeçalhos de segurança; muitos
+clientes de FTP escondem-no por predefinição). São precisos o `mod_rewrite` e o `mod_headers`.
+
+### Alternativas suportadas — NÃO UTILIZADAS HOJE
+
+- **Netlify / Cloudflare Pages** — comando `npm run build`, pasta `dist`; o
+  `public/_redirects` é reconhecido automaticamente.
+- **Vercel** — mesmo comando e mesma pasta, mas o `_redirects` **não** é lido: seriam
+  precisos um `vercel.json` traduzido a partir de `src/lib/redirects.mjs`, ou aceitar as
+  páginas-stub do Astro (que funcionam, mas usam `meta refresh` em vez de 301 reais).
+- **GitHub Pages** — funciona, sem redireções ao nível do servidor: as 190 regras 301
+  passariam a depender das páginas-stub do Astro, o que é pior para uma década de ligações
+  acumuladas.
+
+### Automatização — NÃO IMPLEMENTADO
+
+**Não existe atualmente um pipeline CI/CD automatizado neste repositório.**
+[`docs/implantacao.md`](docs/implantacao.md) documenta uma *proposta* de workflow do GitHub
+Actions; ver a secção seguinte.
+
+### Editor de conteúdos
+
+O Decap CMS precisa de uma aplicação OAuth do GitHub e de um serviço que troque o código de
+autorização por um token (Git Gateway da Netlify, ou um serviço de OAuth próprio) — ver
+[`docs/implantacao.md`](docs/implantacao.md#configurar-o-editor-de-conteúdos) e
+[CMS Decap](wiki/CMS-Decap.md). **Esta configuração ainda não foi feita**, pelo que o
+`/admin/` em produção não está funcional enquanto não existirem a aplicação OAuth e o
+serviço de autenticação.
+
+Mais detalhe: [Implantação](wiki/Implantacao.md).
 
 ---
 
 ## CI/CD
 
-**There is no GitHub Actions workflow (or any other CI system) currently configured in this repository** — `.github/workflows/` does not exist. All verification (`npm run check`, `npm run lint:links`, `npm run qa`, `npm run audit:seo`, `npm run audit:desempenho`) is run manually by a developer before deploying.
+**Não existe atualmente um pipeline CI/CD automatizado neste repositório.** Não há diretório
+`.github/`, nem workflows do GitHub Actions, nem qualquer outro sistema de integração
+contínua. Todas as verificações (`npm run check`, `npm run build`, `npm run lint:links`,
+`npm run qa`, `npm run audit:seo`, `npm run audit:desempenho`) são executadas manualmente
+por quem desenvolve, antes de publicar.
 
-`docs/implantacao.md` documents a suggested `publicar.yml` workflow (checkout → setup-node@22 → `npm ci` → `npm run build` → `npm run lint:links` → upload artifact) as a starting point for automating this, but it has not been added to the repository. See [CI/CD](wiki/CI-CD.md) in the Wiki before wiring one up, so tests and deployment steps match what's actually documented for this project.
+[`docs/implantacao.md`](docs/implantacao.md#publicação-automática--não-implementada) contém uma **proposta** de
+workflow (`publicar.yml`) como ponto de partida. É uma sugestão, não algo em funcionamento.
+Ver [CI/CD](wiki/CI-CD.md) antes de a implementar.
 
 ---
 
-## Testing
+## Testes
 
-There is no unit-test framework (no Vitest, Jest, etc.) in this project. Verification is done through:
+Não há framework de testes unitários (nem Vitest, nem Jest). A verificação é feita por estas
+ferramentas, todas presentes no repositório:
 
-| Tool | What it checks | Command |
-| --- | --- | --- |
-| `astro check` (`@astrojs/check` + TypeScript) | Type errors across `.astro`, `.ts` files | `npm run check` |
-| Playwright + `@axe-core/playwright` (`scripts/qa.mjs`) | Accessibility (WCAG rule sets), responsive layout across 7 widths, and functional behavior (filters, search, theme toggle, map, forms) against a real Chromium browser | `npm run qa` |
-| `scripts/check-links.mjs` | Broken internal links, anchors, and (optionally) external links, over the built `dist/` | `npm run lint:links` |
-| `scripts/auditar-seo.mjs` | Metadata, JSON-LD, heading hierarchy, sitemap correctness | `npm run audit:seo` |
-| `scripts/auditar-desempenho.mjs` | Core Web Vitals under throttled network/CPU | `npm run audit:desempenho` |
+| Ferramenta | Objetivo | Comando | O que verifica |
+| --- | --- | --- | --- |
+| `astro check` (`@astrojs/check` + TypeScript) | Tipos | `npm run check` | Erros de tipo em `.astro` e `.ts` |
+| `scripts/qa.mjs` (Playwright + `@axe-core/playwright`) | Acessibilidade, responsivo e funcional | `npm run qa` | axe-core (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`, `best-practice`) em 37 páginas × 2 temas; transbordo horizontal em 7 larguras; 17 testes funcionais; alvos de toque; erros de consola |
+| `scripts/capturas.mjs` | Revisão visual | `npm run qa:capturas` | Gera capturas responsivas em `reports/capturas/` |
+| `scripts/check-links.mjs` | Ligações | `npm run lint:links` | Ligações internas, âncoras e (com `-- --externas`) ligações externas, sobre o `dist/` |
+| `scripts/auditar-seo.mjs` | SEO | `npm run audit:seo` | Metadados, JSON-LD, hierarquia de títulos, sitemap e textos alternativos |
+| `scripts/auditar-desempenho.mjs` | Desempenho | `npm run audit:desempenho` | LCP, FCP, CLS, peso e número de pedidos sob 4G lento e CPU 4× mais lento |
 
-**Before submitting a change**, run at minimum:
+**Antes de submeter uma alteração**, no mínimo:
 
 ```bash
 npm run check
@@ -491,62 +751,151 @@ npm run lint:links
 npm run qa
 ```
 
-There are no automated tests wired into a CI system (see [CI/CD](#cicd) above) — these are run manually and their latest recorded results live in [`docs/qualidade.md`](docs/qualidade.md).
+Nada disto corre automaticamente (ver [CI/CD](#cicd)). Os resultados registados estão em
+[`docs/qualidade.md`](docs/qualidade.md) e em [Testes e Qualidade](wiki/Testes-e-Qualidade.md).
 
 ---
 
-## Security
+## Segurança
 
-- **No secrets in the repository** — no API keys, credentials, or tokens are committed (see [Environment Variables](#environment-variables)).
-- **No database, no server-side code in production** — the static-output architecture removes the attack surface of the previous WordPress install (outdated plugins, an exposed `wp-admin`, SQL injection).
-- **Authentication is delegated entirely to GitHub OAuth** for content editing; the site itself never sees or stores a password.
-- **Security headers** are set in `public/.htaccess` (Apache): `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`, `Strict-Transport-Security`. Any other host would need to replicate these at the server/CDN level.
-- **No user-submitted HTML to sanitize** — all content is authored Markdown, processed at build time by Astro's Markdown pipeline, by people with repository write access.
-- External links use `rel="noopener noreferrer"`.
-- `/admin/` and `/area-reservada/` are blocked in `robots.txt` (not a security boundary by itself, but keeps them out of search results).
-- No Content-Security-Policy header is currently set — `docs/implantacao.md` notes this is worth adding but needs to be tuned per real host so it doesn't break the OpenStreetMap tiles or the space-weather image panels.
+O que está verificado:
 
-See [Security](wiki/Security.md) in the Wiki for more detail, and [`docs/implantacao.md`](docs/implantacao.md#segurança) for the association-facing summary.
+- **Sem segredos no repositório** — nenhuma chave, credencial ou token.
+- **Sem base de dados e sem código a correr no servidor** em produção: a superfície de
+  ataque de um WordPress (plugins por atualizar, `wp-admin` exposto, injeção de SQL)
+  desaparece.
+- **Autenticação delegada ao GitHub** (OAuth) para edição de conteúdos; o sítio nunca vê nem
+  guarda palavras-passe.
+- **Cabeçalhos de segurança** em `public/.htaccess`: `X-Content-Type-Options`,
+  `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy` e `Strict-Transport-Security`.
+  Qualquer outro alojamento teria de os replicar ao nível do servidor ou da CDN.
+- **Sem HTML de utilizador por sanear** — todo o conteúdo é Markdown escrito por quem tem
+  acesso de escrita ao repositório e processado no build.
+- Ligações externas com `rel="noopener noreferrer"`.
+- `/admin/` e `/area-reservada/` bloqueados no `robots.txt` (não é uma fronteira de
+  segurança, mas mantém-nos fora dos resultados de pesquisa).
 
----
+Limitações conhecidas, ditas por inteiro:
 
-## Troubleshooting
+- **Não há `Content-Security-Policy`.** Tem de ser afinada contra o alojamento real para não
+  bloquear as telas do OpenStreetMap nem os painéis de meteorologia espacial.
+- **O `npm audit` reporta 3 vulnerabilidades** (1 crítica, 1 alta, 1 baixa) em dependências
+  — `astro`, `sharp` e `esbuild`. A correção implica atualizações major. Ver a análise em
+  [`docs/auditoria-do-projeto.md`](docs/auditoria-do-projeto.md#segurança).
+- O Decap CMS é carregado de `https://unpkg.com` em `public/admin/index.html`, sem
+  Subresource Integrity.
 
-**`npm install` fails.** Confirm Node.js ≥ 20.3 (`node -v`); the project is developed against Node 22 (`.nvmrc`). Delete `node_modules` and `package-lock.json`-derived state and retry with `npm ci` if `npm install` leaves an inconsistent tree.
-
-**`npm run dev` starts but the search page says the index isn't available.** Expected — Pagefind only indexes the output of `npm run build`, so search never works under `npm run dev`. Run `npm run build && npm run preview` to test search locally.
-
-**`npm run build` fails with `[InvalidContentEntryDataError]`.** A content file (Markdown or JSON) is missing a required field or has an invalid value for an enum field (e.g. `banda`, `estado`). The error names the collection, entry, and field — this is the Zod schema in `src/content.config.ts` doing its job, not a bug.
-
-**Environment variables "missing".** There are none required — if something environment-related seems broken, it's more likely a `PUBLIC_SITE_URL` mismatch affecting canonical URLs/OG tags in a non-production build.
-
-**Images don't show up after uploading via the CMS.** Decap CMS saves uploads to `public/imagens/conteudo/` and references them as `/imagens/conteudo/…` (per `media_folder`/`public_folder` in `public/admin/config.yml`). A file placed manually in a different folder needs its reference path adjusted to match.
-
-**Routes/redirects from the old site don't work.** Redirects are defined once in `src/lib/redirects.mjs` but must be deployed in the format your host understands: Apache reads `public/.htaccess`, Netlify/Cloudflare Pages read `public/_redirects`, other static hosts fall back to Astro's generated `meta refresh` redirect pages. Confirm the hidden `.htaccess` file was actually uploaded — FTP clients commonly hide it.
-
-**Deployment doesn't reflect a change.** Confirm the build actually succeeded, hard-refresh (`Ctrl`+`F5` / `Cmd`+`Shift`+`R`), purge any CDN cache, and confirm in Git history that the change was actually committed. See [`docs/implantacao.md`](docs/implantacao.md#quando-o-sítio-não-atualiza).
-
-**Type errors from `npm run check`.** Fix at the source — the project uses `astro/tsconfigs/strict` with `strictNullChecks`; there are no suppressions configured, so a type error usually points at a real mismatch between a schema and how a page consumes it.
-
-**Lint errors.** There is no separate linter configured (no ESLint/Prettier config in the repository) — `npm run check` (TypeScript) is the closest equivalent to a lint step.
-
-More scenarios: [Troubleshooting](wiki/Troubleshooting.md) in the Wiki.
+Mais detalhe: [Segurança](wiki/Seguranca.md).
 
 ---
 
-## Contributing
+## Resolução de problemas
 
-- **Branching:** no enforced naming convention is defined in the repository; branch from `main` and open a pull request against it.
-- **Commit style:** existing history uses descriptive, imperative Portuguese commit subjects (e.g. `Redesenhar por completo o sítio da ARLA: Astro, CMS e migração de conteúdos`) — match the existing tone and language for content/architecture commits; commit messages in English are fine for code-only changes.
-- **Before opening a pull request**, run: `npm run check`, `npm run build`, `npm run lint:links`, and — for anything touching UI, content rendering, or accessibility — `npm run qa`. There is no CI to catch this automatically yet (see [CI/CD](#cicd)).
-- **Code style:** follow the conventions already in the file you're editing — scoped `<style>` blocks per component, custom properties instead of hardcoded values, Portuguese for user-facing strings and content-model field names (`titulo`, `resumo`, `estado`…), English is acceptable for internal-only code comments where used.
-- **Content changes** (new articles, repeater updates, etc.) can be made either through `/admin/` or as a direct pull request — see [Content Management](wiki/Content-Management.md).
-- **Documentation:** update the relevant page in `docs/` (Portuguese, association-facing) or the Wiki (English, developer-facing) alongside any change that affects how the site is built, deployed, or content is authored.
+**O `npm install` falha.** Confirme Node.js ≥ 20.3 (`node -v`); o projeto é desenvolvido
+contra o Node 22 (`.nvmrc`). Apague `node_modules` e repita com `npm ci`.
 
-See [Contributing](wiki/Contributing.md) in the Wiki for more detail.
+**A pesquisa diz que o índice não está disponível em `npm run dev`.** É o esperado: o
+Pagefind só indexa a saída de `npm run build`. Use `npm run build && npm run preview`.
+
+**O `npm run build` falha com `[InvalidContentEntryDataError]`.** Um ficheiro de conteúdo
+não tem um campo obrigatório, ou tem um valor inválido num campo de enum (`banda`, `estado`,
+`tipo`, `nivel`). A mensagem indica a coleção, a entrada e o campo — é o esquema Zod a fazer
+o seu trabalho.
+
+**As imagens não aparecem depois de carregadas pelo CMS.** O Decap grava em
+`public/imagens/conteudo/` e referencia como `/imagens/conteudo/…` (`media_folder` e
+`public_folder` em `public/admin/config.yml`). Um ficheiro colocado à mão noutra pasta
+precisa que o caminho seja ajustado.
+
+**As redireções do sítio antigo não funcionam.** Estão definidas em `src/lib/redirects.mjs`
+mas têm de ser publicadas no formato que o alojamento entende: o Apache lê o
+`public/.htaccess`, a Netlify e a Cloudflare Pages leem o `public/_redirects`, os restantes
+recorrem às páginas-stub geradas pelo Astro. Confirme que o `.htaccess` foi mesmo enviado.
+
+**O `npm run check` acusa erros de tipo.** Corrija na origem: o projeto usa
+`astro/tsconfigs/strict` com `strictNullChecks` e não tem supressões configuradas.
+
+**Não há linter.** Não existe configuração de ESLint nem de Prettier; o `npm run check` é o
+equivalente mais próximo.
+
+Mais cenários: [Resolução de Problemas](wiki/Resolucao-de-Problemas.md).
 
 ---
 
-## License
+## Contribuir
 
-No `LICENSE` file is present in this repository — the code is not currently released under an open-source license. The website's text, photographs, and documents are the property of the Associação de Radioamadores do Litoral Alentejano and their respective authors, credited individually where known.
+- **Branches:** não há convenção de nomes imposta no repositório. **Note que não existe uma
+  branch `main`**: a branch predefinida é atualmente `claude/arla-website-redesign-vcemm3`.
+  Parta da branch predefinida e abra o pull request contra ela. O
+  `public/admin/config.yml` ainda aponta para `main` — ver
+  [auditoria](docs/auditoria-do-projeto.md#problemas-encontrados) (DOC-020).
+- **Mensagens de commit:** o histórico usa frases descritivas no imperativo, em português
+  (ex.: `Redesenhar por completo o sítio da ARLA: Astro, CMS e migração de conteúdos`).
+  Mantenha esse tom para alterações de conteúdo e de arquitetura.
+- **Antes de abrir um pull request:** `npm run check`, `npm run build`, `npm run lint:links`
+  e — para alterações de UI, de apresentação de conteúdo ou de acessibilidade — `npm run qa`.
+  Não há CI que o faça por si.
+- **Estilo de código:** siga o que já está no ficheiro que está a editar — blocos `<style>`
+  com âmbito por componente, custom properties em vez de valores fixos, português nos textos
+  visíveis e nos nomes dos campos do modelo de conteúdo (`titulo`, `resumo`, `estado`…).
+- **Conteúdo** (artigos novos, atualizações de repetidores) pode ser alterado por `/admin/`
+  ou por pull request.
+- **Documentação:** atualize a página correspondente em `docs/` (para a direção) ou na
+  [Wiki](wiki/Home.md) (para quem desenvolve) sempre que alterar a forma como o sítio é
+  construído, publicado ou editado.
+
+Mais detalhe: [Contribuir](wiki/Contribuir.md).
+
+---
+
+## Licença
+
+**Não existe ficheiro `LICENSE` neste repositório** — o código não está publicado sob nenhuma
+licença de código aberto. Os textos, as fotografias e os documentos do sítio são propriedade
+da Associação de Radioamadores do Litoral Alentejano e dos respetivos autores, creditados
+individualmente quando conhecidos.
+
+---
+
+## Documentação
+
+### Wiki técnica (para quem desenvolve)
+
+[Início](wiki/Home.md) ·
+[Arquitetura](wiki/Arquitetura.md) ·
+[Estrutura do Projeto](wiki/Estrutura-do-Projeto.md) ·
+[Desenvolvimento Local](wiki/Desenvolvimento-Local.md) ·
+[Gestão de Conteúdos](wiki/Gestao-de-Conteudos.md) ·
+[Coleções de Conteúdo](wiki/Colecoes-de-Conteudo.md) ·
+[Sistema de Repetidores](wiki/Sistema-de-Repetidores.md) ·
+[Balizas e Rede](wiki/Balizas-e-Rede.md) ·
+[Notícias e Artigos](wiki/Noticias-e-Artigos.md) ·
+[Eventos](wiki/Eventos.md) ·
+[CMS Decap](wiki/CMS-Decap.md) ·
+[Media e Imagens](wiki/Media-e-Imagens.md) ·
+[Componentes](wiki/Componentes.md) ·
+[Sistema de Design](wiki/Sistema-de-Design.md) ·
+[Design Responsivo](wiki/Design-Responsivo.md) ·
+[Rotas](wiki/Rotas.md) ·
+[SEO](wiki/SEO.md) ·
+[Acessibilidade](wiki/Acessibilidade.md) ·
+[Desempenho](wiki/Desempenho.md) ·
+[Redirecionamentos](wiki/Redirecionamentos.md) ·
+[Testes e Qualidade](wiki/Testes-e-Qualidade.md) ·
+[Variáveis de Ambiente](wiki/Variaveis-de-Ambiente.md) ·
+[Segurança](wiki/Seguranca.md) ·
+[Implantação](wiki/Implantacao.md) ·
+[CI/CD](wiki/CI-CD.md) ·
+[Resolução de Problemas](wiki/Resolucao-de-Problemas.md) ·
+[Contribuir](wiki/Contribuir.md)
+
+### Documentação da associação
+
+[Arquitetura e decisões](docs/arquitetura.md) ·
+[Gestão de conteúdos](docs/gestao-de-conteudos.md) ·
+[Implantação](docs/implantacao.md) ·
+[Resultados de qualidade](docs/qualidade.md) ·
+[Mapa de redireções](docs/mapa-de-redirecoes.md) ·
+[Inventário de conteúdos migrados](docs/inventario-de-conteudos.md) ·
+[Conteúdo que carece de verificação](docs/carece-de-verificacao.md) ·
+[Auditoria do projeto](docs/auditoria-do-projeto.md)

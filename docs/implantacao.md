@@ -1,6 +1,7 @@
 # Implantação
 
-Como pôr o sítio no ar, e como o manter a atualizar-se sozinho.
+Como pôr o sítio no ar. **A publicação é hoje inteiramente manual** — a automatização é uma
+proposta, descrita mais abaixo, não algo em funcionamento.
 
 ---
 
@@ -93,10 +94,15 @@ com 301 reais.
 
 ---
 
-## Publicação automática
+## Publicação automática — NÃO IMPLEMENTADA
 
-Com isto, cada alteração feita no CMS publica-se sozinha. Ficheiro
-`.github/workflows/publicar.yml`:
+**Não existe atualmente um pipeline CI/CD automatizado neste repositório.** Não há
+diretório `.github/`, nem workflows do GitHub Actions, nem qualquer outro sistema de
+integração contínua. Hoje, publicar é um processo manual: correr `npm run build` e enviar
+o conteúdo de `dist/` para o alojamento.
+
+O que se segue é uma **proposta** — um ponto de partida para quem venha a automatizar a
+publicação, a colocar em `.github/workflows/publicar.yml`. Não está em funcionamento:
 
 ```yaml
 name: Publicar
@@ -127,6 +133,10 @@ jobs:
 O `npm run lint:links` no fim é uma rede de segurança barata: se uma alteração de conteúdo
 criar uma ligação partida, o build falha antes de chegar ao público.
 
+Enquanto esta proposta não for implementada, **cada alteração gravada no CMS fica no
+repositório sem chegar ao sítio** até alguém publicar à mão. Vale a pena ter isto presente
+ao explicar o fluxo a quem edita.
+
 ---
 
 ## Configurar o editor de conteúdos
@@ -141,7 +151,7 @@ Em `public/admin/config.yml`, confirme:
 ```yaml
 backend:
   name: github
-  repo: themantas1994/arla   # ← o repositório real da associação
+  repo: themantas1994/arla-site   # ← o repositório real da associação
   branch: main               # ← a branch publicada
 ```
 
@@ -171,7 +181,7 @@ Duas opções habituais:
   ```yaml
   backend:
     name: github
-    repo: themantas1994/arla
+    repo: themantas1994/arla-site
     branch: main
     base_url: https://autenticacao.exemplo.pt
   ```
@@ -224,7 +234,9 @@ de meteorologia espacial.
 
 ### Quando o sítio não atualiza
 
-1. Veja se o build passou (separador **Actions** no GitHub, ou o painel do alojamento).
+1. Confirme que o build foi mesmo corrido e publicado: **não há publicação automática**
+   neste projeto (ver acima). Se usar um alojamento com build próprio — Netlify,
+   Cloudflare Pages — veja o painel desse serviço.
 2. Force a atualização no navegador: `Ctrl`+`F5`.
 3. Se usar CDN ou Cloudflare, limpe a cache.
 4. Confirme que a alteração ficou mesmo gravada: procure o *commit* no GitHub.

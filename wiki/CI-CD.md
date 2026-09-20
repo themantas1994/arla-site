@@ -1,17 +1,40 @@
 # CI/CD
 
-## Current state: none
+## Estado atual
 
-**There is no `.github/workflows/` directory in this repository, and no CI/CD system of any kind is currently configured.** This is a factual statement about the repository as it exists today, not an oversight to read past — if you're looking for a pipeline to fix or extend, there isn't one yet to find.
+> **Não existe atualmente um pipeline CI/CD automatizado neste repositório.**
 
-Concretely, today:
-- Type checking (`npm run check`), the build (`npm run build`), link checking (`npm run lint:links`), accessibility/functional QA (`npm run qa`), SEO auditing (`npm run audit:seo`), and performance auditing (`npm run audit:desempenho`) are all run **manually** by a developer before deploying — see [Testing](Testing).
-- Deployment is a manual upload of `dist/` to the Apache host — see [Deployment](Deployment).
-- There is no `Claude Approvals`, no branch protection rule enforcement visible in the repository config, and no automated PR checks.
+Isto é uma afirmação factual sobre o repositório tal como está hoje, verificada nesta
+auditoria — não um lapso de documentação a contornar. Em concreto:
 
-## The suggested (not implemented) workflow
+- **não existe o diretório `.github/`**, e portanto não há workflows do GitHub Actions;
+- não há configuração de nenhum outro sistema de integração contínua (GitLab CI, Jenkins,
+  Travis, CircleCI);
+- não há ficheiros de verificações obrigatórias, de proteção de branch nem de revisão
+  automática visíveis no repositório;
+- não há `npm test` — não existe sequer um guião com esse nome em `package.json`.
 
-[`docs/implantacao.md`](https://github.com/themantas1994/arla/blob/main/docs/implantacao.md#publicação-automática) documents a *proposed* GitHub Actions workflow, presented explicitly as a starting point rather than something already in place:
+Em consequência, **tudo é corrido à mão** por quem desenvolve, antes de publicar:
+
+```bash
+npm run check
+npm run build
+npm run preview &
+npm run lint:links
+npm run qa
+npm run audit:seo
+npm run audit:desempenho
+```
+
+E a publicação é igualmente manual: envio do conteúdo de `dist/` para o alojamento Apache.
+Ver [Implantação](Implantacao.md) e [Testes e Qualidade](Testes-e-Qualidade.md).
+
+---
+
+## Proposta (NÃO IMPLEMENTADA)
+
+[`docs/implantacao.md`](../docs/implantacao.md#publicação-automática--não-implementada)
+regista um workflow como ponto de partida. **Não está no repositório e nunca correu:**
 
 ```yaml
 name: Publicar
@@ -32,36 +55,62 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run lint:links
-      # Replace with the actual deployment step for your chosen host.
+      # Substituir pelo passo de publicação do alojamento escolhido.
       - uses: actions/upload-artifact@v4
         with:
           name: sitio
           path: dist
 ```
 
-The `npm run lint:links` step is called out specifically as a cheap safety net: if a content change introduces a broken link, the build fails before it reaches production.
-
-## If you implement this
-
-Before adding `.github/workflows/publicar.yml` (or similar) to the repository:
-
-1. Confirm the Node version matches `.nvmrc` (22) — the `engines.node` field in `package.json` only requires `>=20.3`, so pin explicitly to 22 in CI to match what's actually developed/tested against.
-2. Decide on the actual deployment step for whichever host is chosen — the workflow above stops at `upload-artifact` deliberately, since [Deployment](Deployment) documents multiple viable hosts (Apache/cPanel today, or Netlify/Cloudflare Pages/Vercel/GitHub Pages) with different deployment mechanics and different redirect-format implications.
-3. Consider adding `npm run check` (type checking) and, for a more thorough gate, `npm run qa`/`npm run audit:seo` — these currently only run manually and are the main quality gates this project actually relies on (see [Testing](Testing)); a CI pipeline that skips them would be weaker than the manual process it replaces.
-4. There is no existing Claude Approvals or required-status-check configuration to integrate with in this repository — if your organization wants one, it would be new setup, not something to extend.
-
-## Mermaid: proposed pipeline shape
-
 ```mermaid
 flowchart LR
-    Push["git push to main"] --> Checkout["actions/checkout"]
-    Checkout --> SetupNode["actions/setup-node (v22)"]
-    SetupNode --> Install["npm ci"]
-    Install --> TypeCheck["npm run check (recommended addition)"]
-    TypeCheck --> Build["npm run build"]
-    Build --> LinkCheck["npm run lint:links"]
-    LinkCheck --> QA["npm run qa (recommended addition)"]
-    QA --> Deploy["Deploy step — host-specific,\nnot yet defined"]
+    Push["push para main"] --> Checkout["actions/checkout"]
+    Checkout --> Node["actions/setup-node (22)"]
+    Node --> Install["npm ci"]
+    Install --> Check["npm run check<br>(acrescentar)"]
+    Check --> Build["npm run build"]
+    Build --> Links["npm run lint:links"]
+    Links --> QA["npm run qa<br>(acrescentar)"]
+    QA --> Deploy["Passo de publicação<br>por definir"]
 ```
 
-This diagram describes a **possible future state**, matching the workflow suggested in `docs/implantacao.md` plus the additional gates recommended above — it does not describe anything currently running.
+O diagrama descreve um **estado futuro possível**. Nada nele está a correr.
+
+---
+
+## Se for para implementar
+
+1. **Fixe o Node em 22**, para corresponder ao `.nvmrc`. O `engines.node` do `package.json`
+   só exige `>=20.3`, o que é mais permissivo do que aquilo contra o qual o projeto é
+   realmente desenvolvido e testado.
+2. **Acrescente `npm run check`** antes do build. A proposta acima salta-o, e é a
+   verificação mais barata que existe.
+3. **Pondere `npm run qa` e `npm run audit:seo`.** São as verificações em que este projeto
+   realmente se apoia; um pipeline que as salte é mais fraco do que o processo manual que
+   substitui. Precisam de um Chromium no runner (`npx playwright install --with-deps
+   chromium`, ou uma imagem que já o traga) e do sítio servido — normalmente
+   `npm run preview &` seguido de uma espera pela porta 4321.
+4. **Decida o passo de publicação.** A proposta termina em `upload-artifact` de propósito,
+   porque cada alojamento tem mecânica diferente e implicações diferentes nas redireções
+   (ver [Implantação](Implantacao.md)). Para o Apache/cPanel atual, seria um passo de
+   FTP/SFTP — e **o `.htaccess` tem de ir junto**, o que muitos clientes de FTP omitem por
+   ser um ficheiro oculto.
+5. **Guarde as credenciais de publicação como secrets do repositório**, nunca no workflow.
+6. **Considere `npm audit`** como passo informativo — hoje reporta 3 vulnerabilidades em
+   dependências (ver [Segurança](Seguranca.md)), e convém que isso não passe despercebido.
+7. **Não faça o build falhar por causa das ligações externas.** O `npm run lint:links` sem
+   `--externas` verifica apenas ligações internas, que é o comportamento certo para um
+   pipeline: 14 das ligações externas do sítio estão mortas dentro de artigos de arquivo,
+   por decisão editorial.
+
+---
+
+## O que a automatização mudaria na prática
+
+O ganho maior não seria a verificação — que já é feita, ainda que à mão — mas fechar a
+lacuna entre o CMS e o sítio publicado: hoje, uma alteração gravada em `/admin/` fica no
+repositório **sem chegar ao sítio** até alguém correr o build e publicar. É o que torna a
+frase «depois de gravar, o sítio atualiza-se sozinho» incorreta, e é a razão pela qual vale
+a pena implementar isto.
+
+Ver [`docs/auditoria-do-projeto.md`](../docs/auditoria-do-projeto.md#recomendações-futuras).

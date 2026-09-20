@@ -2,19 +2,30 @@
 
 Todas as moradas do sítio WordPress anterior continuam a funcionar.
 
-São **96 correspondências de endereço**, cada uma gerada em duas variantes — com e sem o
-prefixo `/site/`, para o caso de o sítio novo passar a ser servido na raiz do domínio —
-o que dá **189 regras de redireção permanente (HTTP 301)** no `.htaccess` e no
-`_redirects`. As redireções 301 preservam a autoridade de pesquisa acumulada e garantem
-que nenhuma ligação partilhada ao longo dos anos — em fóruns, mensagens ou marcadores —
-deixa de funcionar.
+São **96 correspondências de endereço**, quase todas geradas em duas variantes — com e sem
+o prefixo `/site/`, para o caso de o sítio novo passar a ser servido na raiz do domínio.
+Três delas (`/site/`, `/site/contactos/` e `/site/noticias/`) só existem com o prefixo,
+porque a variante sem prefixo é uma página do sítio novo.
+
+Os números exatos, verificáveis nos ficheiros:
+
+| Ficheiro | Regras | Composição |
+| --- | --- | --- |
+| `src/lib/redirects.mjs` | **183** | 93 endereços de rota, 90 deles em duas variantes |
+| `public/.htaccess` | **190** | as 183 acima + 6 para ficheiros PDF + 1 regra final de recolha (`^site/?$`) |
+| `public/_redirects` | **190** | as 183 acima + 6 para ficheiros PDF + 1 regra de recolha (`/site/*`) |
+
+As redireções 301 preservam a autoridade de pesquisa acumulada e garantem que nenhuma
+ligação partilhada ao longo dos anos — em fóruns, mensagens ou marcadores — deixa de
+funcionar.
 
 As tabelas abaixo listam as 96 correspondências canónicas.
 
 ## Como estão implementadas
 
-As redireções existem em três formatos, gerados a partir da mesma fonte
-(`src/lib/redirects.mjs`), para que funcionem em qualquer alojamento:
+As redireções existem em três formatos, para que funcionem em qualquer alojamento. Os três
+ficheiros são mantidos à mão e descrevem o mesmo mapa — `src/lib/redirects.mjs` é a
+referência, mas **não gera** os outros dois:
 
 | Ficheiro | Para que servidor | O que faz |
 | --- | --- | --- |
@@ -23,7 +34,13 @@ As redireções existem em três formatos, gerados a partir da mesma fonte
 | `src/lib/redirects.mjs` → `astro.config.mjs` | Qualquer alojamento de ficheiros estáticos | Páginas de redireção com `meta refresh` e `<link rel="canonical">`, como rede de segurança |
 
 Os ficheiros `.pdf` só são redirecionados ao nível do servidor: gerar uma página HTML
-num caminho terminado em `.pdf` confundiria quem o descarregasse.
+num caminho terminado em `.pdf` confundiria quem o descarregasse. A regra final de recolha
+(qualquer outro endereço sob `/site/` vai para a página inicial) também só existe ao nível
+do servidor.
+
+**Os três ficheiros são mantidos à mão e têm de ser alterados em conjunto.** Não há
+geração automática: acrescentar uma redireção só em `src/lib/redirects.mjs` deixa-a a
+funcionar por `meta refresh` mas sem 301 real no alojamento atual.
 
 ## Verificação
 

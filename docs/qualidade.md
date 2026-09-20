@@ -3,6 +3,14 @@
 Medições feitas sobre o build de produção, com as ferramentas do repositório. Todas são
 reproduzíveis:
 
+> **Última reverificação: 20/09/2026** (ver
+> [`auditoria-do-projeto.md`](auditoria-do-projeto.md)). `npm run check`, `npm run build`,
+> `npm run qa`, `npm run lint:links`, `npm run audit:seo` e `npm run audit:desempenho`
+> voltaram a passar, com os mesmos resultados de fundo: 74 análises axe-core sem violações,
+> 0 ligações internas partidas, 0 problemas de SEO e todas as páginas dentro dos limiares de
+> Core Web Vitals. As diferenças observadas são de ambiente (ver «Erros de consola») e de
+> arredondamento nas medições de tempo.
+
 ```bash
 npm run build
 npm run preview &
@@ -126,8 +134,13 @@ Testado a **320, 375, 390, 768, 1024, 1280 e 1440 px** em 37 páginas (259 combi
 | Verificação | Resultado |
 | --- | --- |
 | Transbordo horizontal | ✓ Nenhum, em nenhuma largura |
-| Tabelas em ecrãs estreitos | ✓ Passam a cartões abaixo de 860 px |
+| Tabelas em ecrãs estreitos | ✓ Passam a cartões, cada uma no seu ponto de rutura |
 | Menu por toque | ✓ Abre, expande secções e fecha |
+
+As três tabelas de dados não mudam de vista todas à mesma largura, porque não têm o mesmo
+número de colunas: repetidores a **860 px** (`TabelaRepetidores.astro`), balizas a
+**900 px** (`rede/balizas.astro`) e associados a **700 px** (`arla/quem-somos.astro`). O
+menu passa de barra a botão a **1180 px** (`Cabecalho.astro`).
 
 Corrigido durante os testes: a tabela da página de cookies empurrava a página 173 px para
 fora a 320 px. Passou a deslocar-se dentro do seu próprio contentor.
@@ -277,8 +290,9 @@ Revisão página a página em três larguras e nos dois temas; capturas em `repo
 
 ## Erros de consola
 
-Sete ocorrências de `net::ERR_TOO_MANY_RETRIES` nas páginas com mapa e na de meteorologia
-espacial. **São do ambiente de teste, não do sítio:** o sandbox onde os testes correram
+Ocorrências de `net::ERR_TOO_MANY_RETRIES` nas páginas com mapa e na de meteorologia
+espacial — sete na medição original, cinco na reverificação de 20/09/2026. O número varia
+com o ambiente, o que é em si um indício. **São do ambiente de teste, não do sítio:** o sandbox onde os testes correram
 encaminha o tráfego externo por um proxy que bloqueia parte dos pedidos às telas do
 OpenStreetMap e às imagens do HamQSL.
 

@@ -13,9 +13,17 @@ Guia para quem mantém o sítio da ARLA. **Não é preciso saber programar, nem 
 Quem pode entrar são as pessoas com acesso ao repositório da associação no GitHub. Para
 dar acesso a alguém novo, ver [implantacao.md](implantacao.md#dar-acesso-de-edição-a-alguém).
 
-Depois de gravar, o sítio é reconstruído sozinho e a alteração fica visível em **um a dois
-minutos**. Se não aparecer, force a atualização no navegador com `Ctrl`+`F5`
-(ou `Cmd`+`Shift`+`R` no Mac).
+> **Antes de o editor funcionar em produção.** O acesso por **Login with GitHub** depende de
+> uma aplicação OAuth e de um serviço de autenticação que ainda **não estão criados** — ver
+> [implantacao.md](implantacao.md#configurar-o-editor-de-conteúdos). Até lá, o editor só
+> funciona localmente, com `npx decap-server`.
+
+> **O sítio não se publica sozinho.** Gravar no editor faz um *commit* no repositório, mas
+> **não atualiza o sítio**: alguém tem de correr o build e publicar o resultado. Não existe
+> publicação automática neste projeto — ver
+> [implantacao.md](implantacao.md#publicação-automática--não-implementada). Depois de a
+> alteração ser publicada, se não a vir, force a atualização no navegador com `Ctrl`+`F5`
+> (ou `Cmd`+`Shift`+`R` no Mac).
 
 > **Cada alteração fica registada.** O editor grava no Git: vê-se sempre quem mudou o quê e
 > quando, e qualquer alteração pode ser revertida. Nada se perde por engano.

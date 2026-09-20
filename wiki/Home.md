@@ -1,28 +1,76 @@
-# ARLA Website — Developer Wiki
+# Wiki técnica — Sítio da ARLA
 
-**ARLA** (Associação de Radioamadores do Litoral Alentejano — Amateur Radio Association of the Alentejo Coast) is a Portuguese non-profit amateur radio association, callsign **CS5ARLA**, based in Santiago do Cacém. This repository is the source for its public website, [www.cs5arla.pt](https://www.cs5arla.pt): a full rebuild of a previous WordPress site as a static [Astro](https://astro.build) site with Git-backed content.
+A **ARLA — Associação de Radioamadores do Litoral Alentejano** é uma associação portuguesa
+sem fins lucrativos, com o indicativo coletivo **CS5ARLA**, sediada em Santiago do Cacém.
+Este repositório contém o código-fonte do seu sítio público,
+[www.cs5arla.pt](https://www.cs5arla.pt): uma reconstrução completa de um sítio WordPress
+anterior, sob a forma de um sítio estático em [Astro](https://astro.build), com o conteúdo
+guardado em Git.
 
-This Wiki is the **deep technical reference** for developers working on the codebase: architecture rationale, the exact content and data models, component conventions, deployment and CI/CD, and troubleshooting. It intentionally does not repeat what's in the [README](https://github.com/themantas1994/arla/blob/main/README.md) — start there for a project overview, the technology stack, and the quick-start commands.
+Esta Wiki é a **referência técnica aprofundada** para quem desenvolve: arquitetura, modelo
+de conteúdos e de dados, convenções dos componentes, implantação, qualidade e resolução de
+problemas. Não repete o [README](../README.md) — comece por lá para a visão geral, a pilha
+tecnológica e os comandos.
 
-There is also a `docs/` directory in the repository, written in **Portuguese** for the association's own non-technical maintainers: it documents *why* architectural decisions were made, the content-migration audit, the CMS editing workflow for board members, and recorded QA results. This Wiki cross-links to it where relevant rather than duplicating it.
+O diretório [`docs/`](../docs) contém documentação dirigida à direção da associação e a quem
+mantém o projeto: o *porquê* das decisões de arquitetura, a auditoria da migração de
+conteúdos, o guia de edição para os membros da direção e os resultados de qualidade
+registados. Esta Wiki liga-lhe em vez de o duplicar.
 
-## Recommended reading path
+---
 
-1. **[Architecture](Architecture)** — how the site is put together and why, with diagrams.
-2. **[Project Structure](Project-Structure)** — what every directory and key file does.
-3. **[Local Development](Local-Development)** — get a working dev environment.
-4. **[Content Management](Content-Management)** and **[Repeater Data](Repeater-Data)** — the content and data model, in depth.
-5. **[Articles and News](Articles-and-News)** and **[Events](Events)** — the editorial content lifecycle.
-6. **[Components](Components)** and **[Styling and Design System](Styling-and-Design-System)** — the UI layer.
-7. **[Routing](Routing)** — the full route table.
-8. **[SEO](SEO)**, **[Accessibility](Accessibility)**, **[Performance](Performance)** — cross-cutting quality concerns.
-9. **[Testing](Testing)**, **[Deployment](Deployment)**, **[CI/CD](CI-CD)** — shipping changes.
-10. **[Security](Security)**, **[Troubleshooting](Troubleshooting)**, **[Contributing](Contributing)** — reference material.
+## Percurso de leitura recomendado
 
-## What this project actually is (and isn't)
+1. **[Arquitetura](Arquitetura.md)** — como o sítio está construído e porquê.
+2. **[Estrutura do Projeto](Estrutura-do-Projeto.md)** — o que cada diretório e ficheiro faz.
+3. **[Desenvolvimento Local](Desenvolvimento-Local.md)** — pôr o ambiente a funcionar.
+4. **[Coleções de Conteúdo](Colecoes-de-Conteudo.md)** e
+   **[Sistema de Repetidores](Sistema-de-Repetidores.md)** — o modelo de dados, a fundo.
+5. **[Notícias e Artigos](Noticias-e-Artigos.md)** e **[Eventos](Eventos.md)** — o ciclo de
+   vida do conteúdo editorial.
+6. **[Componentes](Componentes.md)** e **[Sistema de Design](Sistema-de-Design.md)** — a
+   camada de apresentação.
+7. **[Rotas](Rotas.md)** — a tabela completa de rotas.
+8. **[SEO](SEO.md)**, **[Acessibilidade](Acessibilidade.md)**,
+   **[Desempenho](Desempenho.md)** — qualidade transversal.
+9. **[Testes e Qualidade](Testes-e-Qualidade.md)**, **[Implantação](Implantacao.md)**,
+   **[CI/CD](CI-CD.md)** — publicar alterações.
+10. **[Segurança](Seguranca.md)**, **[Resolução de Problemas](Resolucao-de-Problemas.md)**,
+    **[Contribuir](Contribuir.md)** — material de referência.
 
-- It **is** a static site: every page is generated once, at build time, from Markdown and JSON files stored in this Git repository. There is no database and no server-side application code running in production.
-- It **is** content-managed: the association's board edits news, events, and technical data (repeaters, beacons, governing bodies) through [Decap CMS](https://decapcms.org) at `/admin/`, which commits directly to this repository via GitHub OAuth.
-- It **is not** built with React, Vue, or any client-side framework — Astro ships zero JavaScript by default, and the handful of interactive widgets (the map, the repeater filter/search, the theme toggle) are small, framework-free `<script>` blocks.
-- It **is not** internationalized yet — all content and UI strings are Portuguese (`pt-PT`); the architecture leaves room for adding a second locale later (see [Architecture](Architecture#future-directions)) but nothing is implemented.
-- There **is no CI/CD pipeline** in the repository today (no `.github/workflows/`) and **no automated test suite** in the unit-test sense — verification is a set of Node.js/Playwright scripts run manually. See [CI/CD](CI-CD) and [Testing](Testing).
+---
+
+## O que este projeto é (e o que não é)
+
+- **É** um sítio estático: cada página é gerada uma vez, no build, a partir de ficheiros
+  Markdown e JSON deste repositório Git. Não há base de dados nem código a correr no
+  servidor em produção.
+- **É** gerido por conteúdos: a direção edita notícias, eventos e dados técnicos
+  (repetidores, balizas, órgãos sociais) através do [Decap CMS](https://decapcms.org) em
+  `/admin/`, que faz commit diretamente neste repositório por OAuth do GitHub.
+- **Não é** feito com React, Vue ou qualquer framework de cliente. O Astro não envia
+  JavaScript por predefinição, e os poucos elementos interativos (mapa, filtros de
+  repetidores, alternância de tema, pesquisa) são blocos `<script>` pequenos e sem framework.
+- **Não está** internacionalizado. Todo o conteúdo e todos os textos de interface estão em
+  `pt-PT`; a arquitetura deixa caminho aberto para um segundo idioma
+  (ver [Arquitetura](Arquitetura.md#evolução-futura)), mas nada está implementado.
+- **Não tem** pipeline de CI/CD (não existe `.github/`) nem suite de testes unitários. A
+  verificação é feita por guiões Node.js/Playwright, executados manualmente. Ver
+  [CI/CD](CI-CD.md) e [Testes e Qualidade](Testes-e-Qualidade.md).
+
+---
+
+## Estado da documentação
+
+A última auditoria ao repositório está registada em
+[`docs/auditoria-do-projeto.md`](../docs/auditoria-do-projeto.md), com a lista do que foi
+verificado, o que estava errado na documentação anterior e o que continua por resolver.
+
+Convenção usada em todas as páginas desta Wiki para classificar funcionalidades:
+
+| Etiqueta | Significado |
+| --- | --- |
+| **IMPLEMENTADO** | Existe no código e foi verificado nesta auditoria |
+| **PARCIALMENTE IMPLEMENTADO** | Existe, mas incompleto ou dependente de configuração externa |
+| **NÃO IMPLEMENTADO** | Documentado ou discutido, mas ausente do repositório |
+| **PROPOSTA / FUTURO** | Melhoria possível, sem qualquer trabalho feito |
