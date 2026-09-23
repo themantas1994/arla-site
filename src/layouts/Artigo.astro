@@ -34,13 +34,11 @@ export interface Props {
     categoria?: string; imagem?: string;
   }[];
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
-  /** Bloco de informação do evento, colocado antes do corpo. */
-  tipoArtigo?: 'noticia' | 'tecnica' | 'evento';
 }
 const {
   titulo, resumo, data, atualizado, autor, indicativo, categoria, etiquetas = [],
   imagem, imagemAlt, historico = false, notaHistorica, titulos = [], mostrarIndice = false,
-  corpoTexto, migalhas, anterior, seguinte, relacionados = [], jsonLd, tipoArtigo = 'noticia',
+  corpoTexto, migalhas, anterior, seguinte, relacionados = [], jsonLd,
 } = Astro.props;
 
 const minutos = tempoLeitura(corpoTexto);

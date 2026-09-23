@@ -13,17 +13,36 @@ Guia para quem mantém o sítio da ARLA. **Não é preciso saber programar, nem 
 Quem pode entrar são as pessoas com acesso ao repositório da associação no GitHub. Para
 dar acesso a alguém novo, ver [implantacao.md](implantacao.md#dar-acesso-de-edição-a-alguém).
 
-> **Antes de o editor funcionar em produção.** O acesso por **Login with GitHub** depende de
-> uma aplicação OAuth e de um serviço de autenticação que ainda **não estão criados** — ver
-> [implantacao.md](implantacao.md#configurar-o-editor-de-conteúdos). Até lá, o editor só
-> funciona localmente, com `npx decap-server`.
+> **O editor ainda NÃO funciona em produção.** Faltam duas coisas:
+>
+> 1. a aplicação OAuth do GitHub e o serviço de autenticação, que **não estão criados**;
+> 2. a decisão sobre qual é a branch publicada — o `config.yml` indica `main`, que **não
+>    existe** no repositório.
+>
+> Ver [implantacao.md](implantacao.md#configurar-o-editor-de-conteúdos) e
+> [decisoes-pendentes.md](decisoes-pendentes.md). Até lá, o editor só funciona localmente,
+> com `npx decap-server`.
 
 > **O sítio não se publica sozinho.** Gravar no editor faz um *commit* no repositório, mas
-> **não atualiza o sítio**: alguém tem de correr o build e publicar o resultado. Não existe
-> publicação automática neste projeto — ver
-> [implantacao.md](implantacao.md#publicação-automática--não-implementada). Depois de a
-> alteração ser publicada, se não a vir, force a atualização no navegador com `Ctrl`+`F5`
-> (ou `Cmd`+`Shift`+`R` no Mac).
+> **não atualiza o sítio**. Este é o percurso real de uma alteração:
+>
+> ```text
+>   Gravar no CMS
+>        ↓
+>   commit no Git
+>        ↓
+>   repositório no GitHub
+>        ↓
+>   ⚠ BUILD E PUBLICAÇÃO MANUAIS  ← alguém tem de fazer isto, à mão
+>        ↓
+>   sítio em produção
+> ```
+>
+> Entre o terceiro e o quarto passo pode passar um dia ou uma semana: depende de quando
+> alguém correr `npm run build` e enviar o resultado. **Não existe publicação automática
+> neste projeto** — ver [implantacao.md](implantacao.md#publicação-automática--não-implementada).
+> Depois de a alteração ser mesmo publicada, se não a vir, force a atualização no navegador
+> com `Ctrl`+`F5` (ou `Cmd`+`Shift`+`R` no Mac).
 
 > **Cada alteração fica registada.** O editor grava no Git: vê-se sempre quem mudou o quê e
 > quando, e qualquer alteração pode ser revertida. Nada se perde por engano.
@@ -185,8 +204,9 @@ levar alguém a sintonizar a frequência errada.
 ## Perguntas frequentes de quem edita
 
 **Gravei e não vejo a alteração.**
-Espere um ou dois minutos e atualize com `Ctrl`+`F5`. Se continuar, veja em
-[implantacao.md](implantacao.md#quando-o-sítio-não-atualiza).
+É o esperado: o sítio não se reconstrói sozinho. A alteração está guardada no repositório
+e aparece no sítio quando alguém correr o build e publicar. Ver o percurso no início desta
+página e, para quem publica, [implantacao.md](implantacao.md#quando-o-sítio-não-atualiza).
 
 **Enganei-me e já publiquei.**
 Volte a editar e corrija — é o mais simples. Para desfazer por completo, qualquer pessoa

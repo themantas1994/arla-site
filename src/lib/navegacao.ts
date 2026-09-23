@@ -1,3 +1,22 @@
+export interface RotaEditorial {
+  /** Ficheiro em src/content/paginas/ (sem .md). */
+  slug: string;
+  sobretitulo: string;
+}
+
+/**
+ * Páginas editoriais servidas por src/pages/radioamadorismo/[pagina].astro.
+ *
+ * Vive aqui, e não na própria página, porque o `getStaticPaths()` do Astro é
+ * avaliado num módulo à parte e não vê as constantes do frontmatter: a página
+ * importa-o dinamicamente e deriva as rotas de `Object.keys()`, de modo que
+ * acrescentar uma entrada aqui chegue para a rota passar a existir.
+ */
+export const ROTAS_RADIOAMADORISMO: Record<string, RotaEditorial> = {
+  'o-que-e': { slug: 'o-que-e-o-radioamadorismo', sobretitulo: 'Radioamadorismo' },
+  'ser-radioamador': { slug: 'ser-radioamador', sobretitulo: 'Radioamadorismo' },
+};
+
 export interface ItemNav {
   rotulo: string;
   href: string;

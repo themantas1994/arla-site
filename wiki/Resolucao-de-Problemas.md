@@ -119,15 +119,19 @@ endereços internos terminam em `/`. O `npm run lint:links` apanha estes casos s
 
 ### Uma redireção do sítio antigo não funciona
 
-Os três ficheiros de redireções são mantidos à mão e podem estar dessincronizados. No
-alojamento Apache atual, o que conta é o `public/.htaccess`; uma redireção que só exista em
-`src/lib/redirects.mjs` fica a funcionar por `meta refresh` em vez de 301 real. Confirme
-também que o `.htaccess` foi mesmo enviado — é um ficheiro oculto e muitos clientes de FTP
-escondem-no. Ver [Redirecionamentos](Redirecionamentos.md).
+Comece por `npm run redirecoes:validar`: se os ficheiros tiverem divergido da fonte,
+`npm run redirecoes:gerar` resolve. Se a validação passar, o problema está na publicação —
+no alojamento Apache atual o que conta é o `public/.htaccess`, e **é um ficheiro oculto que
+muitos clientes de FTP não enviam**. Confirme que chegou ao servidor.
+
+Se a redireção existir e continuar a não funcionar, confirme que não foi escrita à mão
+dentro dos marcadores do `.htaccess`: nesse caso perdeu-se na última geração. A fonte é
+`src/lib/redirects.mjs`. Ver [Redirecionamentos](Redirecionamentos.md).
 
 ### Renomeei um ficheiro de conteúdo e o endereço antigo deixou de funcionar
 
-O nome do ficheiro é o slug. Acrescente a redireção nos três ficheiros.
+O nome do ficheiro é o slug. Acrescente a redireção **só** em `src/lib/redirects.mjs` e
+corra `npm run redirecoes:gerar`.
 
 ---
 

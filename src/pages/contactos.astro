@@ -4,9 +4,9 @@ import Mapa from '@components/Mapa.astro';
 import Icone from '@components/Icone.astro';
 import BotaoCopiar from '@components/BotaoCopiar.astro';
 import { SITIO, email, emailVisivel, moradaLinhas } from '@lib/sitio';
-import { formatarCoordenadas } from '@lib/maidenhead';
 
-const coordDMS = formatarCoordenadas(SITIO.coordenadas.lat, SITIO.coordenadas.lon);
+// As coordenadas por extenso vêm de sitio.json (SITIO.coordenadasTexto), para
+// ficarem sob controlo de quem edita os conteúdos.
 const coordDecimal = `${SITIO.coordenadas.lat}, ${SITIO.coordenadas.lon}`;
 
 const jsonLd = {

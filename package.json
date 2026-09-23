@@ -7,22 +7,33 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build && pagefind --site dist",
+    "build": "node scripts/validar-dados.mjs && astro build && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
     "lint:links": "node scripts/check-links.mjs",
+    "redirecoes:gerar": "node scripts/gerar-redirecoes.mjs",
+    "redirecoes:validar": "node scripts/validar-redirecoes.mjs",
+    "validar:esquemas": "node scripts/validar-esquemas.mjs",
+    "validar:dados": "node scripts/validar-dados.mjs",
+    "validar:documentos": "node scripts/validar-documentos.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "qa": "node scripts/qa.mjs",
     "qa:capturas": "node scripts/capturas.mjs",
+    "media:otimizar": "node scripts/otimizar-media.mjs",
+    "conteudo:resumos": "node scripts/regenerar-resumos.mjs",
     "audit:seo": "node scripts/auditar-seo.mjs",
-    "audit:desempenho": "node scripts/auditar-desempenho.mjs"
+    "audit:desempenho": "node scripts/auditar-desempenho.mjs",
+    "audit:csp": "node scripts/auditar-csp.mjs",
+    "validar": "npm run check && npm run redirecoes:validar && npm run validar:esquemas && npm run validar:dados && npm run validar:documentos && npm run test"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.12",
     "@astrojs/sitemap": "^3.6.0",
     "astro": "^5.15.10",
     "leaflet": "^1.9.4",
-    "sharp": "^0.34.4"
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
@@ -30,9 +41,16 @@
     "@types/leaflet": "^1.9.22",
     "pagefind": "^1.4.0",
     "playwright": "^1.63.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.1",
+    "wait-on": "^9.1.0",
+    "yaml": "^2.9.1",
+    "zod": "^3.25.76"
   },
   "engines": {
     "node": ">=20.3.0"
+  },
+  "overrides": {
+    "sharp": "$sharp"
   }
 }

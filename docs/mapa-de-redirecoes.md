@@ -7,13 +7,17 @@ o prefixo `/site/`, para o caso de o sítio novo passar a ser servido na raiz do
 Três delas (`/site/`, `/site/contactos/` e `/site/noticias/`) só existem com o prefixo,
 porque a variante sem prefixo é uma página do sítio novo.
 
-Os números exatos, verificáveis nos ficheiros:
+Os números exatos, verificáveis com `npm run redirecoes:validar`:
 
 | Ficheiro | Regras | Composição |
 | --- | --- | --- |
-| `src/lib/redirects.mjs` | **183** | 93 endereços de rota, 90 deles em duas variantes |
-| `public/.htaccess` | **190** | as 183 acima + 6 para ficheiros PDF + 1 regra final de recolha (`^site/?$`) |
-| `public/_redirects` | **190** | as 183 acima + 6 para ficheiros PDF + 1 regra de recolha (`/site/*`) |
+| `src/lib/redirects.mjs` | **191** | 183 de rota + 7 de ficheiro estático + 1 de recolha final |
+| `public/.htaccess` | **191** | geradas a partir do ficheiro acima |
+| `public/_redirects` | **191** | geradas a partir do ficheiro acima |
+
+As 183 de rota são 93 endereços, 90 deles em duas variantes. As 7 de ficheiro estático
+são os 3 PDF do sítio antigo (também em duas variantes) e o nome alternativo
+`hamRadio.mp4` do vídeo do radioamadorismo, unificado em `hamradio.mp4`.
 
 As redireções 301 preservam a autoridade de pesquisa acumulada e garantem que nenhuma
 ligação partilhada ao longo dos anos — em fóruns, mensagens ou marcadores — deixa de
@@ -23,9 +27,20 @@ As tabelas abaixo listam as 96 correspondências canónicas.
 
 ## Como estão implementadas
 
-As redireções existem em três formatos, para que funcionem em qualquer alojamento. Os três
-ficheiros são mantidos à mão e descrevem o mesmo mapa — `src/lib/redirects.mjs` é a
-referência, mas **não gera** os outros dois:
+As redireções existem em três formatos, para que funcionem em qualquer alojamento.
+**`src/lib/redirects.mjs` é a fonte única e gera os outros dois** (auditoria: DT-001):
+
+```text
+src/lib/redirects.mjs
+  ├─ redirects              rotas HTML → astro.config.mjs (páginas de redireção)
+  ├─ redirecoesDeFicheiros  ficheiros estáticos, só ao nível do servidor
+  └─ capturaFinal           recolha de /site/*
+          │
+          │  npm run redirecoes:gerar
+          ▼
+  public/.htaccess (só o bloco entre marcadores)   public/_redirects (ficheiro completo)
+```
+
 
 | Ficheiro | Para que servidor | O que faz |
 | --- | --- | --- |
@@ -38,18 +53,44 @@ num caminho terminado em `.pdf` confundiria quem o descarregasse. A regra final 
 (qualquer outro endereço sob `/site/` vai para a página inicial) também só existe ao nível
 do servidor.
 
-**Os três ficheiros são mantidos à mão e têm de ser alterados em conjunto.** Não há
-geração automática: acrescentar uma redireção só em `src/lib/redirects.mjs` deixa-a a
-funcionar por `meta refresh` mas sem 301 real no alojamento atual.
+**Nunca edite `public/.htaccess` nem `public/_redirects` à mão.** Acrescente a redireção
+em `src/lib/redirects.mjs` e corra `npm run redirecoes:gerar`; o que estiver escrito à mão
+dentro dos marcadores perde-se na geração seguinte.
+
+O `.htaccess` tem mais do que redireções — cabeçalhos de segurança, regras de cache,
+Content-Security-Policy e `ErrorDocument`. O gerador só toca no bloco entre
+
+```apache
+  # >>> INÍCIO DAS REDIREÇÕES GERADAS — não editar à mão
+  # <<< FIM DAS REDIREÇÕES GERADAS
+```
+
+e deixa tudo o resto intacto. Se os marcadores desaparecerem, a geração falha com uma
+mensagem em vez de reescrever o ficheiro.
 
 ## Verificação
 
 ```bash
+npm run redirecoes:validar    # concordância entre os três ficheiros
 npm run build
 npm run lint:links            # confirma que nenhum destino está partido
 ```
 
-A última verificação não encontrou ligações internas partidas.
+`redirecoes:validar` falha quando encontra:
+
+- regras em falta, a mais ou com destino diferente entre os três ficheiros;
+- origens duplicadas;
+- auto-redireções, ciclos (A → B → A) e cadeias (A → B, sendo B origem de outra regra);
+- origens ou destinos mal formados (sem `/` inicial, com espaços, com `*` fora da recolha);
+- códigos de estado que não sejam 301/302/307/308;
+- destinos de ficheiro que não existem em `public/`;
+- desaparecimento das secções do `.htaccess` mantidas à mão.
+
+Avisa (sem falhar) quando um destino de rota não termina em `/`, por o sítio usar
+`trailingSlash: 'always'`.
+
+A última verificação encontrou 191 regras coerentes nos três ficheiros, sem ciclos nem
+cadeias, e nenhuma ligação interna partida.
 
 ---
 
@@ -200,6 +241,15 @@ A última verificação não encontrou ligações internas partidas.
 
 ## Regra de recolha
 
-Além das redireções explícitas, o `.htaccess` inclui uma regra final que envia qualquer
-pedido restante a `/site/` para a página inicial, e a página 404 explica a quem chegar de
-uma ligação antiga o que aconteceu, com pesquisa e atalhos.
+Além das redireções explícitas, há uma regra final que envia qualquer pedido restante sob
+`/site/` para a página inicial. Fica sempre em último lugar, para as regras específicas
+ganharem (`[L]` no Apache, ordem do ficheiro no Netlify).
+
+Até à remediação da auditoria, os dois ficheiros faziam coisas diferentes: o `_redirects`
+tinha `/site/*`, que apanha tudo, e o `.htaccess` tinha `^site/?$`, que só apanhava
+`/site/` e `/site` — ou seja, no alojamento atual, `/site/pagina-que-ja-nao-existe/` dava
+404 em vez de ir para a página inicial. O padrão Apache passou a `^site(/|$)`, equivalente
+ao do Netlify.
+
+A página 404 continua a explicar a quem chegue de uma ligação antiga o que aconteceu, com
+pesquisa e atalhos.

@@ -16,13 +16,13 @@ nas páginas.
 | `560px` | `Paginacao.astro`, `arla/quotizacao.astro`, `contactos.astro` | Grelhas locais |
 | `620px` | `arla/ser-associado.astro`, `eventos/[...slug].astro` | Grelhas locais |
 | `640px` | **`global.css`**, `Rodape.astro`, `Artigo.astro` | Espaçamento interior de `.envolvente`; layout do rodapé e do cabeçalho do artigo |
-| `700px` | `arla/quem-somos.astro` | **Tabela de associados → cartões** |
+| `700px` | `global.css` (`so-*--700`), usado por `arla/quem-somos.astro` | **Tabela de associados → cartões** |
 | `720px` | `arla/historia.astro`, `rede/repetidores.astro` | Grelhas locais |
 | `760px` | `radioamadorismo/comecar.astro`, `radioamadorismo/meteorologia-espacial.astro` | Grelhas locais |
 | `800px` | `radioamadorismo/index.astro` | Grelha local |
-| `860px` | `TabelaRepetidores.astro` | **Tabela de repetidores → cartões** |
+| `860px` | `global.css` (`so-*--860`), usado por `TabelaRepetidores.astro` | **Tabela de repetidores → cartões** |
 | `880px` | `CartaoArtigo.astro` | Cartão de artigo em destaque |
-| `900px` | `FundoEspectro.astro`, `radioamadorismo/satelites.astro`, `rede/balizas.astro` | **Tabela de balizas → cartões**; animação de fundo |
+| `900px` | `global.css` (`so-*--900`), usado por `rede/balizas.astro`; também `FundoEspectro.astro` e `radioamadorismo/satelites.astro` | **Tabela de balizas → cartões**; animação de fundo |
 | `960px` | `contactos.astro`, `index.astro` | Layouts de duas colunas |
 | `1000px` | `Rodape.astro` | Colunas do rodapé |
 | `1080px` | `arla/historia.astro` | Cronologia em duas colunas |
@@ -54,24 +54,51 @@ longos em português; abaixo disso, a barra horizontal deixava de caber.
 
 ## Tabelas → cartões — IMPLEMENTADO
 
-Três tabelas de dados têm uma vista alternativa em cartões. O padrão é o mesmo nas três, mas
-**as classes `.so-largo` e `.so-estreito` não são globais**: cada ficheiro define-as no seu
-próprio bloco `<style>`, com o seu ponto de rutura.
+Três tabelas de dados têm uma vista alternativa em cartões. **O padrão está definido uma só
+vez**, em `src/styles/global.css`, na camada `utilities` (auditoria: DT-011). Cada tabela
+escolhe o seu ponto de rutura pela classe com sufixo; nenhuma página repete regras de
+`display`.
 
-| Tabela | Ficheiro | Ponto de rutura | Porquê |
-| --- | --- | --- | --- |
-| Repetidores | `src/components/TabelaRepetidores.astro` | 860px | 10 colunas |
-| Balizas | `src/pages/rede/balizas.astro` | 900px | 8 colunas, uma delas larga (antena) |
-| Associados | `src/pages/arla/quem-somos.astro` | 700px | 3 colunas |
+| Tabela | Ficheiro | Classes | Ponto de rutura | Porquê |
+| --- | --- | --- | --- | --- |
+| Repetidores | `src/components/TabelaRepetidores.astro` | `so-largo--860` / `so-estreito--860` | 860px | 10 colunas |
+| Balizas | `src/pages/rede/balizas.astro` | `so-largo--900` / `so-estreito--900` | 900px | 9 colunas, uma delas larga (antena) |
+| Associados | `src/pages/arla/quem-somos.astro` | `so-largo--700` / `so-estreito--700` | 700px | 5 colunas |
 
-O padrão, em cada um dos três:
+No HTML, as duas classes andam sempre juntas — a genérica traz o comportamento, a do sufixo
+traz o ponto de rutura:
+
+```html
+<div class="tabela-envolvente so-largo so-largo--860"> … </div>
+<ul   class="cartoes-repetidores so-estreito so-estreito--860"> … </ul>
+```
+
+Em `global.css`:
 
 ```css
-.so-largo { display: none; }
-.so-estreito { display: grid; }            /* ou block */
-@media (min-width: N) { .so-largo { display: block; } .so-estreito { display: none; } }
-@media print        { .so-largo { display: block; } .so-estreito { display: none; } }
+.so-largo    { display: none; }
+.so-estreito { display: grid; gap: var(--e-3); }
+
+@media (min-width: 700px) { .so-largo--700 { display: block } .so-estreito--700 { display: none } }
+@media (min-width: 860px) { .so-largo--860 { display: block } .so-estreito--860 { display: none } }
+@media (min-width: 900px) { .so-largo--900 { display: block } .so-estreito--900 { display: none } }
 ```
+
+E, no bloco `@media print` no fim do ficheiro:
+
+```css
+.so-largo    { display: block !important; }
+.so-estreito { display: none  !important; }
+```
+
+**Porquê três valores e não um.** Não é inconsistência: cada tabela deixa de caber a uma
+largura própria, e forçar as três ao mesmo ponto de rutura ou mostraria a tabela de
+repetidores espremida a 700px, ou passaria a de associados a cartões muito antes de ser
+preciso. O que estava duplicado — e deixou de estar — era o *comportamento*, não o valor.
+
+**Porquê `!important` na impressão.** As regras partilhadas estão numa camada `@layer`, e
+os `<style>` de componente do Astro não estão em camada nenhuma — ganhariam à regra de
+impressão. O `!important` garante que o papel leva sempre a tabela.
 
 Pontos que valem a pena reter:
 
@@ -125,5 +152,9 @@ prática em uso é: **escolha a largura em que o conteúdo deixa de caber**, nã
 dispositivo. Se a mudança for do mesmo tipo de uma já existente (por exemplo, mais uma
 tabela a passar a cartões), reutilize o breakpoint da tabela mais parecida em número de
 colunas, para não multiplicar valores.
+
+Para uma tabela nova, use um dos três pares `so-largo--700/860/900` já existentes. Só se
+nenhum servir acrescente um par novo em `global.css` — e nunca escreva regras de `display`
+para `.so-largo`/`.so-estreito` no `<style>` da página: voltaria a espalhar o padrão.
 
 Depois de qualquer alteração de layout: `npm run build && npm run qa`.

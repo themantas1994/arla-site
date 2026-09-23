@@ -109,9 +109,22 @@ Disallow: /admin/
 Sitemap: https://www.cs5arla.pt/sitemap-index.xml
 ```
 
-**O endereço do sitemap está escrito literalmente**, não derivado de `PUBLIC_SITE_URL`:
-`robots.txt` é um ficheiro estático em `public/`. Ao publicar noutro domínio, é preciso
-alterá-lo à mão.
+**O endereço do sitemap acompanha `PUBLIC_SITE_URL`.** O `robots.txt` deixou de ser um
+ficheiro estático em `public/` e passou a ser gerado no build, por
+`src/pages/robots.txt.ts` (auditoria: DOC-017):
+
+```bash
+PUBLIC_SITE_URL=https://ensaio.exemplo.pt npm run build
+# → dist/robots.txt com «Sitemap: https://ensaio.exemplo.pt/sitemap-index.xml»
+```
+
+Antes, o endereço estava escrito literalmente: em qualquer domínio que não fosse o de
+produção — uma pré-visualização, um domínio novo — apontava para o sítio errado, e ninguém
+dava por isso.
+
+As áreas bloqueadas estão na constante `BLOQUEADAS`, no topo do ficheiro, e **têm de
+coincidir com o filtro do sitemap** em `astro.config.mjs`. `npm run audit:seo` verifica o
+`robots.txt` gerado.
 
 `Disallow` não é uma fronteira de segurança — mantém estas páginas fora dos resultados de
 pesquisa, nada mais.
@@ -147,7 +160,7 @@ publicação é passada como `data-pagefind-meta`.
 
 ## Redireções — IMPLEMENTADO
 
-183 redireções de rota em `src/lib/redirects.mjs` e 190 regras em cada um dos
+183 redireções de rota em `src/lib/redirects.mjs` e 191 regras em cada um dos
 `public/.htaccess` e `public/_redirects`. Detalhe, números e procedimento de manutenção em
 [Redirecionamentos](Redirecionamentos.md).
 

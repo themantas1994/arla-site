@@ -1,4 +1,6 @@
 # Redireções do sítio anterior — ver docs/mapa-de-redirecoes.md
+# GERADO a partir de src/lib/redirects.mjs por `npm run redirecoes:gerar`.
+# Não editar à mão: as alterações perdem-se na próxima geração.
 /2017/07/11/emissoes-em-sstv-08072017/  /eventos/emissoes-sstv-2017-07-08/  301
 /2017/08/04/5-o-ciclo-raid/  /noticias/5-ciclo-raid/  301
 /2017/08/09/emissoes-em-sstv-sabado-1282017/  /eventos/emissoes-sstv-2017-08-12/  301
@@ -60,8 +62,8 @@
 /2023/11/16/modos-digitais-qo-100-ct1etl/  /tecnica/modos-digitais-para-o-qo-100/  301
 /2024/04/14/convivio-pota-2024/  /eventos/convivio-pota-2024/  301
 /2024/10/25/12a-edicao-fim-de-semana-am/  /eventos/12a-edicao-fim-de-semana-am/  301
-/ARLA_ficha_de_inscrição.pdf  /documentos/arla-ficha-de-inscricao.pdf  301
 /account/  /area-reservada/  301
+/ARLA_ficha_de_inscrição.pdf  /documentos/arla-ficha-de-inscricao.pdf  301
 /associacao/  /arla/  301
 /associacao/repetidores/  /rede/repetidores/  301
 /aviso-legal/  /legal/aviso-legal/  301
@@ -75,6 +77,7 @@
 /euc-cs5arla/  /rede/cs5arla/  301
 /feed/  /rss.xml  301
 /historial/  /arla/historia/  301
+/imagens/conteudo/hamRadio.mp4  /imagens/conteudo/hamradio.mp4  301
 /indices-propagacao/  /radioamadorismo/meteorologia-espacial/  301
 /login/  /area-reservada/  301
 /logout/  /area-reservada/  301
@@ -153,8 +156,8 @@
 /site/2023/11/16/modos-digitais-qo-100-ct1etl/  /tecnica/modos-digitais-para-o-qo-100/  301
 /site/2024/04/14/convivio-pota-2024/  /eventos/convivio-pota-2024/  301
 /site/2024/10/25/12a-edicao-fim-de-semana-am/  /eventos/12a-edicao-fim-de-semana-am/  301
-/site/ARLA_ficha_de_inscrição.pdf  /documentos/arla-ficha-de-inscricao.pdf  301
 /site/account/  /area-reservada/  301
+/site/ARLA_ficha_de_inscrição.pdf  /documentos/arla-ficha-de-inscricao.pdf  301
 /site/associacao/  /arla/  301
 /site/associacao/repetidores/  /rede/repetidores/  301
 /site/aviso-legal/  /legal/aviso-legal/  301

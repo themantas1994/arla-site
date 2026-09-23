@@ -3,13 +3,21 @@
 Medições feitas sobre o build de produção, com as ferramentas do repositório. Todas são
 reproduzíveis:
 
-> **Última reverificação: 20/09/2026** (ver
-> [`auditoria-do-projeto.md`](auditoria-do-projeto.md)). `npm run check`, `npm run build`,
-> `npm run qa`, `npm run lint:links`, `npm run audit:seo` e `npm run audit:desempenho`
-> voltaram a passar, com os mesmos resultados de fundo: 74 análises axe-core sem violações,
-> 0 ligações internas partidas, 0 problemas de SEO e todas as páginas dentro dos limiares de
-> Core Web Vitals. As diferenças observadas são de ambiente (ver «Erros de consola») e de
-> arredondamento nas medições de tempo.
+> **Última reverificação: 21/09/2026**, depois da remediação da auditoria (ver
+> [`remediacao-da-auditoria.md`](remediacao-da-auditoria.md)). Tudo voltou a passar, com os
+> mesmos resultados de fundo: 74 análises axe-core sem violações, 17/17 testes funcionais,
+> 0 ligações internas partidas, 0 problemas de SEO e todas as páginas dentro dos limiares
+> de Core Web Vitals. Juntaram-se 58 testes unitários, a validação dos dados, a
+> concordância das redireções e o teste da Content-Security-Policy. As diferenças
+> observadas são de ambiente (ver «Erros de consola») e de arredondamento nos tempos.
+
+Verificações que não precisam de navegador:
+
+```bash
+npm run validar            # tipos + redireções + esquemas + dados + documentos + testes
+```
+
+Verificações sobre o build, com o sítio a correr:
 
 ```bash
 npm run build
@@ -17,10 +25,51 @@ npm run preview &
 npm run qa                 # acessibilidade, responsivo, alvos de toque, funcional
 npm run audit:seo          # metadados, dados estruturados, hierarquia, sitemap
 npm run audit:desempenho   # Core Web Vitals sob 4G lento
+npm run audit:csp          # Content-Security-Policy em modo impositivo
 npm run lint:links -- --externas
 ```
 
+Todas correm também em integração contínua, a cada *push* e *pull request*
+(`.github/workflows/qualidade.yml`). **O workflow verifica; não publica nada.**
+
 Os relatórios em bruto ficam em `reports/`.
+
+---
+
+## Testes unitários
+
+**58 testes, 3 ficheiros, todos a passar.** Motor: Vitest (`npm test`).
+
+Cobrem a lógica pura de `src/lib/`, que antes só era verificada por inspeção visual:
+
+| Função | Ficheiro | O que os testes fixam |
+| --- | --- | --- |
+| `quadriculaParaCoordenadas()` | `tests/maidenhead.test.ts` | conversão da quadrícula da sede, centro e não canto, precisão por comprimento, extremos do sistema, 10 formas inválidas rejeitadas |
+| `formatarCoordenadas()` | `tests/maidenhead.test.ts` | graus e minutos decimais, hemisférios, zero |
+| `estadoEvento()` | `tests/sitio.test.ts` | futuro/a decorrer/terminado, fronteiras do primeiro e do último dia, indiferença à hora, evento sem fim, fim anterior ao início |
+| `intervaloDatas()` | `tests/sitio.test.ts` | mesmo dia, mesmo mês, mesmo ano, anos diferentes, meses em PT-PT |
+| `tempoLeitura()` | `tests/sitio.test.ts` | mínimo de 1 minuto, 200 palavras/minuto, arredondamento, texto vazio, texto muito longo |
+| `normalizar()` | `tests/sitio.test.ts` | acentos e maiúsculas |
+| `slugCategoria()` | `tests/conteudo.test.ts` | acentos, pontuação, hífenes nas pontas, idempotência |
+| `relacionados()` | `tests/conteudo.test.ts` | lista vazia, um só candidato, nunca o próprio artigo, etiquetas acima de categoria, preenchimento pelos mais recentes, sem repetidos |
+| `textoSimples()` | `tests/conteudo.test.ts` | blocos de código, imagens, ligações, texto vazio |
+
+Os testes não carregam o Astro: `tests/duplos/astro-content.ts` substitui o módulo virtual
+`astro:content`, e qualquer chamada a `getCollection()` falha com uma mensagem explícita.
+Só lógica pura é testada aqui — o resto é coberto pelos testes funcionais do `npm run qa`.
+
+---
+
+## Validação de dados e configuração
+
+Quatro verificações acrescentadas na remediação da auditoria, todas sem navegador:
+
+| Comando | O que garante |
+| --- | --- |
+| `npm run validar:dados` | os 5 ficheiros JSON fora das coleções têm todos os campos, com os tipos certos (esquemas Zod `strict`: um campo mal escrito falha em vez de dar `undefined`). Corre dentro do `npm run build` |
+| `npm run validar:esquemas` | o CMS não deixa gravar nada que o build venha a recusar — campos, obrigatoriedade e valores de `select` comparados com `src/content.config.ts` |
+| `npm run redirecoes:validar` | as 191 regras coincidem nos três ficheiros, sem duplicados, ciclos nem cadeias |
+| `npm run validar:documentos` | cada PDF da biblioteca existe e o tamanho publicado corresponde ao ficheiro |
 
 ---
 
@@ -138,9 +187,20 @@ Testado a **320, 375, 390, 768, 1024, 1280 e 1440 px** em 37 páginas (259 combi
 | Menu por toque | ✓ Abre, expande secções e fecha |
 
 As três tabelas de dados não mudam de vista todas à mesma largura, porque não têm o mesmo
-número de colunas: repetidores a **860 px** (`TabelaRepetidores.astro`), balizas a
-**900 px** (`rede/balizas.astro`) e associados a **700 px** (`arla/quem-somos.astro`). O
-menu passa de barra a botão a **1180 px** (`Cabecalho.astro`).
+número de colunas. Os três pontos de rutura estão agora **definidos num só sítio**,
+em `src/styles/global.css` (auditoria: DT-011), e cada tabela escolhe o seu pela classe:
+
+| Tabela | Ficheiro | Classes | Ponto de rutura |
+| --- | --- | --- | --- |
+| Associados (5 colunas) | `arla/quem-somos.astro` | `so-largo--700` / `so-estreito--700` | 700 px |
+| Repetidores (10 colunas) | `TabelaRepetidores.astro` | `so-largo--860` / `so-estreito--860` | 860 px |
+| Balizas (9 colunas) | `rede/balizas.astro` | `so-largo--900` / `so-estreito--900` | 900 px |
+
+O comportamento partilhado — esconder a tabela por baixo do ponto de rutura, esconder os
+cartões por cima dele, e mostrar sempre a tabela na impressão — está escrito uma só vez.
+As páginas já não repetem regras de `display`.
+
+O menu passa de barra a botão a **1180 px** (`Cabecalho.astro`).
 
 Corrigido durante os testes: a tabela da página de cookies empurrava a página 173 px para
 fora a 320 px. Passou a deslocar-se dentro do seu próprio contentor.
@@ -291,7 +351,7 @@ Revisão página a página em três larguras e nos dois temas; capturas em `repo
 ## Erros de consola
 
 Ocorrências de `net::ERR_TOO_MANY_RETRIES` nas páginas com mapa e na de meteorologia
-espacial — sete na medição original, cinco na reverificação de 20/09/2026. O número varia
+espacial — sete na medição original, cinco a 20/09/2026, seis a 21/09/2026. O número varia
 com o ambiente, o que é em si um indício. **São do ambiente de teste, não do sítio:** o sandbox onde os testes correram
 encaminha o tráfego externo por um proxy que bloqueia parte dos pedidos às telas do
 OpenStreetMap e às imagens do HamQSL.
@@ -314,7 +374,14 @@ Por honestidade, o que fica por fazer:
   recentes, mas não foram testados.
 - **Dispositivos reais.** Os testes usam emulação, não telemóveis físicos.
 - **Carga.** Não é relevante num sítio estático, mas não foi medida.
-- **O CMS em produção.** O Decap CMS foi configurado e validado (o `config.yml` analisa
-  corretamente, e as coleções apontam para os ficheiros existentes), mas a autenticação
-  OAuth só pode ser testada depois de o repositório e a aplicação OAuth estarem criados —
-  ver [implantacao.md](implantacao.md#configurar-o-editor-de-conteúdos).
+- **O CMS em produção.** O `config.yml` é validado automaticamente contra os esquemas de
+  conteúdo (`npm run validar:esquemas`) e a página do editor foi testada a carregar com a
+  versão fixa e o SRI. Mas a autenticação OAuth só pode ser testada depois de a aplicação
+  OAuth existir, e a branch de publicação está por decidir — ver
+  [decisoes-pendentes.md](decisoes-pendentes.md).
+- **A Content-Security-Policy em produção.** É testada em modo impositivo num navegador
+  (`npm run audit:csp`, 15 páginas, 0 violações), mas está a ser servida em `Report-Only` e
+  só o Apache a aplica. Ver [seguranca-csp.md](seguranca-csp.md).
+- **O `.htaccess` num Apache real.** As regras geradas são verificadas por concordância
+  entre ficheiros, não executadas por um Apache. A redireção `/site/…` é confirmada pelo
+  teste funcional, mas através das páginas de redireção do Astro.

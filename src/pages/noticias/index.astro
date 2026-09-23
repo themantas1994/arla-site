@@ -4,10 +4,9 @@ import CartaoArtigo from '@components/CartaoArtigo.astro';
 import Paginacao from '@components/Paginacao.astro';
 import EstadoVazio from '@components/EstadoVazio.astro';
 import Icone from '@components/Icone.astro';
-import { noticias, slugCategoria } from '@lib/conteudo';
+import { noticias, slugCategoria, POR_PAGINA } from '@lib/conteudo';
 
 const todas = await noticias();
-const POR_PAGINA = 12;
 const pagina = todas.slice(0, POR_PAGINA);
 const totalPaginas = Math.ceil(todas.length / POR_PAGINA);
 

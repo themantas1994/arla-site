@@ -1,10 +1,18 @@
 /**
- * Mapa de redireções permanentes do sítio WordPress anterior (/site/…)
- * para as novas rotas. Gerado a partir do inventário de conteúdos;
- * ver docs/mapa-de-redirecoes.md.
+ * FONTE ÚNICA das redireções permanentes do sítio WordPress anterior (/site/…)
+ * para as novas rotas. Ver docs/mapa-de-redirecoes.md.
  *
- * Os ficheiros estáticos (PDF) são redirecionados ao nível do servidor
- * (public/.htaccess e public/_redirects), não aqui.
+ * Este ficheiro é a única fonte: `public/.htaccess` e `public/_redirects` são
+ * GERADOS a partir daqui por `npm run redirecoes:gerar`. Não os edite à mão —
+ * `npm run redirecoes:validar` (incluído em `npm run validar`) falha se
+ * estiverem desatualizados.
+ *
+ * Três exportações, porque nem tudo pode ir para o Astro:
+ *   - `redirects`            rotas HTML, entregues ao Astro em astro.config.mjs
+ *   - `redirecoesDeFicheiros` ficheiros estáticos (PDF, media): o Astro geraria
+ *                            uma página HTML no lugar do ficheiro, por isso só
+ *                            existem ao nível do servidor
+ *   - `capturaFinal`         regra de recolha para o resto de /site/
  */
 export const redirects = {
   '/2017/07/11/emissoes-em-sstv-08072017/': { status: 301, destination: '/eventos/emissoes-sstv-2017-07-08/' },
@@ -190,4 +198,33 @@ export const redirects = {
   '/site/ser-associado/': { status: 301, destination: '/arla/ser-associado/' },
   '/site/user/': { status: 301, destination: '/area-reservada/' },
   '/user/': { status: 301, destination: '/area-reservada/' },
+};
+
+/**
+ * Ficheiros estáticos do sítio antigo. Só existem nos ficheiros de servidor:
+ * uma entrada em `redirects` faria o Astro gerar um .html com este nome, o que
+ * partiria o endereço em vez de o redirecionar.
+ */
+export const redirecoesDeFicheiros = {
+  '/ARLA_ficha_de_inscrição.pdf': { status: 301, destination: '/documentos/arla-ficha-de-inscricao.pdf' },
+  '/estatutos_arla.pdf': { status: 301, destination: '/documentos/estatutos-arla.pdf' },
+  '/regulamentos_internos.pdf': { status: 301, destination: '/documentos/regulamentos-internos.pdf' },
+  '/site/ARLA_ficha_de_inscrição.pdf': { status: 301, destination: '/documentos/arla-ficha-de-inscricao.pdf' },
+  '/site/estatutos_arla.pdf': { status: 301, destination: '/documentos/estatutos-arla.pdf' },
+  '/site/regulamentos_internos.pdf': { status: 301, destination: '/documentos/regulamentos-internos.pdf' },
+  // Nome alternativo do vídeo do radioamadorismo, servido antes de os dois
+  // ficheiros com o mesmo conteúdo serem unificados em hamradio.mp4 (DT-010).
+  '/imagens/conteudo/hamRadio.mp4': { status: 301, destination: '/imagens/conteudo/hamradio.mp4' },
+};
+
+/**
+ * Recolha final: qualquer outro endereço sob /site/ vai para a página inicial.
+ * Fica sempre em último lugar, para as regras específicas acima ganharem.
+ */
+export const capturaFinal = {
+  origem: '/site/*',
+  destino: '/',
+  status: 301,
+  /** Equivalente em Apache: apanha /site, /site/ e tudo o que venha a seguir. */
+  padraoApache: '^site(/|$)',
 };

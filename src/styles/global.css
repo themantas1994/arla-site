@@ -476,6 +476,34 @@
   }
   .saltar-para-conteudo:focus { transform: translateY(0); color: var(--accent-contraste); }
 
+  /* ------------------- Vista dupla: tabela ↔ cartões ---------------------
+     Padrão partilhado pelas três tabelas de dados do sítio. `so-largo` marca a
+     tabela e `so-estreito` a lista de cartões equivalente; o sufixo é o ponto
+     de rutura, ou seja, a largura a partir da qual a tabela cabe no ecrã.
+
+       so-*--700  Associados        src/pages/arla/quem-somos.astro   (5 colunas)
+       so-*--860  Repetidores       src/components/TabelaRepetidores.astro (10 colunas)
+       so-*--900  Balizas           src/pages/rede/balizas.astro      (9 colunas)
+
+     Os três valores são intencionalmente diferentes: cada tabela deixa de caber
+     a uma largura própria. Na impressão mostra-se sempre a tabela — a regra
+     está no bloco @media print no fim deste ficheiro.
+     Ver wiki/Design-Responsivo.md. */
+  .so-largo { display: none; }
+  .so-estreito { display: grid; gap: var(--e-3); }
+  @media (min-width: 700px) {
+    .so-largo--700 { display: block; }
+    .so-estreito--700 { display: none; }
+  }
+  @media (min-width: 860px) {
+    .so-largo--860 { display: block; }
+    .so-estreito--860 { display: none; }
+  }
+  @media (min-width: 900px) {
+    .so-largo--900 { display: block; }
+    .so-estreito--900 { display: none; }
+  }
+
   .mono { font-family: var(--fonte-mono); font-variant-numeric: tabular-nums; }
   .suave { color: var(--texto-suave); }
   .fraco { color: var(--texto-fraco); }
@@ -498,6 +526,9 @@
   :root { --fundo: #fff; --superficie: #fff; --texto: #000; --texto-suave: #333; --borda: #bbb; }
   body { background: #fff; color: #000; font-size: 11pt; }
   .site-cabecalho, .site-rodape, .nao-imprimir, .barra-filtros, .paginacao { display: none !important; }
+  /* Em papel mostra-se sempre a tabela, seja qual for a largura da página. */
+  .so-largo { display: block !important; }
+  .so-estreito { display: none !important; }
   .prosa { max-width: none; }
   a[href^='http']::after { content: ' (' attr(href) ')'; font-size: 9pt; color: #555; word-break: break-all; }
   table.dados { font-size: 9pt; }

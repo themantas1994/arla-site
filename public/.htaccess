@@ -1,8 +1,13 @@
-# Redireções permanentes do sítio WordPress anterior para a nova estrutura.
-# Gerado automaticamente — ver docs/mapa-de-redirecoes.md.
+# Configuração do sítio da ARLA para Apache/cPanel.
+#
+# A secção das redireções é GERADA a partir de src/lib/redirects.mjs por
+# `npm run redirecoes:gerar`; `npm run redirecoes:validar` falha se divergir.
+# Tudo o que está fora dos marcadores — cabeçalhos de segurança, cache e
+# ErrorDocument — é mantido à mão e nunca é tocado pelo gerador.
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # >>> INÍCIO DAS REDIREÇÕES GERADAS — não editar à mão
   RewriteRule ^2017/07/11/emissoes-em-sstv-08072017/$ /eventos/emissoes-sstv-2017-07-08/ [R=301,L]
   RewriteRule ^2017/08/04/5-o-ciclo-raid/$ /noticias/5-ciclo-raid/ [R=301,L]
   RewriteRule ^2017/08/09/emissoes-em-sstv-sabado-1282017/$ /eventos/emissoes-sstv-2017-08-12/ [R=301,L]
@@ -64,8 +69,8 @@
   RewriteRule ^2023/11/16/modos-digitais-qo-100-ct1etl/$ /tecnica/modos-digitais-para-o-qo-100/ [R=301,L]
   RewriteRule ^2024/04/14/convivio-pota-2024/$ /eventos/convivio-pota-2024/ [R=301,L]
   RewriteRule ^2024/10/25/12a-edicao-fim-de-semana-am/$ /eventos/12a-edicao-fim-de-semana-am/ [R=301,L]
-  RewriteRule ^ARLA_ficha_de_inscrição.pdf$ /documentos/arla-ficha-de-inscricao.pdf [R=301,L]
   RewriteRule ^account/$ /area-reservada/ [R=301,L]
+  RewriteRule ^ARLA_ficha_de_inscrição\.pdf$ /documentos/arla-ficha-de-inscricao.pdf [R=301,L]
   RewriteRule ^associacao/$ /arla/ [R=301,L]
   RewriteRule ^associacao/repetidores/$ /rede/repetidores/ [R=301,L]
   RewriteRule ^aviso-legal/$ /legal/aviso-legal/ [R=301,L]
@@ -75,10 +80,11 @@
   RewriteRule ^category/sstv/$ /eventos/ [R=301,L]
   RewriteRule ^direcao-tecnica/$ /arla/direcao-tecnica/ [R=301,L]
   RewriteRule ^estacao-portatil-qo-100/$ /tecnica/qo-100-estacao-portatil/ [R=301,L]
-  RewriteRule ^estatutos_arla.pdf$ /documentos/estatutos-arla.pdf [R=301,L]
+  RewriteRule ^estatutos_arla\.pdf$ /documentos/estatutos-arla.pdf [R=301,L]
   RewriteRule ^euc-cs5arla/$ /rede/cs5arla/ [R=301,L]
   RewriteRule ^feed/$ /rss.xml [R=301,L]
   RewriteRule ^historial/$ /arla/historia/ [R=301,L]
+  RewriteRule ^imagens/conteudo/hamRadio\.mp4$ /imagens/conteudo/hamradio.mp4 [R=301,L]
   RewriteRule ^indices-propagacao/$ /radioamadorismo/meteorologia-espacial/ [R=301,L]
   RewriteRule ^login/$ /area-reservada/ [R=301,L]
   RewriteRule ^logout/$ /area-reservada/ [R=301,L]
@@ -91,7 +97,7 @@
   RewriteRule ^radioamador/$ /radioamadorismo/ser-radioamador/ [R=301,L]
   RewriteRule ^radioamadorismo-o-que-e/$ /radioamadorismo/o-que-e/ [R=301,L]
   RewriteRule ^register/$ /area-reservada/ [R=301,L]
-  RewriteRule ^regulamentos_internos.pdf$ /documentos/regulamentos-internos.pdf [R=301,L]
+  RewriteRule ^regulamentos_internos\.pdf$ /documentos/regulamentos-internos.pdf [R=301,L]
   RewriteRule ^repetidores/$ /rede/repetidores/ [R=301,L]
   RewriteRule ^satelite-qo-100-2/$ /tecnica/qo-100-kg-stv/ [R=301,L]
   RewriteRule ^ser-associado/$ /arla/ser-associado/ [R=301,L]
@@ -157,8 +163,8 @@
   RewriteRule ^site/2023/11/16/modos-digitais-qo-100-ct1etl/$ /tecnica/modos-digitais-para-o-qo-100/ [R=301,L]
   RewriteRule ^site/2024/04/14/convivio-pota-2024/$ /eventos/convivio-pota-2024/ [R=301,L]
   RewriteRule ^site/2024/10/25/12a-edicao-fim-de-semana-am/$ /eventos/12a-edicao-fim-de-semana-am/ [R=301,L]
-  RewriteRule ^site/ARLA_ficha_de_inscrição.pdf$ /documentos/arla-ficha-de-inscricao.pdf [R=301,L]
   RewriteRule ^site/account/$ /area-reservada/ [R=301,L]
+  RewriteRule ^site/ARLA_ficha_de_inscrição\.pdf$ /documentos/arla-ficha-de-inscricao.pdf [R=301,L]
   RewriteRule ^site/associacao/$ /arla/ [R=301,L]
   RewriteRule ^site/associacao/repetidores/$ /rede/repetidores/ [R=301,L]
   RewriteRule ^site/aviso-legal/$ /legal/aviso-legal/ [R=301,L]
@@ -169,7 +175,7 @@
   RewriteRule ^site/contactos/$ /contactos/ [R=301,L]
   RewriteRule ^site/direcao-tecnica/$ /arla/direcao-tecnica/ [R=301,L]
   RewriteRule ^site/estacao-portatil-qo-100/$ /tecnica/qo-100-estacao-portatil/ [R=301,L]
-  RewriteRule ^site/estatutos_arla.pdf$ /documentos/estatutos-arla.pdf [R=301,L]
+  RewriteRule ^site/estatutos_arla\.pdf$ /documentos/estatutos-arla.pdf [R=301,L]
   RewriteRule ^site/euc-cs5arla/$ /rede/cs5arla/ [R=301,L]
   RewriteRule ^site/feed/$ /rss.xml [R=301,L]
   RewriteRule ^site/historial/$ /arla/historia/ [R=301,L]
@@ -186,15 +192,14 @@
   RewriteRule ^site/radioamador/$ /radioamadorismo/ser-radioamador/ [R=301,L]
   RewriteRule ^site/radioamadorismo-o-que-e/$ /radioamadorismo/o-que-e/ [R=301,L]
   RewriteRule ^site/register/$ /area-reservada/ [R=301,L]
-  RewriteRule ^site/regulamentos_internos.pdf$ /documentos/regulamentos-internos.pdf [R=301,L]
+  RewriteRule ^site/regulamentos_internos\.pdf$ /documentos/regulamentos-internos.pdf [R=301,L]
   RewriteRule ^site/repetidores/$ /rede/repetidores/ [R=301,L]
   RewriteRule ^site/satelite-qo-100-2/$ /tecnica/qo-100-kg-stv/ [R=301,L]
   RewriteRule ^site/ser-associado/$ /arla/ser-associado/ [R=301,L]
   RewriteRule ^site/user/$ /area-reservada/ [R=301,L]
   RewriteRule ^user/$ /area-reservada/ [R=301,L]
-
-  # Qualquer outro endereço do sítio antigo vai para a página inicial.
-  RewriteRule ^site/?$ / [R=301,L]
+  RewriteRule ^site(/|$) / [R=301,L]
+  # <<< FIM DAS REDIREÇÕES GERADAS
 </IfModule>
 
 # Cabeçalhos de segurança
@@ -204,6 +209,16 @@
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  # Content-Security-Policy — EM MODO REPORT-ONLY.
+  #
+  # Report-Only NÃO bloqueia nada: o navegador só regista na consola o que
+  # bloquearia. É deliberado — uma CSP mal afinada parte mapas e pesquisa sem
+  # dar erro visível. Ver docs/seguranca-csp.md para o que falta para a impor.
+  #
+  # Esta linha é uma cópia de scripts/lib/csp.mjs; `npm run audit:csp` falha
+  # se as duas divergirem, e testa a política contra o sítio a correr.
+  Header always set Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org https://www.hamqsl.com https://services.swpc.noaa.gov; font-src 'self'; media-src 'self'; connect-src 'self' https://api.github.com https://unpkg.com; frame-src 'none'; object-src 'none'; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests"
   <FilesMatch "\.(?:js|css|woff2|avif|webp|png|jpe?g|svg|mp4)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>

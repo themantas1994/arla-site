@@ -12,11 +12,42 @@ Esta página é o resultado de uma pesquisa exaustiva no repositório por `proce
 
 | Variável | Descrição | Obrigatória | Segredo | Onde é utilizada |
 | --- | --- | --- | --- | --- |
-| `PUBLIC_SITE_URL` | Origem canónica do sítio. Predefinição: `https://www.cs5arla.pt` | Não | Não | `astro.config.mjs` (`site`) e `scripts/check-links.mjs` (`ORIGEM_PROPRIA`) |
-| `CHROMIUM_PATH` | Caminho para um binário do Chromium a usar nos guiões de QA. Predefinição: `/opt/pw-browsers/chromium`, quando existe | Não | Não | `scripts/qa.mjs`, `scripts/capturas.mjs`, `scripts/auditar-desempenho.mjs` |
+| `PUBLIC_SITE_URL` | Origem canónica do sítio. Predefinição: `https://www.cs5arla.pt` | Não | Não | `astro.config.mjs` (`site`), `src/pages/robots.txt.ts` e `scripts/check-links.mjs` (`ORIGEM_PROPRIA`) |
+| `CHROMIUM_PATH` | Caminho para um binário do Chromium a usar nos guiões de navegador | Não | Não | `scripts/qa.mjs`, `scripts/lib/capturas.mjs`, `scripts/auditar-desempenho.mjs`, `scripts/auditar-csp.mjs` |
 
-`CHROMIUM_PATH` é de desenvolvimento apenas: não afeta o sítio, só onde o Playwright procura
-o navegador.
+### `CHROMIUM_PATH` — quando é preciso
+
+`CHROMIUM_PATH` é de desenvolvimento e de CI apenas: **não afeta o sítio publicado**, só
+onde o Playwright vai buscar o navegador. Os quatro guiões tentam, por esta ordem:
+
+```js
+const CHROMIUM = process.env.CHROMIUM_PATH ?? '/opt/pw-browsers/chromium';
+const navegador = await chromium.launch(
+  existsSync(CHROMIUM) ? { executablePath: CHROMIUM } : {},
+);
+```
+
+1. **o caminho em `CHROMIUM_PATH`**, se a variável estiver definida e o ficheiro existir;
+2. **`/opt/pw-browsers/chromium`**, se existir — é onde alguns ambientes de contentor já
+   trazem o Chromium instalado, e evita descarregar outro;
+3. **o navegador que o Playwright instala**, se nenhum dos anteriores existir (o `{}` faz o
+   Playwright resolver o caminho sozinho).
+
+| Situação | É preciso definir? |
+| --- | --- |
+| Máquina normal, depois de `npx playwright install chromium` | **Não** — cai no passo 3 |
+| Integração contínua (`.github/workflows/qualidade.yml`) | **Não** — instala o Chromium e cai no passo 3 |
+| Contentor com o Chromium em `/opt/pw-browsers/` | **Não** — cai no passo 2 |
+| Chromium já instalado noutro sítio, que se quer reutilizar | **Sim** |
+
+```bash
+CHROMIUM_PATH=/usr/bin/chromium npm run qa
+```
+
+**O caminho é específico de cada máquina.** Não o escreva em nenhum ficheiro do
+repositório, nem o copie de outra máquina: `/opt/pw-browsers/chromium` é a predefinição
+porque é o caminho de um ambiente concreto, não porque seja universal. Se o caminho não
+existir, o guião não falha — passa ao navegador do Playwright.
 
 Além destas, o código usa duas variáveis **internas** do Astro, que não se definem à mão:
 

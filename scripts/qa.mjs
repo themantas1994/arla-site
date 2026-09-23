@@ -8,6 +8,7 @@ import { chromium } from 'playwright';
 import { AxeBuilder } from '@axe-core/playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { capturar, SAIDA as SAIDA_CAPTURAS } from './lib/capturas.mjs';
 
 const BASE = process.argv.includes('--url')
   ? process.argv[process.argv.indexOf('--url') + 1]
@@ -351,34 +352,11 @@ for (const tema of ['escuro', 'claro']) {
 }
 
 // ---------------------------------------------------------------- Capturas
+// Mesma implementação de `npm run qa:capturas` — ver scripts/lib/capturas.mjs.
 if (comCapturas) {
-  await mkdir('reports/capturas', { recursive: true });
-  const ALVOS = [
-    ['inicio', '/'], ['repetidores', '/rede/repetidores/'], ['artigo-tecnico', '/tecnica/modos-digitais-para-o-qo-100/'],
-    ['eventos', '/eventos/'], ['ser-associado', '/arla/ser-associado/'], ['contactos', '/contactos/'],
-    ['comecar', '/radioamadorismo/comecar/'], ['historia', '/arla/historia/'], ['noticias', '/noticias/'],
-    ['404', '/404.html'],
-  ];
-  for (const [largura, rotulo] of [[1440, 'desktop'], [768, 'tablet'], [390, 'telemovel']]) {
-    for (const tema of ['escuro', 'claro']) {
-      const ctx = await navegador.newContext({ viewport: { width: largura, height: 1000 }, ignoreHTTPSErrors: true });
-      const pagina = await ctx.newPage();
-      await pagina.addInitScript((t) => {
-        try { localStorage.setItem('arla-tema', t); } catch {}
-      }, tema);
-      for (const [nome, rota] of ALVOS) {
-        if (largura !== 1440 && !['inicio', 'repetidores', 'contactos'].includes(nome)) continue;
-        if (tema === 'claro' && !['inicio', 'repetidores', 'artigo-tecnico'].includes(nome)) continue;
-        await pagina.goto(BASE + rota, { waitUntil: 'networkidle' });
-        await pagina.waitForTimeout(400);
-        await pagina.screenshot({
-          path: `reports/capturas/${nome}-${rotulo}-${tema}.png`,
-          fullPage: nome !== 'inicio',
-        });
-      }
-      await ctx.close();
-    }
-  }
+  await mkdir(SAIDA_CAPTURAS, { recursive: true });
+  const n = await capturar(navegador, { base: BASE });
+  console.log(`\n${n} capturas em ${SAIDA_CAPTURAS}/`);
 }
 
 await navegador.close();

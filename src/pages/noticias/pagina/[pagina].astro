@@ -3,14 +3,12 @@ import type { GetStaticPaths } from 'astro';
 import Pagina from '@layouts/Pagina.astro';
 import CartaoArtigo from '@components/CartaoArtigo.astro';
 import Paginacao from '@components/Paginacao.astro';
-import { noticias } from '@lib/conteudo';
-
-const POR_PAGINA = 12;
+import { noticias, POR_PAGINA } from '@lib/conteudo';
 
 export const getStaticPaths = (async () => {
-  const { noticias } = await import('@lib/conteudo');
+  const { noticias, POR_PAGINA } = await import('@lib/conteudo');
   const todas = await noticias();
-  const total = Math.ceil(todas.length / 12);
+  const total = Math.ceil(todas.length / POR_PAGINA);
   // A página 1 vive em /noticias/, por isso a numeração começa na 2.
   return Array.from({ length: Math.max(0, total - 1) }, (_, i) => ({
     params: { pagina: String(i + 2) },

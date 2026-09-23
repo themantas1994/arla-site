@@ -2,115 +2,117 @@
 
 ## Estado atual
 
-> **Não existe atualmente um pipeline CI/CD automatizado neste repositório.**
+> **Integração contínua: IMPLEMENTADA.**
+> **Publicação automática: NÃO IMPLEMENTADA.**
 
-Isto é uma afirmação factual sobre o repositório tal como está hoje, verificada nesta
-auditoria — não um lapso de documentação a contornar. Em concreto:
+A distinção é importante e não é um jogo de palavras: a partir da remediação da auditoria,
+cada alteração é **verificada** automaticamente, mas **nenhuma é publicada**
+automaticamente. A lacuna entre o CMS e o sítio publicado continua lá.
 
-- **não existe o diretório `.github/`**, e portanto não há workflows do GitHub Actions;
-- não há configuração de nenhum outro sistema de integração contínua (GitLab CI, Jenkins,
-  Travis, CircleCI);
-- não há ficheiros de verificações obrigatórias, de proteção de branch nem de revisão
-  automática visíveis no repositório;
-- não há `npm test` — não existe sequer um guião com esse nome em `package.json`.
-
-Em consequência, **tudo é corrido à mão** por quem desenvolve, antes de publicar:
-
-```bash
-npm run check
-npm run build
-npm run preview &
-npm run lint:links
-npm run qa
-npm run audit:seo
-npm run audit:desempenho
-```
-
-E a publicação é igualmente manual: envio do conteúdo de `dist/` para o alojamento Apache.
-Ver [Implantação](Implantacao.md) e [Testes e Qualidade](Testes-e-Qualidade.md).
-
----
-
-## Proposta (NÃO IMPLEMENTADA)
-
-[`docs/implantacao.md`](../docs/implantacao.md#publicação-automática--não-implementada)
-regista um workflow como ponto de partida. **Não está no repositório e nunca correu:**
-
-```yaml
-name: Publicar
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-jobs:
-  publicar:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-      - run: npm run lint:links
-      # Substituir pelo passo de publicação do alojamento escolhido.
-      - uses: actions/upload-artifact@v4
-        with:
-          name: sitio
-          path: dist
-```
+O workflow vive em `.github/workflows/qualidade.yml` e corre a cada *push* em qualquer
+branch, a cada *pull request*, e a pedido (`workflow_dispatch`).
 
 ```mermaid
-flowchart LR
-    Push["push para main"] --> Checkout["actions/checkout"]
-    Checkout --> Node["actions/setup-node (22)"]
-    Node --> Install["npm ci"]
-    Install --> Check["npm run check<br>(acrescentar)"]
-    Check --> Build["npm run build"]
-    Build --> Links["npm run lint:links"]
-    Links --> QA["npm run qa<br>(acrescentar)"]
-    QA --> Deploy["Passo de publicação<br>por definir"]
+flowchart TD
+    Push["push / pull request"] --> V["Trabalho: verificar"]
+    Push --> N["Trabalho: navegador"]
+
+    V --> V1["npm ci"]
+    V1 --> V2["npm audit (informativo)"]
+    V2 --> V3["validar:dados · validar:esquemas<br>redirecoes:validar · validar:documentos"]
+    V3 --> V4["npm test (58 testes)"]
+    V4 --> V5["npm run check"]
+    V5 --> V6["npm run build"]
+    V6 --> V7["lint:links · audit:seo"]
+
+    N --> N1["npm ci"]
+    N1 --> N2["playwright install chromium"]
+    N2 --> N3["npm run build"]
+    N3 --> N4["astro preview + wait-on"]
+    N4 --> N5["qa · audit:csp · audit:desempenho"]
+    N5 --> N6["upload-artifact: reports/"]
+
+    V7 --> Fim["✓ verificado"]
+    N6 --> Fim
+    Fim -.->|"NÃO EXISTE"| Deploy["publicação"]
+
+    style Deploy stroke-dasharray: 5 5
 ```
 
-O diagrama descreve um **estado futuro possível**. Nada nele está a correr.
+### Trabalho `verificar`
+
+Tudo o que não precisa de navegador. Pela ordem em que corre:
+
+| Passo | Comando | Porque está nesta ordem |
+| --- | --- | --- |
+| Vulnerabilidades | `npm audit --audit-level=moderate \|\| true` | informativo; não faz falhar (ver [Segurança](Seguranca.md)) |
+| Dados | `npm run validar:dados` | é o mais barato e apanha erros de conteúdo |
+| CMS ↔ esquemas | `npm run validar:esquemas` | idem; apanha divergências antes de o build as encontrar |
+| Redireções | `npm run redirecoes:validar` | idem |
+| Documentos | `npm run validar:documentos` | idem |
+| Testes unitários | `npm test` | segundos, e falha cedo numa regressão de lógica |
+| Tipos | `npm run check` | a verificação mais barata antes do build |
+| Build | `npm run build` | tudo o que vem a seguir precisa do `dist/` |
+| Ligações e SEO | `npm run lint:links`, `npm run audit:seo` | correm sobre o `dist/` |
+
+### Trabalho `navegador`
+
+Corre em paralelo, porque é o lento. Instala o Chromium do Playwright
+(`npx playwright install --with-deps chromium`), serve o build com `astro preview` e espera
+pela porta com `wait-on` antes de correr `qa`, `audit:csp` e `audit:desempenho`.
+
+**`CHROMIUM_PATH` não é definido**, de propósito: sem a variável e sem
+`/opt/pw-browsers/chromium`, os guiões usam o navegador que o Playwright acabou de instalar
+— ver [Variáveis de Ambiente](Variaveis-de-Ambiente.md).
+
+O `reports/` é guardado como artefacto mesmo quando um passo falha (`if: always()`), porque
+é lá que está o detalhe de qualquer violação de acessibilidade ou métrica de desempenho.
 
 ---
 
-## Se for para implementar
+## Porque não publica
 
-1. **Fixe o Node em 22**, para corresponder ao `.nvmrc`. O `engines.node` do `package.json`
-   só exige `>=20.3`, o que é mais permissivo do que aquilo contra o qual o projeto é
-   realmente desenvolvido e testado.
-2. **Acrescente `npm run check`** antes do build. A proposta acima salta-o, e é a
-   verificação mais barata que existe.
-3. **Pondere `npm run qa` e `npm run audit:seo`.** São as verificações em que este projeto
-   realmente se apoia; um pipeline que as salte é mais fraco do que o processo manual que
-   substitui. Precisam de um Chromium no runner (`npx playwright install --with-deps
-   chromium`, ou uma imagem que já o traga) e do sítio servido — normalmente
-   `npm run preview &` seguido de uma espera pela porta 4321.
-4. **Decida o passo de publicação.** A proposta termina em `upload-artifact` de propósito,
-   porque cada alojamento tem mecânica diferente e implicações diferentes nas redireções
-   (ver [Implantação](Implantacao.md)). Para o Apache/cPanel atual, seria um passo de
-   FTP/SFTP — e **o `.htaccess` tem de ir junto**, o que muitos clientes de FTP omitem por
-   ser um ficheiro oculto.
-5. **Guarde as credenciais de publicação como secrets do repositório**, nunca no workflow.
-6. **Considere `npm audit`** como passo informativo — hoje reporta 3 vulnerabilidades em
-   dependências (ver [Segurança](Seguranca.md)), e convém que isso não passe despercebido.
-7. **Não faça o build falhar por causa das ligações externas.** O `npm run lint:links` sem
-   `--externas` verifica apenas ligações internas, que é o comportamento certo para um
-   pipeline: 14 das ligações externas do sítio estão mortas dentro de artigos de arquivo,
-   por decisão editorial.
+Não há nenhum passo de implantação, e o workflow **não usa nenhum segredo**. Isto é
+deliberado, não um esquecimento:
+
+- o alojamento atual é Apache/cPanel, e publicar exigiria credenciais de FTP/SFTP guardadas
+  como *secrets* do repositório;
+- quem deve controlar a publicação do sítio da associação é uma decisão da direção, não uma
+  escolha técnica;
+- inventar credenciais ou um destino de publicação para o pipeline «ficar completo» seria
+  pior do que não o ter.
+
+As opções e o que cada uma implica estão em
+[`docs/decisoes-pendentes.md`](../docs/decisoes-pendentes.md#3-a-publicação-continua-manual-ou-passa-a-automática).
+
+**Enquanto for assim, a publicação é manual:** `npm run build` e envio de `dist/` para o
+alojamento. Ver [Implantação](Implantacao.md).
 
 ---
 
-## O que a automatização mudaria na prática
+## Se for para acrescentar publicação
 
-O ganho maior não seria a verificação — que já é feita, ainda que à mão — mas fechar a
-lacuna entre o CMS e o sítio publicado: hoje, uma alteração gravada em `/admin/` fica no
-repositório **sem chegar ao sítio** até alguém correr o build e publicar. É o que torna a
-frase «depois de gravar, o sítio atualiza-se sozinho» incorreta, e é a razão pela qual vale
-a pena implementar isto.
+1. **Decida primeiro o destino.** Para o Apache/cPanel atual, um passo de FTP/SFTP — e **o
+   `.htaccess` tem de ir junto**, o que muitos clientes de FTP omitem por ser um ficheiro
+   oculto. Para Netlify ou Cloudflare Pages, a publicação vem incluída e o `_redirects` é
+   lido sem configuração (e o Git Gateway resolveria também a autenticação do CMS).
+2. **Guarde as credenciais como *secrets* do repositório**, nunca no ficheiro do workflow.
+3. **Publique só a partir da branch publicada**, o que exige decidir qual é — ver
+   [`docs/decisoes-pendentes.md`](../docs/decisoes-pendentes.md#1-qual-é-a-branch-publicada-do-sítio).
+4. **Mantenha a publicação num trabalho separado**, dependente dos dois existentes
+   (`needs: [verificar, navegador]`), para nunca publicar um build que não passou nas
+   verificações.
+5. **Não faça falhar por ligações externas.** O `npm run lint:links` sem `--externas`
+   verifica apenas ligações internas, que é o comportamento certo aqui: 14 das ligações
+   externas do sítio estão mortas dentro de artigos de arquivo, por decisão editorial.
 
-Ver [`docs/auditoria-do-projeto.md`](../docs/auditoria-do-projeto.md#recomendações-futuras).
+---
+
+## O que a automatização da publicação mudaria
+
+Fecharia a lacuna entre o CMS e o sítio publicado: hoje, uma alteração gravada em `/admin/`
+fica no repositório **sem chegar ao sítio** até alguém correr o build e publicar. É o que
+torna incorreta a frase «depois de gravar, o sítio atualiza-se sozinho», e é a razão pela
+qual vale a pena — depois de tomada a decisão.
+
+Ver [`docs/remediacao-da-auditoria.md`](../docs/remediacao-da-auditoria.md).

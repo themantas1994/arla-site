@@ -15,6 +15,8 @@
       #sem-config h1 { font-size: 1.4rem; margin-top: 0; }
       #sem-config code { background: #16273a; padding: 0.15em 0.4em; border-radius: 4px; }
       #sem-config a { color: #2c9fe0; }
+      #sem-config ul { padding-left: 1.2rem; }
+      #sem-config li { margin-bottom: 0.4rem; }
     </style>
   </head>
   <body>
@@ -22,16 +24,49 @@
       <h1>Gestão de conteúdos da ARLA</h1>
       <p>
         Esta página carrega o Decap CMS, o editor de conteúdos do sítio. Se está a ver
-        esta mensagem, o editor ainda não arrancou — o mais provável é não haver ligação
-        à Internet, ou o <code>backend</code> em <code>/admin/config.yml</code> ainda não
-        estar configurado.
+        esta mensagem, o editor ainda não arrancou. As causas possíveis, por ordem de
+        probabilidade:
       </p>
+      <ul>
+        <li>Não há ligação à Internet (o editor é descarregado de <code>unpkg.com</code>).</li>
+        <li>
+          A autenticação OAuth do GitHub ainda não está configurada em produção — ver
+          <code>docs/implantacao.md</code>.
+        </li>
+        <li>
+          A <code>branch</code> indicada em <code>/admin/config.yml</code> não existe no
+          repositório. <strong>Está por decidir qual é a branch publicada.</strong>
+        </li>
+        <li>
+          O ficheiro do editor não corresponde ao <code>integrity</code> declarado nesta
+          página e o navegador recusou-o. Veja a consola do navegador.
+        </li>
+      </ul>
       <p>
-        Instruções completas em <code>docs/gestao-de-conteudos.md</code> no repositório.
+        Instruções completas em <code>docs/gestao-de-conteudos.md</code> e
+        <code>docs/implantacao.md</code>, no repositório.
       </p>
     </div>
 
-    <script src="https://unpkg.com/decap-cms@^3.8.4/dist/decap-cms.js"></script>
+    <!--
+      Decap CMS carregado do CDN da unpkg, com a versão FIXA e com Subresource
+      Integrity (SRI): sem as duas coisas, o intervalo `^3.8.4` deixava o CDN
+      escolher a versão, e um ficheiro trocado passaria sem ninguém dar por isso
+      — com acesso de escrita ao repositório da associação.
+
+      Ao atualizar o Decap é preciso mudar as DUAS coisas ao mesmo tempo:
+
+        curl -sL https://unpkg.com/decap-cms@<versão>/dist/decap-cms.js \
+          | openssl dgst -sha384 -binary | openssl base64 -A
+
+      Se o hash não corresponder, o navegador recusa o ficheiro e esta página
+      fica com a mensagem de diagnóstico visível em vez de arrancar em silêncio.
+    -->
+    <script
+      src="https://unpkg.com/decap-cms@3.16.2/dist/decap-cms.js"
+      integrity="sha384-tbnFsiSBvMm2vOLu70Mx7HlnMj6kXxR0Tdo0USlY9564mb1AyMnIdCjOZ738PWPr"
+      crossorigin="anonymous"
+    ></script>
     <script>
       // Assim que o CMS arranca, a mensagem de diagnóstico deixa de ser precisa.
       window.addEventListener('load', function () {

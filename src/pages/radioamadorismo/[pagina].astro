@@ -5,18 +5,13 @@ import IndiceConteudos from '@components/IndiceConteudos.astro';
 import Partilhar from '@components/Partilhar.astro';
 import Icone from '@components/Icone.astro';
 import { getCollection, render } from 'astro:content';
+import { ROTAS_RADIOAMADORISMO as ROTAS } from '@lib/navegacao';
 
-/** Páginas editoriais do radioamadorismo, vindas de src/content/paginas. */
-const ROTAS: Record<string, { slug: string; sobretitulo: string }> = {
-  'o-que-e': { slug: 'o-que-e-o-radioamadorismo', sobretitulo: 'Radioamadorismo' },
-  'ser-radioamador': { slug: 'ser-radioamador', sobretitulo: 'Radioamadorismo' },
-};
-
+// O getStaticPaths() corre num módulo à parte e não vê as constantes daqui,
+// por isso reimporta a mesma fonte em vez de repetir as chaves.
 export const getStaticPaths = (async () => {
-  return Object.keys({
-    'o-que-e': 1,
-    'ser-radioamador': 1,
-  }).map((p) => ({ params: { pagina: p } }));
+  const { ROTAS_RADIOAMADORISMO } = await import('@lib/navegacao');
+  return Object.keys(ROTAS_RADIOAMADORISMO).map((p) => ({ params: { pagina: p } }));
 }) satisfies GetStaticPaths;
 
 const chave = Astro.params.pagina!;
