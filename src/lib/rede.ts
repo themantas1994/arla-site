@@ -22,7 +22,7 @@ export async function marcadoresDaRede(
         lon: 'lon' in pos ? pos.lon : 0,
         titulo: d.indicativo,
         descricao: `${d.banda} · ${d.modo}<br>${d.localizacao}${d.quadricula ? ` (${d.quadricula})` : ''}<br>Tx ${d.frequenciaTx} / Rx ${d.frequenciaRx} MHz`,
-        tipo: d.filtros.includes('aprs') ? 'repetidor' : 'repetidor',
+        tipo: 'repetidor',
         origem: d.coordenadas ? 'exata' : 'quadricula',
         url: '/rede/repetidores/',
       });

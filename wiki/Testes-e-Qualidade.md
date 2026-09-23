@@ -1,9 +1,8 @@
 # Testes e Qualidade
 
-**Não existe framework de testes unitários neste projeto** — nem Vitest, nem Jest, nem
-qualquer outro. Não há ficheiros `*.test.*` nem `*.spec.*`. A verificação é feita por seis
-ferramentas, todas presentes no repositório e todas executadas **manualmente**: não há CI
-(ver [CI/CD](CI-CD.md)).
+A verificação é feita por doze ferramentas, todas presentes no repositório e todas
+executadas também em integração contínua, a cada *push* e *pull request* (ver
+[CI/CD](CI-CD.md)).
 
 ---
 
@@ -12,14 +11,54 @@ ferramentas, todas presentes no repositório e todas executadas **manualmente**:
 | Ferramenta | Objetivo | Comando | O que verifica |
 | --- | --- | --- | --- |
 | `astro check` (`@astrojs/check` + TypeScript) | Tipos | `npm run check` | Erros de tipo em `.astro` e `.ts`, com `astro/tsconfigs/strict` |
+| **Vitest** | Lógica pura | `npm test` | 58 testes unitários sobre `src/lib/` — ver abaixo |
+| `scripts/validar-dados.mjs` (Zod) | Dados | `npm run validar:dados` | Os 5 JSON fora das coleções, com esquemas `strict`. Corre **dentro do `npm run build`** |
+| `scripts/validar-esquemas.mjs` | CMS ↔ conteúdo | `npm run validar:esquemas` | Campos, obrigatoriedade e valores de `select` do Decap contra `src/content.config.ts`; avisa se a branch do CMS não existir |
+| `scripts/validar-redirecoes.mjs` | Redireções | `npm run redirecoes:validar` | 191 regras coerentes nos três ficheiros; ciclos, cadeias, duplicados, destinos inexistentes |
+| `scripts/validar-documentos.mjs` | Documentos | `npm run validar:documentos` | Cada PDF existe e o tamanho publicado corresponde ao ficheiro |
 | `scripts/qa.mjs` (Playwright + `@axe-core/playwright`) | Acessibilidade, responsivo, funcional | `npm run qa` | axe-core em 37 páginas × 2 temas; transbordo em 7 larguras; alvos de toque; erros de consola; 17 testes funcionais |
 | `scripts/capturas.mjs` (Playwright) | Revisão visual | `npm run qa:capturas` | Gera capturas em `reports/capturas/` |
 | `scripts/check-links.mjs` | Ligações | `npm run lint:links` | Ligações internas, âncoras e, com `-- --externas`, ligações externas |
 | `scripts/auditar-seo.mjs` | SEO | `npm run audit:seo` | Metadados, JSON-LD, hierarquia de títulos, sitemap, `robots.txt`, textos alternativos |
 | `scripts/auditar-desempenho.mjs` (Playwright) | Desempenho | `npm run audit:desempenho` | LCP, FCP, CLS, peso, pedidos e nós do DOM sob 4G lento |
+| `scripts/auditar-csp.mjs` (Playwright) | Segurança | `npm run audit:csp` | Aplica a CSP em modo impositivo em 15 páginas e conta violações |
+
+Atalho para tudo o que não precisa de navegador:
+
+```bash
+npm run validar    # check + redirecoes + esquemas + dados + documentos + test
+```
 
 Não há linter de código (sem ESLint, sem Prettier). O `npm run check` é o equivalente mais
 próximo.
+
+---
+
+## Testes unitários
+
+**58 testes, 3 ficheiros.** Motor: Vitest, configurado em `vitest.config.ts`.
+
+```text
+tests/
+├── duplos/astro-content.ts   duplo de `astro:content` (ver abaixo)
+├── maidenhead.test.ts        quadriculaParaCoordenadas, formatarCoordenadas
+├── sitio.test.ts             estadoEvento, intervaloDatas, tempoLeitura, normalizar
+└── conteudo.test.ts          slugCategoria, relacionados, textoSimples
+```
+
+Cobrem só **lógica pura** — funções sem I/O, sem Astro, sem DOM. Os casos limite valem mais
+do que os normais e é isso que os testes privilegiam: quadrículas Maidenhead inválidas,
+eventos no primeiro e no último dia, um evento cujo fim é anterior ao início, listas vazias
+e de um só elemento, texto vazio e texto muito longo, categorias com pontuação.
+
+**Como funcionam sem o Astro.** `src/lib/conteudo.ts` importa `astro:content`, um módulo
+virtual que só existe durante o build. O `vitest.config.ts` resolve-o para
+`tests/duplos/astro-content.ts`, que fornece os tipos e faz `getCollection()` lançar uma
+mensagem explícita. Se um teste precisar de coleções, é sinal de que devia ser um teste
+funcional em `npm run qa`, não um teste unitário.
+
+O `vitest.config.ts` replica também os *aliases* do `tsconfig.json` (`@lib`, `@data`, …).
+Ao acrescentar um alias novo, acrescente-o nos dois sítios.
 
 ---
 
@@ -28,11 +67,17 @@ próximo.
 | Comando | Precisa de `dist/`? | Precisa de servidor? |
 | --- | --- | --- |
 | `npm run check` | Não | Não |
+| `npm test` | Não | Não |
+| `npm run validar:dados` | Não | Não |
+| `npm run validar:esquemas` | Não | Não |
+| `npm run redirecoes:validar` | Não | Não |
+| `npm run validar:documentos` | Não | Não |
 | `npm run lint:links` | **Sim** | Não (lê ficheiros) |
 | `npm run audit:seo` | **Sim** | Não (lê ficheiros) |
 | `npm run qa` | Sim | **Sim** (`npm run preview`) |
 | `npm run qa:capturas` | Sim | **Sim** |
 | `npm run audit:desempenho` | Sim | **Sim** |
+| `npm run audit:csp` | Sim | **Sim** |
 
 Sequência completa:
 
@@ -187,14 +232,20 @@ Nada disto corre automaticamente. **Se não correr estes comandos, ninguém os c
 
 Por honestidade, o que fica de fora:
 
-- **Não há testes unitários.** Funções como `estadoEvento()`, `quadriculaParaCoordenadas()`,
-  `relacionados()` ou `intervaloDatas()` — lógica pura, fácil de testar — não têm teste
-  nenhum. É a dívida técnica mais visível do projeto.
+- **Os testes unitários cobrem `src/lib/`, e mais nada.** Os componentes `.astro`, os
+  layouts e as páginas não têm testes unitários — são cobertos pelos 17 testes funcionais
+  do `npm run qa`, que correm num navegador real.
 - **Leitores de ecrã reais** (NVDA, VoiceOver) não foram usados. O axe-core verifica
   estrutura, não experiência.
 - **Só Chromium.** Safari e Firefox não foram testados.
 - **Só emulação**, sem dispositivos físicos.
-- **O CMS em produção** não foi testado, porque a autenticação OAuth ainda não existe.
+- **O CMS em produção** não foi testado, porque a autenticação OAuth ainda não existe e a
+  branch publicada está por decidir. O que é verificável sem ele — a coerência do
+  `config.yml` com os esquemas — é verificado por `npm run validar:esquemas`.
+- **O `.htaccess` não é executado por nenhum Apache.** As regras geradas são verificadas
+  por concordância entre ficheiros, não em funcionamento.
+- **A CSP está em `Report-Only`.** É testada em modo impositivo num navegador, mas não está
+  imposta em produção — ver [`docs/seguranca-csp.md`](../docs/seguranca-csp.md).
 - **Carga** não foi medida — pouco relevante num sítio estático.
 
 Ver [Acessibilidade](Acessibilidade.md) e

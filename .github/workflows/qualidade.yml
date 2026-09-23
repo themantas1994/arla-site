@@ -1,0 +1,114 @@
+name: Qualidade
+
+# Verificação de qualidade do sítio da ARLA.
+#
+# ATENÇÃO — ISTO NÃO PUBLICA NADA. Não há aqui nenhum passo de implantação, de
+# propósito: o alojamento de produção é Apache/cPanel e a publicação é manual
+# (`npm run build` e envio de `dist/`, ver docs/implantacao.md). Automatizar a
+# publicação exige credenciais e uma decisão da direção da associação que ainda
+# não foi tomada — ver docs/decisoes-pendentes.md. Nenhum segredo é usado aqui.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qualidade-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Tipos, testes, build e ligações
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Vulnerabilidades conhecidas
+        # Informativo: as vulnerabilidades que restam exigem uma migração de
+        # versão maior do Astro (DT-004). Não faz falhar a verificação.
+        run: npm audit --audit-level=moderate || true
+
+      - name: Validar dados JSON fora das coleções
+        run: npm run validar:dados
+
+      - name: Validar CMS contra os esquemas de conteúdo
+        run: npm run validar:esquemas
+
+      - name: Validar redireções
+        run: npm run redirecoes:validar
+
+      - name: Validar biblioteca de documentos
+        run: npm run validar:documentos
+
+      - name: Testes unitários
+        run: npm test
+
+      - name: Verificação de tipos
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Ligações internas
+        run: npm run lint:links
+
+      - name: SEO
+        run: npm run audit:seo
+
+  navegador:
+    name: Acessibilidade, CSP e desempenho
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Instalar o Chromium do Playwright
+        # Sem CHROMIUM_PATH definido, os guiões usam o navegador que o
+        # Playwright instala — ver wiki/Variaveis-de-Ambiente.md.
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      - name: Servir o build
+        run: |
+          npx astro preview --port 4321 &
+          npx wait-on --timeout 60000 http://localhost:4321/
+
+      - name: QA (axe-core, responsivo e funcional)
+        run: npm run qa
+
+      - name: Content-Security-Policy
+        run: npm run audit:csp
+
+      - name: Desempenho
+        run: npm run audit:desempenho
+
+      - name: Guardar relatórios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios
+          path: reports/
+          if-no-files-found: ignore

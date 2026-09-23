@@ -5,7 +5,7 @@ import Icone from '@components/Icone.astro';
 import Mapa from '@components/Mapa.astro';
 import { render } from 'astro:content';
 import { eventos, relacionados, textoSimples } from '@lib/conteudo';
-import { intervaloDatas, estadoEvento, ROTULO_ESTADO_EVENTO, dataExtenso, SITIO } from '@lib/sitio';
+import { intervaloDatas, estadoEvento, ROTULO_ESTADO_EVENTO, SITIO } from '@lib/sitio';
 
 export const getStaticPaths = (async () => {
   const { eventos } = await import('@lib/conteudo');
@@ -83,7 +83,6 @@ const jsonLd = {
     imagem: r.data.imagem,
   }))}
   jsonLd={jsonLd}
-  tipoArtigo="evento"
 >
   <div slot="antes-do-corpo" class="ficha-evento">
     <div class={`ficha-evento__estado ficha-evento__estado--${estado}`}>

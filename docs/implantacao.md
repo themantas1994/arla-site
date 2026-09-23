@@ -141,19 +141,49 @@ ao explicar o fluxo a quem edita.
 
 ## Configurar o editor de conteúdos
 
+> **ESTADO: PARCIALMENTE IMPLEMENTADO.**
+>
+> O que está feito, no repositório: o `config.yml` está completo e coerente com os
+> esquemas de conteúdo (verificado por `npm run validar:esquemas`), o `repo` aponta para o
+> repositório real, os caminhos de media estão certos, o editor carrega de uma versão fixa
+> do Decap com Subresource Integrity, e o backend local funciona.
+>
+> O que falta, **tudo fora do repositório e nada disto derivável do código**:
+>
+> 1. a **aplicação OAuth do GitHub** e o **serviço de autenticação** (passos 2 e 3 abaixo);
+> 2. a decisão sobre qual é a **branch publicada** (passo 1).
+>
+> Até os dois estarem feitos e testados com uma gravação real, **o `/admin/` carrega mas
+> não autentica** e o fluxo de publicação a partir do CMS **não está operacional**. Ver
+> [`decisoes-pendentes.md`](decisoes-pendentes.md).
+
 O Decap CMS grava no repositório através da API do GitHub, e precisa de uma aplicação
 OAuth para autenticar quem edita.
 
-### 1. Apontar ao repositório certo
+### 1. Apontar ao repositório certo — e escolher a branch
 
-Em `public/admin/config.yml`, confirme:
+Em `public/admin/config.yml`:
 
 ```yaml
 backend:
   name: github
-  repo: themantas1994/arla-site   # ← o repositório real da associação
-  branch: main               # ← a branch publicada
+  repo: themantas1994/arla-site   # ← já está certo: é o repositório real
+  branch: main                    # ← POR DECIDIR: esta branch NÃO EXISTE
 ```
+
+⚠ **O repositório não tem nenhuma branch chamada `main`.** As branches existentes são
+todas de trabalho (`claude/…`) e a predefinida é `claude/arla-website-redesign-vcemm3`.
+Com o CMS a funcionar, gravar daria erro.
+
+O valor não foi corrigido de propósito: qual é a branch publicada do sítio da ARLA é uma
+decisão da associação. Escolha uma das duas vias e mude **só essa linha**:
+
+| Via | O que fazer | Consequência |
+| --- | --- | --- |
+| a) criar `main` | `git branch main <branch-publicada>` e `git push -u origin main`; depois pô-la como predefinida em **Settings → Branches** | o `config.yml` fica como está |
+| b) usar o nome atual | escreva em `branch:` o nome da branch publicada | nada mais muda |
+
+`npm run validar:esquemas` avisa sempre que a branch indicada não existir no repositório.
 
 ### 2. Criar a aplicação OAuth
 
@@ -162,15 +192,29 @@ Em **GitHub → Settings → Developer settings → OAuth Apps → New OAuth App
 | Campo | Valor |
 | --- | --- |
 | Application name | `ARLA CMS` |
-| Homepage URL | `https://www.cs5arla.pt` |
-| Authorization callback URL | o endereço do serviço de autenticação (passo 3) |
+| Homepage URL | `https://www.cs5arla.pt` (o domínio de produção real) |
+| Authorization callback URL | `https://<serviço-de-autenticação>/callback` (passo 3) |
 
 Guarde o *Client ID* e o *Client Secret*. **O *secret* nunca entra no repositório** — vive
-só nas variáveis de ambiente do serviço de autenticação.
+só nas variáveis de ambiente do serviço de autenticação. Não há nenhum sítio neste
+repositório onde ele deva ser colado, e nenhum ficheiro `.env` é lido em produção.
+
+**Permissões do GitHub necessárias.** A aplicação OAuth pede o âmbito `repo`, que dá
+leitura e escrita no repositório. Quem autorizar a aplicação passa a poder gravar tudo
+aquilo a que já tem acesso — a aplicação não amplia permissões, só as usa. Por isso:
+
+- quem edita tem de ter acesso **Write** ao repositório (passo «Dar acesso de edição»);
+- se o repositório for da conta pessoal de alguém, considere passá-lo para uma organização
+  da associação antes de abrir o CMS a mais pessoas;
+- rever periodicamente a lista de colaboradores é o controlo de acesso do sítio.
 
 ### 3. Serviço de autenticação
 
-O GitHub exige que a troca do código de autorização por um *token* seja feita num servidor.
+O GitHub exige que a troca do código de autorização por um *token* seja feita num servidor
+— não pode acontecer no navegador, porque implicaria expor o *Client Secret*. O alojamento
+atual (Apache/cPanel com ficheiros estáticos) **não serve para isto**: é preciso algo que
+corra código.
+
 Duas opções habituais:
 
 - **Netlify** — traz o *Git Gateway* incluído; basta ativá-lo e mudar o `backend` para
@@ -185,6 +229,11 @@ Duas opções habituais:
     branch: main
     base_url: https://autenticacao.exemplo.pt
   ```
+
+Depois de qualquer das opções, **teste o fluxo real antes de o dar por operacional**:
+entrar em `https://<domínio>/admin/`, autenticar com o GitHub, gravar uma alteração de
+teste e confirmar que aparece um commit no repositório, na branch escolhida no passo 1.
+Enquanto esse teste não passar, o CMS em produção continua por configurar.
 
 ### Experimentar localmente
 
@@ -223,10 +272,14 @@ O que está feito:
 - **Ligações externas** com `rel="noopener noreferrer"`.
 - **`/admin/` e `/area-reservada/` bloqueados** no `robots.txt`.
 
-Se acrescentar cabeçalhos noutro alojamento, replique os do `.htaccess`. Uma
-*Content-Security-Policy* é possível e desejável; foi deixada de fora porque tem de ser
-afinada contra o alojamento real para não bloquear as telas do OpenStreetMap nem os painéis
-de meteorologia espacial.
+- **Editor do CMS com versão fixa e Subresource Integrity.** `public/admin/index.html`
+  carrega uma versão exata do Decap com `integrity` e `crossorigin`; um ficheiro trocado no
+  CDN é recusado pelo navegador.
+- **Content-Security-Policy em modo `Report-Only`** no `.htaccess` — ver
+  [`seguranca-csp.md`](seguranca-csp.md).
+
+Se acrescentar cabeçalhos noutro alojamento, **replique todos os do `.htaccess`**,
+incluindo a CSP: fora do Apache, nenhum deles é aplicado.
 
 ---
 

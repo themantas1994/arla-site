@@ -4,6 +4,9 @@ import { estadoEvento, normalizar } from './sitio';
 const publicado = <T extends { data: { rascunho?: boolean } }>(e: T) =>
   import.meta.env.DEV || !e.data.rascunho;
 
+/** Notícias por página, em /noticias/ e em /noticias/pagina/N/. */
+export const POR_PAGINA = 12;
+
 /** Notícias por data decrescente. */
 export async function noticias(): Promise<CollectionEntry<'noticias'>[]> {
   const todas = await getCollection('noticias', publicado);

@@ -254,9 +254,11 @@ Resultados medidos: [`qualidade.md`](qualidade.md).
 - dados estruturados JSON-LD: `Organization` em todo o sítio, mais `NewsArticle`,
   `TechArticle`, `Event`, `FAQPage`, `HowTo`, `BreadcrumbList` e `WebSite` conforme a página;
 - `sitemap-index.xml` gerado no build, com a área reservada excluída;
-- `robots.txt` que bloqueia `/admin/` e `/area-reservada/`;
-- redireções 301 do sítio antigo, em três formatos — 183 rotas em `src/lib/redirects.mjs`
-  e 190 regras em cada um dos `public/.htaccess` e `public/_redirects` (ver
+- `robots.txt` gerado no build (`src/pages/robots.txt.ts`), que bloqueia `/admin/` e
+  `/area-reservada/` e aponta o sitemap para `PUBLIC_SITE_URL`;
+- redireções 301 do sítio antigo, em três formatos, com `src/lib/redirects.mjs` como
+  fonte única: 183 rotas entregues ao Astro e 191 regras geradas em cada um dos
+  `public/.htaccess` e `public/_redirects` (ver
   [`mapa-de-redirecoes.md`](mapa-de-redirecoes.md));
 - feed RSS em `/rss.xml` com notícias, artigos e eventos.
 

@@ -97,19 +97,25 @@ Tudo o que está aqui é copiado tal e qual para `dist/`.
 | Caminho | O que é | Alterar? |
 | --- | --- | --- |
 | `admin/config.yml` | Configuração do Decap CMS: backend, coleções, campos | Sim — ver [CMS Decap](CMS-Decap.md) |
-| `admin/index.html` | Página que carrega o Decap CMS a partir do unpkg | Raramente |
+| `admin/index.html` | Carrega o Decap do unpkg, com versão fixa e Subresource Integrity | Raramente |
 | `documentos/` | PDF da associação (estatutos, regulamentos, ficha de inscrição) | Pelo CMS ou à mão |
 | `imagens/` | Logótipos e ícones |  |
 | `imagens/conteudo/` | Media migrada do sítio anterior e carregamentos do CMS | Pelo CMS |
-| `.htaccess` | 190 regras 301, cabeçalhos de segurança e de cache (Apache) | **Sincronizar** com `src/lib/redirects.mjs` |
-| `_redirects` | As mesmas 190 regras, formato Netlify/Cloudflare Pages | **Sincronizar** com `src/lib/redirects.mjs` |
-| `robots.txt` | Bloqueia `/admin/` e `/area-reservada/`; aponta para o sitemap | Sim |
+| `.htaccess` | 191 regras 301, cabeçalhos de segurança, cache e CSP (Apache) | **Gerado** — `npm run redirecoes:gerar` |
+| `_redirects` | As mesmas 191 regras, formato Netlify/Cloudflare Pages | **Gerado** — `npm run redirecoes:gerar` |
 | `manifest.webmanifest` | Manifesto da aplicação Web | Sim |
 | `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | Ícones | Sim |
 
-**Atenção:** `.htaccess` e `_redirects` **não são gerados pelo build**. São mantidos à mão e
-têm de ser atualizados em conjunto com `src/lib/redirects.mjs` sempre que uma redireção
-mudar. Ver [Redirecionamentos](Redirecionamentos.md).
+**Atenção:** o bloco de redireções do `.htaccess` e todo o `_redirects` são **gerados** a
+partir de `src/lib/redirects.mjs` por `npm run redirecoes:gerar`, e não devem ser editados
+à mão. O resto do `.htaccess` — cabeçalhos de segurança, cache, Content-Security-Policy e
+`ErrorDocument` — é mantido à mão e o gerador não lhe toca.
+`npm run redirecoes:validar` falha se divergirem. Ver
+[Redirecionamentos](Redirecionamentos.md).
+
+O `robots.txt` **já não está em `public/`**: passou a ser gerado no build por
+`src/pages/robots.txt.ts`, para o endereço do sitemap acompanhar `PUBLIC_SITE_URL`
+(auditoria: DOC-017). Ver [SEO](SEO.md).
 
 ---
 

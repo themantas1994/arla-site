@@ -22,7 +22,7 @@ const marcadores = await marcadoresDaRede({ repetidores: false, balizas: true })
     <strong class="mono">CS5BLA</strong>.
   </p>
 
-  <div class="tabela-envolvente so-largo">
+  <div class="tabela-envolvente so-largo so-largo--900">
     <table class="dados">
       <caption>Balizas operadas pela ARLA.</caption>
       <thead>
@@ -58,7 +58,7 @@ const marcadores = await marcadoresDaRede({ repetidores: false, balizas: true })
     </table>
   </div>
 
-  <ul class="grelha grelha--auto-sm cartoes so-estreito">
+  <ul class="grelha grelha--auto-sm cartoes so-estreito so-estreito--900">
     {balizas.map((b) => (
       <li class="cartao baliza">
         <div class="baliza__topo">
@@ -104,10 +104,8 @@ const marcadores = await marcadoresDaRede({ repetidores: false, balizas: true })
   .intro { font-size: var(--t-lg); color: var(--texto-suave); max-width: 64ch; margin-bottom: var(--e-5); }
   .nota-licenca { font-size: var(--t-xs); font-style: italic; }
 
-  .so-largo { display: none; }
+  /* A alternância tabela/cartões vive em global.css (.so-largo--900). */
   .cartoes { list-style: none; padding: 0; }
-  @media (min-width: 900px) { .so-largo { display: block; } .so-estreito { display: none; } }
-  @media print { .so-largo { display: block; } .so-estreito { display: none; } }
 
   .baliza { padding: var(--e-4); gap: var(--e-2); }
   .baliza__topo { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }

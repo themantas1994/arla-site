@@ -93,7 +93,7 @@ preciso um `vercel.json` traduzido a partir de `src/lib/redirects.mjs`.
 
 ### GitHub Pages
 
-Funciona, com a limitação mais séria: **não há redireções ao nível do servidor**. As 190
+Funciona, com a limitação mais séria: **não há redireções ao nível do servidor**. As 191
 regras passariam todas a depender das páginas-stub com `meta refresh` — pior para uma década
 de ligações acumuladas. Para este sítio em concreto, prefira um alojamento com 301 reais.
 

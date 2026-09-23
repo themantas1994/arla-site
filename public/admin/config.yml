@@ -7,12 +7,40 @@
 # ATENÇÃO: não existe publicação automática. Depois de gravar, alguém tem de
 # correr o build e publicar o resultado — ver docs/implantacao.md.
 #
+# ESTADO EM PRODUÇÃO: NÃO OPERACIONAL. Faltam duas coisas, nenhuma delas
+# resolúvel dentro deste repositório:
+#   1. a aplicação OAuth do GitHub e o serviço de autenticação
+#      (docs/implantacao.md § «Autenticação do CMS em produção»);
+#   2. a decisão sobre qual é a branch publicada (ver "branch" abaixo).
+# Até lá, /admin/ carrega mas não autentica. O backend local, com
+# `npx decap-server`, funciona e é a forma de experimentar o editor.
+#
 # "repo" tem de corresponder ao repositório real; se a associação mudar de
 # conta ou de organização, atualize-o aqui e na aplicação OAuth.
 # ---------------------------------------------------------------------------
 backend:
   name: github
   repo: themantas1994/arla-site
+
+  # ⚠ POR DECIDIR — DECISÃO DA DIREÇÃO DA ASSOCIAÇÃO (auditoria: DOC-020)
+  #
+  # O repositório NÃO TEM uma branch chamada "main". As branches existentes são
+  # todas de trabalho (claude/…), e a predefinida é
+  # "claude/arla-website-redesign-vcemm3".
+  #
+  # Com o CMS a funcionar em produção, gravar daria erro: o Decap tenta ler e
+  # escrever nesta branch e ela não existe.
+  #
+  # O valor NÃO foi alterado de propósito: qual é a branch publicada do sítio da
+  # ARLA é uma decisão da associação, não uma correção que se tire do código.
+  #
+  # Para resolver, escolha uma das duas vias e mude SÓ esta linha:
+  #   a) criar a branch "main" a partir da branch publicada e deixá-la como
+  #      predefinida do repositório — nada mais muda aqui;
+  #   b) manter o nome atual da branch publicada e escrevê-lo aqui.
+  #
+  # Depois de mudar, atualize também docs/implantacao.md e confirme o fluxo de
+  # gravação com uma alteração de teste antes de a dar por operacional.
   branch: main
   commit_messages:
     create: 'Conteúdo: criar {{collection}} "{{slug}}"'

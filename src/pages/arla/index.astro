@@ -6,7 +6,7 @@ import { SITIO } from '@lib/sitio';
 
 const pagina = await getEntry('paginas', 'a-arla');
 if (!pagina) throw new Error('Falta o conteúdo src/content/paginas/a-arla.md');
-const { Content, headings } = await render(pagina);
+const { Content } = await render(pagina);
 
 const seccoes = [
   { rotulo: 'História', href: '/arla/historia/', icone: 'relogio', texto: 'A cronologia da associação desde a primeira reunião, em 1999.' },

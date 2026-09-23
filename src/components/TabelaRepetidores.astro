@@ -57,7 +57,7 @@ const filtrosVisiveis = FILTROS.filter((f) => disponiveis.has(f.chave));
   )}
 
   {/* ---------- Tabela para ecrãs médios e grandes ---------- */}
-  <div class="tabela-envolvente so-largo">
+  <div class="tabela-envolvente so-largo so-largo--860">
     <table class="dados">
       {legenda && <caption>{legenda}</caption>}
       <thead>
@@ -80,6 +80,7 @@ const filtrosVisiveis = FILTROS.filter((f) => disponiveis.has(f.chave));
           return (
             <tr
               data-linha-repetidor
+              data-id={d.id}
               data-filtros={d.filtros.join(' ')}
               data-texto={[d.canal, d.banda, d.modo, d.localizacao, d.quadricula, d.frequenciaTx, d.frequenciaRx, d.indicativo].filter(Boolean).join(' ').toLowerCase()}
             >
@@ -113,13 +114,14 @@ const filtrosVisiveis = FILTROS.filter((f) => disponiveis.has(f.chave));
   </div>
 
   {/* ---------- Cartões para telemóvel ---------- */}
-  <ul class="cartoes-repetidores so-estreito">
+  <ul class="cartoes-repetidores so-estreito so-estreito--860">
     {repetidores.map((r) => {
       const d = r.data;
       return (
         <li
           class="cartao cartao-repetidor"
           data-linha-repetidor
+          data-id={d.id}
           data-filtros={d.filtros.join(' ')}
           data-texto={[d.canal, d.banda, d.modo, d.localizacao, d.quadricula, d.frequenciaTx, d.frequenciaRx, d.indicativo].filter(Boolean).join(' ').toLowerCase()}
         >
@@ -199,18 +201,6 @@ const filtrosVisiveis = FILTROS.filter((f) => disponiveis.has(f.chave));
   .freq { font-weight: 600; }
   table.dados td .copiar { margin-left: 0.4rem; vertical-align: middle; }
 
-  /* Alternância tabela / cartões */
-  .so-largo { display: none; }
-  .so-estreito { display: grid; gap: var(--e-3); }
-  @media (min-width: 860px) {
-    .so-largo { display: block; }
-    .so-estreito { display: none; }
-  }
-  @media print {
-    .so-largo { display: block; }
-    .so-estreito { display: none; }
-  }
-
   .cartao-repetidor { padding: var(--e-4); gap: var(--e-3); }
   .cartao-repetidor__topo {
     display: flex; align-items: start; justify-content: space-between;
@@ -263,7 +253,10 @@ const filtrosVisiveis = FILTROS.filter((f) => disponiveis.has(f.chave));
         const mostrar = okBanda && okModo && okTexto;
         linha.hidden = !mostrar;
         // Cada repetidor aparece duas vezes (tabela + cartão); conta-se uma só.
-        if (mostrar && !vistos.has(texto)) { vistos.add(texto); visiveis++; }
+        // A chave é o `id` do repetidor, que é único — o texto pesquisável pode
+        // coincidir entre dois registos e fundi-los na contagem.
+        const id = linha.dataset.id ?? texto;
+        if (mostrar && !vistos.has(id)) { vistos.add(id); visiveis++; }
       }
 
       if (contagem) {

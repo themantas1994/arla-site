@@ -184,24 +184,30 @@ dev → build → preview e para usar o CMS localmente.
 | --- | --- |
 | `npm run dev` | Servidor de desenvolvimento com recarga a quente (`astro dev`) |
 | `npm start` | Igual a `npm run dev` |
-| `npm run build` | Gera o sítio em `dist/` e a seguir o índice de pesquisa (`astro build && pagefind --site dist`) |
+| `npm run build` | Valida os dados, gera o sítio em `dist/` e a seguir o índice de pesquisa |
 | `npm run preview` | Serve o conteúdo de `dist/` localmente, como em produção |
 | `npm run check` | `astro check` — verificação de tipos em todo o projeto |
+| `npm test` | Testes unitários da lógica pura de `src/lib/` (Vitest). `npm run test:watch` para o modo contínuo |
+| `npm run validar` | Tudo o que não precisa de navegador: tipos, redireções, esquemas, dados, documentos e testes |
 | `npm run lint:links` | Ligações partidas e âncoras no `dist/` gerado (acrescente `-- --externas` para também testar ligações externas) |
+| `npm run redirecoes:gerar` | Reescreve `public/.htaccess` e `public/_redirects` a partir de `src/lib/redirects.mjs` |
+| `npm run redirecoes:validar` | Concordância das 191 regras nos três ficheiros; ciclos, cadeias e duplicados |
+| `npm run validar:dados` | Esquemas Zod dos 5 ficheiros JSON fora das coleções (corre dentro do `build`) |
+| `npm run validar:esquemas` | Concordância entre `public/admin/config.yml` e `src/content.config.ts` |
+| `npm run validar:documentos` | Cada PDF da biblioteca existe e o tamanho publicado está certo |
 | `npm run qa` | Acessibilidade (axe-core), transbordo responsivo em 7 larguras e testes funcionais num Chromium real |
 | `npm run qa:capturas` | Capturas de ecrã responsivas para `reports/capturas/` (`scripts/capturas.mjs`) |
 | `npm run audit:seo` | Metadados, dados estruturados, hierarquia de títulos e sitemap, sobre o `dist/` |
 | `npm run audit:desempenho` | Core Web Vitals (LCP, FCP, CLS) sob 4G lento, num navegador real |
+| `npm run audit:csp` | Aplica a Content-Security-Policy em modo impositivo e conta o que ficaria bloqueado |
+| `npm run media:otimizar` | Redimensiona imagens migradas para 1600 px de largura máxima (reescreve ficheiros) |
+| `npm run conteudo:resumos` | Regenera o campo `resumo` a partir do texto. Pré-visualiza; `-- --escrever` para gravar |
 
-Existem dois guiões utilitários **sem entrada em `package.json`**, executados à mão quando
-necessário:
+Os dois últimos **reescrevem ficheiros do repositório** e não correm no build nem em
+produção: são utilitários de manutenção, para executar à mão e rever no diff.
 
-```bash
-node scripts/otimizar-media.mjs [diretório]   # redimensiona imagens migradas (1600px máx.)
-node scripts/regenerar-resumos.mjs            # pré-visualiza; --escrever para gravar
-```
-
-`npm run qa`, `audit:seo` e `audit:desempenho` precisam de um build servido localmente:
+`npm run qa`, `audit:seo`, `audit:desempenho` e `audit:csp` precisam de um build servido
+localmente:
 
 ```bash
 npm run build
@@ -209,6 +215,7 @@ npm run preview &
 npm run qa
 npm run audit:seo
 npm run audit:desempenho
+npm run audit:csp
 ```
 
 Os relatórios são escritos em `reports/` (ignorado pelo Git, por ser regenerável). Os
@@ -483,7 +490,10 @@ Mais detalhe: [Eventos](wiki/Eventos.md).
   aplicam às APIs `<Image>`/`getImage()` do Astro, e as páginas atuais referenciam as imagens
   com `<img src="/imagens/conteudo/…">`.
 - **Nomes:** os ficheiros migrados mantêm o nome original (ex.: `20180818_Torre_ARLA-1.jpg`);
-  os carregamentos pelo CMS mantêm o nome do ficheiro enviado.
+  os carregamentos pelo CMS mantêm o nome do ficheiro enviado. **Evite nomes que só difiram
+  em maiúsculas:** o repositório tinha `hamRadio.mp4` e `hamradio.mp4`, byte a byte iguais,
+  que em macOS e Windows se sobrepõem um ao outro. Ficou só `hamradio.mp4`, com uma
+  redireção 301 do nome antigo (auditoria: DT-010).
 - **Referenciar:** por caminho absoluto a partir de `public/`, ex.:
   `/imagens/conteudo/ct1fbf.jpg`.
 - **Texto alternativo:** `imagemAlt` no frontmatter. Imagens decorativas devem ficar com
@@ -616,18 +626,35 @@ Referência das props e dos padrões por tipo de página: [SEO](wiki/SEO.md).
 
 ### Redireções
 
-Os números, verificados neste repositório:
+**`src/lib/redirects.mjs` é a fonte única.** Os dois ficheiros de servidor são gerados a
+partir dele por `npm run redirecoes:gerar` e **não devem ser editados à mão**:
+
+```text
+src/lib/redirects.mjs
+  ├─ redirects (183)              → astro.config.mjs: páginas com meta refresh,
+  │                                 que funcionam em qualquer alojamento
+  ├─ redirecoesDeFicheiros (7)    ┐  só ao nível do servidor: uma página HTML
+  └─ capturaFinal (1)             ┘  num caminho .pdf partiria o descarregamento
+              │
+              │  npm run redirecoes:gerar
+              ▼
+   public/.htaccess (191)      public/_redirects (191)
+```
 
 | Onde | Quantas | O quê |
 | --- | --- | --- |
-| `src/lib/redirects.mjs` | **183** | Redireções de rota, importadas por `astro.config.mjs`; geram páginas-stub com `meta refresh`, que funcionam em qualquer alojamento |
-| `public/.htaccess` | **190** regras `R=301` | As mesmas 183, mais 6 para ficheiros PDF e uma regra final de recolha (`^site/?$` → `/`) |
-| `public/_redirects` | **190** linhas | Idem, no formato Netlify/Cloudflare Pages, com `/site/*` como recolha |
+| `src/lib/redirects.mjs` | **191** no total | 183 de rota + 7 de ficheiro estático + 1 de recolha final |
+| `public/.htaccess` | **191** regras `R=301` | Geradas; só o bloco entre marcadores é reescrito — cabeçalhos de segurança, cache, CSP e `ErrorDocument` ficam intactos |
+| `public/_redirects` | **191** linhas | Geradas; formato Netlify/Cloudflare Pages |
 
-As 183 rotas correspondem a **93 endereços canónicos** (90 deles gerados em duas variantes,
-com e sem o prefixo `/site/`). Os PDF e a regra de recolha existem **apenas** ao nível do
-servidor: gerar uma página HTML num caminho terminado em `.pdf` confundiria quem o
-descarregasse. O mapa completo, endereço a endereço, está em
+As 183 rotas correspondem a **93 endereços canónicos** (90 deles em duas variantes, com e
+sem o prefixo `/site/`).
+
+`npm run redirecoes:validar` falha se os ficheiros divergirem da fonte, ou se houver
+origens duplicadas, ciclos, cadeias, destinos inexistentes ou caminhos mal formados. Corre
+em integração contínua.
+
+O mapa completo, endereço a endereço, está em
 [`docs/mapa-de-redirecoes.md`](docs/mapa-de-redirecoes.md) e em
 [Redirecionamentos](wiki/Redirecionamentos.md).
 
@@ -635,16 +662,35 @@ descarregasse. O mapa completo, endereço a endereço, está em
 
 ## Variáveis de ambiente
 
-O sítio constrói e funciona com **zero variáveis obrigatórias**. Existe exatamente uma,
-opcional:
+O sítio constrói e funciona com **zero variáveis obrigatórias**. Existem duas, ambas
+opcionais:
 
 | Variável | Descrição | Obrigatória | Segredo | Onde é utilizada |
 | --- | --- | --- | --- | --- |
-| `PUBLIC_SITE_URL` | Origem canónica usada em `<link rel="canonical">`, Open Graph, sitemap e RSS. Predefinição: `https://www.cs5arla.pt` | Não | Não | `astro.config.mjs` (`site`) e `scripts/check-links.mjs` (para distinguir ligações próprias de externas) |
+| `PUBLIC_SITE_URL` | Origem canónica usada em `<link rel="canonical">`, Open Graph, sitemap, RSS e `robots.txt`. Predefinição: `https://www.cs5arla.pt` | Não | Não | `astro.config.mjs` (`site`), `src/pages/robots.txt.ts` e `scripts/check-links.mjs` (para distinguir ligações próprias de externas) |
+| `CHROMIUM_PATH` | Caminho para o binário do Chromium usado pelos guiões de navegador. Predefinição: `/opt/pw-browsers/chromium` | Não | Não | `scripts/qa.mjs`, `scripts/lib/capturas.mjs`, `scripts/auditar-desempenho.mjs`, `scripts/auditar-csp.mjs` |
 
 ```bash
 PUBLIC_SITE_URL=https://ensaio.exemplo.pt npm run build
 ```
+
+**Quando é preciso definir `CHROMIUM_PATH`.** Os quatro guiões acima tentam, por esta ordem:
+
+1. o caminho em `CHROMIUM_PATH`, se a variável estiver definida;
+2. `/opt/pw-browsers/chromium`, se existir — é onde alguns ambientes de contentor já trazem
+   o Chromium instalado, para não ser preciso descarregar outro;
+3. o navegador que o Playwright instala, se nenhum dos anteriores existir.
+
+Ou seja: **numa máquina normal não é preciso definir nada.** Basta ter corrido
+`npx playwright install chromium` uma vez e o passo 3 trata do resto — é também o que
+acontece na integração contínua. Defina `CHROMIUM_PATH` apenas se quiser usar um Chromium
+que já tem instalado noutro sítio:
+
+```bash
+CHROMIUM_PATH=/usr/bin/chromium npm run qa
+```
+
+O caminho é específico de cada máquina. Não o escreva em nenhum ficheiro do repositório.
 
 **Não há segredos neste repositório** — nenhuma chave de API, credencial ou token. O Decap
 CMS autentica quem edita por OAuth do GitHub, configurado fora do repositório, pelo que o
@@ -690,7 +736,7 @@ clientes de FTP escondem-no por predefinição). São precisos o `mod_rewrite` e
 - **Vercel** — mesmo comando e mesma pasta, mas o `_redirects` **não** é lido: seriam
   precisos um `vercel.json` traduzido a partir de `src/lib/redirects.mjs`, ou aceitar as
   páginas-stub do Astro (que funcionam, mas usam `meta refresh` em vez de 301 reais).
-- **GitHub Pages** — funciona, sem redireções ao nível do servidor: as 190 regras 301
+- **GitHub Pages** — funciona, sem redireções ao nível do servidor: as 191 regras 301
   passariam a depender das páginas-stub do Astro, o que é pior para uma década de ligações
   acumuladas.
 
@@ -715,26 +761,41 @@ Mais detalhe: [Implantação](wiki/Implantacao.md).
 
 ## CI/CD
 
-**Não existe atualmente um pipeline CI/CD automatizado neste repositório.** Não há diretório
-`.github/`, nem workflows do GitHub Actions, nem qualquer outro sistema de integração
-contínua. Todas as verificações (`npm run check`, `npm run build`, `npm run lint:links`,
-`npm run qa`, `npm run audit:seo`, `npm run audit:desempenho`) são executadas manualmente
-por quem desenvolve, antes de publicar.
+**Integração contínua: IMPLEMENTADA. Publicação automática: NÃO IMPLEMENTADA.**
 
-[`docs/implantacao.md`](docs/implantacao.md#publicação-automática--não-implementada) contém uma **proposta** de
-workflow (`publicar.yml`) como ponto de partida. É uma sugestão, não algo em funcionamento.
-Ver [CI/CD](wiki/CI-CD.md) antes de a implementar.
+`.github/workflows/qualidade.yml` corre a cada *push* e *pull request*, em dois trabalhos:
+
+| Trabalho | O que corre |
+| --- | --- |
+| `verificar` | `npm audit` (informativo), `validar:dados`, `validar:esquemas`, `redirecoes:validar`, `validar:documentos`, `npm test`, `check`, `build`, `lint:links`, `audit:seo` |
+| `navegador` | instala o Chromium do Playwright, serve o build e corre `qa`, `audit:csp` e `audit:desempenho`; guarda `reports/` como artefacto |
+
+**O workflow não publica nada, de propósito.** Não tem nenhum passo de implantação e não
+usa nenhum segredo. Publicar exigiria credenciais do alojamento e uma decisão sobre quem
+controla a publicação, que ainda não foi tomada — ver
+[`docs/decisoes-pendentes.md`](docs/decisoes-pendentes.md).
+
+Continua a ser preciso alguém correr `npm run build` e enviar `dist/` para o alojamento.
+Uma alteração gravada no CMS **não chega ao sítio** enquanto isso não acontecer.
+
+Ver [CI/CD](wiki/CI-CD.md) e
+[`docs/implantacao.md`](docs/implantacao.md#publicação-automática--não-implementada).
 
 ---
 
 ## Testes
 
-Não há framework de testes unitários (nem Vitest, nem Jest). A verificação é feita por estas
-ferramentas, todas presentes no repositório:
+A verificação é feita por estas ferramentas, todas presentes no repositório:
 
 | Ferramenta | Objetivo | Comando | O que verifica |
 | --- | --- | --- | --- |
 | `astro check` (`@astrojs/check` + TypeScript) | Tipos | `npm run check` | Erros de tipo em `.astro` e `.ts` |
+| **Vitest** | Lógica pura | `npm test` | 58 testes sobre `estadoEvento()`, `quadriculaParaCoordenadas()`, `formatarCoordenadas()`, `relacionados()`, `intervaloDatas()`, `slugCategoria()`, `tempoLeitura()`, `normalizar()` e `textoSimples()`, com casos normais e limite |
+| `scripts/validar-dados.mjs` | Dados | `npm run validar:dados` | Esquemas Zod `strict` dos 5 JSON fora das coleções; corre dentro do `build` |
+| `scripts/validar-esquemas.mjs` | CMS ↔ conteúdo | `npm run validar:esquemas` | Campos, obrigatoriedade e valores de `select` do Decap contra `src/content.config.ts` |
+| `scripts/validar-redirecoes.mjs` | Redireções | `npm run redirecoes:validar` | 191 regras coerentes nos três ficheiros; ciclos, cadeias, duplicados, destinos inexistentes |
+| `scripts/validar-documentos.mjs` | Documentos | `npm run validar:documentos` | Cada PDF existe e o tamanho publicado corresponde |
+| `scripts/auditar-csp.mjs` | Segurança | `npm run audit:csp` | Aplica a CSP em modo impositivo em 15 páginas e conta violações |
 | `scripts/qa.mjs` (Playwright + `@axe-core/playwright`) | Acessibilidade, responsivo e funcional | `npm run qa` | axe-core (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`, `best-practice`) em 37 páginas × 2 temas; transbordo horizontal em 7 larguras; 17 testes funcionais; alvos de toque; erros de consola |
 | `scripts/capturas.mjs` | Revisão visual | `npm run qa:capturas` | Gera capturas responsivas em `reports/capturas/` |
 | `scripts/check-links.mjs` | Ligações | `npm run lint:links` | Ligações internas, âncoras e (com `-- --externas`) ligações externas, sobre o `dist/` |
@@ -744,14 +805,15 @@ ferramentas, todas presentes no repositório:
 **Antes de submeter uma alteração**, no mínimo:
 
 ```bash
-npm run check
+npm run validar          # tipos, redireções, esquemas, dados, documentos e testes
 npm run build
 npm run preview &
 npm run lint:links
 npm run qa
 ```
 
-Nada disto corre automaticamente (ver [CI/CD](#cicd)). Os resultados registados estão em
+Tudo isto corre também em integração contínua (ver [CI/CD](#cicd)), mas correr localmente
+poupa uma volta. Os resultados registados estão em
 [`docs/qualidade.md`](docs/qualidade.md) e em [Testes e Qualidade](wiki/Testes-e-Qualidade.md).
 
 ---
@@ -769,6 +831,13 @@ O que está verificado:
 - **Cabeçalhos de segurança** em `public/.htaccess`: `X-Content-Type-Options`,
   `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy` e `Strict-Transport-Security`.
   Qualquer outro alojamento teria de os replicar ao nível do servidor ou da CDN.
+- **Content-Security-Policy em modo `Report-Only`**, servida no `.htaccess` a partir da
+  fonte única `scripts/lib/csp.mjs`. `npm run audit:csp` aplica-a em modo impositivo num
+  navegador real e confirma que nenhuma das 15 páginas mais dependentes de recursos
+  externos se parte. Ver [`docs/seguranca-csp.md`](docs/seguranca-csp.md).
+- **Editor do CMS com versão fixa e Subresource Integrity.** `public/admin/index.html`
+  carrega uma versão exata do Decap com `integrity` e `crossorigin`; um ficheiro trocado no
+  CDN é recusado pelo navegador, verificado em teste.
 - **Sem HTML de utilizador por sanear** — todo o conteúdo é Markdown escrito por quem tem
   acesso de escrita ao repositório e processado no build.
 - Ligações externas com `rel="noopener noreferrer"`.
@@ -777,13 +846,21 @@ O que está verificado:
 
 Limitações conhecidas, ditas por inteiro:
 
-- **Não há `Content-Security-Policy`.** Tem de ser afinada contra o alojamento real para não
-  bloquear as telas do OpenStreetMap nem os painéis de meteorologia espacial.
-- **O `npm audit` reporta 3 vulnerabilidades** (1 crítica, 1 alta, 1 baixa) em dependências
-  — `astro`, `sharp` e `esbuild`. A correção implica atualizações major. Ver a análise em
-  [`docs/auditoria-do-projeto.md`](docs/auditoria-do-projeto.md#segurança).
-- O Decap CMS é carregado de `https://unpkg.com` em `public/admin/index.html`, sem
-  Subresource Integrity.
+- **A CSP está em `Report-Only`, não imposta.** Não bloqueia nada. E leva
+  `'unsafe-inline'` em `script-src`, porque o Astro gera `<script type="module">` em linha
+  e o guião do tema tem de correr antes da primeira pintura — ou seja, **não protege contra
+  XSS injetado em linha**. O que falta para a impor está em
+  [`docs/seguranca-csp.md`](docs/seguranca-csp.md).
+- **Os cabeçalhos de segurança só existem no Apache.** Num alojamento que não leia
+  `.htaccess`, nenhum deles é aplicado — CSP incluída.
+- **O `npm audit` reporta 2 vulnerabilidades** (1 crítica no `astro`, 1 baixa no `esbuild`,
+  esta só no servidor de desenvolvimento em Windows). Ambas exigem subir o Astro de 5 para
+  7 — duas versões maiores —, o que é uma migração e não uma correção. A do `sharp` (alta)
+  foi corrigida na remediação da auditoria, com `sharp@^0.35.4`. Análise de aplicabilidade
+  em [`docs/auditoria-do-projeto.md`](docs/auditoria-do-projeto.md#segurança) e estado atual
+  em [`docs/remediacao-da-auditoria.md`](docs/remediacao-da-auditoria.md).
+- **O CMS em produção não está operacional** — falta o OAuth e a decisão sobre a branch
+  publicada. Ver [`docs/decisoes-pendentes.md`](docs/decisoes-pendentes.md).
 
 Mais detalhe: [Segurança](wiki/Seguranca.md).
 
@@ -850,10 +927,21 @@ Mais detalhe: [Contribuir](wiki/Contribuir.md).
 
 ## Licença
 
-**Não existe ficheiro `LICENSE` neste repositório** — o código não está publicado sob nenhuma
-licença de código aberto. Os textos, as fotografias e os documentos do sítio são propriedade
-da Associação de Radioamadores do Litoral Alentejano e dos respetivos autores, creditados
-individualmente quando conhecidos.
+**Não existe ficheiro `LICENSE` neste repositório**, e nenhum foi acrescentado de propósito:
+escolher uma licença é uma decisão da direção da associação, com efeitos jurídicos, não uma
+correção técnica.
+
+**Consequência prática:** por omissão, o código está integralmente protegido por direitos
+de autor. Ninguém de fora pode legalmente copiar, modificar, redistribuir ou reutilizar o
+código do sítio — nem outra associação de radioamadores que o queira usar como base — e
+contribuições externas ficam numa situação indefinida.
+
+Os textos, as fotografias e os documentos do sítio são propriedade da Associação de
+Radioamadores do Litoral Alentejano e dos respetivos autores, creditados individualmente
+quando conhecidos.
+
+As opções e o que muda em cada uma estão em
+[`docs/decisoes-pendentes.md`](docs/decisoes-pendentes.md#4-licença-do-código).
 
 ---
 

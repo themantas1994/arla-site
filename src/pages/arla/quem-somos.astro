@@ -44,7 +44,7 @@ const comIndicativo = associados.filter((a) => a.indicativo).length;
   </div>
 
   <!-- Tabela em ecrãs largos -->
-  <div class="tabela-envolvente so-largo">
+  <div class="tabela-envolvente so-largo so-largo--700">
     <table class="dados">
       <caption class="invisivel">Associados da ARLA</caption>
       <thead>
@@ -67,7 +67,7 @@ const comIndicativo = associados.filter((a) => a.indicativo).length;
   </div>
 
   <!-- Cartões em ecrãs estreitos -->
-  <ul class="grelha grelha--auto-sm cartoes so-estreito">
+  <ul class="grelha grelha--auto-sm cartoes so-estreito so-estreito--700">
     {associados.map((a) => (
       <li class="cartao associado" data-associado data-texto={`${a.numero} ${a.indicativo} ${a.nome}`.toLowerCase()}>
         <span class="associado__numero mono">#{a.numero}</span>
@@ -103,13 +103,8 @@ const comIndicativo = associados.filter((a) => a.indicativo).length;
   .campo--pesquisa input { padding-left: 2.5rem; }
   .contagem { font-size: var(--t-sm); color: var(--texto-fraco); margin-left: auto; }
 
-  .so-largo { display: none; }
+  /* A alternância tabela/cartões vive em global.css (.so-largo--700). */
   .cartoes { list-style: none; padding: 0; }
-  @media (min-width: 700px) {
-    .so-largo { display: block; }
-    .so-estreito { display: none; }
-  }
-  @media print { .so-largo { display: block; } .so-estreito { display: none; } }
 
   .associado { padding: var(--e-4); gap: 0.15rem; }
   .associado__numero { font-size: var(--t-xs); color: var(--texto-fraco); }

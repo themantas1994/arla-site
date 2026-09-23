@@ -76,6 +76,10 @@ const { valor, rotulo, texto, class: classe } = Astro.props;
         await navigator.clipboard.writeText(valor);
       } catch {
         // Reserva para navegadores sem Clipboard API ou em contexto não seguro
+        // (http://, WebView antiga). `document.execCommand` está obsoleto e o
+        // `astro check` assinala-o — é uma sugestão INTENCIONAL: é a única
+        // alternativa que copia sem Clipboard API, e o `try` acima garante que
+        // só corre quando a API moderna falha. Ver docs/qualidade.md.
         const campo = document.createElement('textarea');
         campo.value = valor;
         campo.setAttribute('readonly', '');

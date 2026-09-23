@@ -14,7 +14,7 @@
 Tudo o que está em `public/` é copiado tal e qual para `dist/`, sem processamento.
 
 **Formatos em uso:** `.jpg`/`.jpeg` e `.png` para imagens, `.mp4` para os dois vídeos
-(`hamRadio.mp4`, `hamradio.mp4`, `14.mp4`), `.pdf` para documentos, `.svg` para o favicon.
+(`hamradio.mp4`, `14.mp4`), `.pdf` para documentos, `.svg` para o favicon.
 
 ---
 
@@ -102,11 +102,21 @@ anterior. Os carregamentos pelo CMS mantêm o nome do ficheiro enviado.
 Para ficheiros novos, convém: minúsculas, sem acentos nem espaços, com hífenes, e um nome
 que diga o que a imagem é (`torre-aldeia-dos-chaos-2026.jpg`).
 
-**Duas notas sobre o que existe hoje:** `public/imagens/conteudo/` tem
-`hamRadio.mp4` e `hamradio.mp4` — dois ficheiros cujos nomes só diferem em maiúsculas, o que
-é ambíguo em sistemas de ficheiros que ignoram maiúsculas (macOS, Windows). Está registado
-na [auditoria](../docs/auditoria-do-projeto.md#dívida-técnica) e não foi alterado, para não
-partir referências em artigos.
+**Nunca use nomes que só difiram em maiúsculas.** `public/imagens/conteudo/` tinha
+`hamRadio.mp4` e `hamradio.mp4`, byte a byte iguais (mesmo `md5`) — ambíguo em sistemas de
+ficheiros que ignoram maiúsculas, onde um se sobrepõe ao outro consoante a ordem do
+checkout. Só o minúsculo era referenciado, em
+`src/content/paginas/ser-radioamador.md`.
+
+Na remediação da auditoria (DT-010) ficou só `hamradio.mp4`, e o nome antigo passou a ter
+uma redireção 301 em `src/lib/redirects.mjs`, em `redirecoesDeFicheiros` — por precaução,
+caso alguém tenha ligado ao endereço maiúsculo:
+
+```text
+/imagens/conteudo/hamRadio.mp4  →  /imagens/conteudo/hamradio.mp4
+```
+
+Só resta um vídeo com nome herdado (`14.mp4`), que não colide com nada.
 
 ---
 
